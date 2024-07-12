@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
-import User from '../../models/User';
+import User from '../models/User';
 import { RequestHandler } from 'express';
 
 interface User {

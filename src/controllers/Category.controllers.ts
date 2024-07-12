@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import Category from '../../models/Category';
+import Category from '../models/Category';
 
 class CategoryController {
   getAll: RequestHandler = async (req, res) => {

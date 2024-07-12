@@ -1,8 +1,8 @@
 import { RequestHandler } from 'express';
-import Product from '../../models/Product';
+import Product from '../models/Product';
 
 class ProductController {
-  getAll: RequestHandler = async (req, res) => {
+  Get_All: RequestHandler = async (req, res) => {
     try {
       const data = await Product.find().populate('category');
       res.status(200).json({
@@ -13,7 +13,7 @@ class ProductController {
     }
   };
 
-  getOne: RequestHandler = async (req, res) => {
+  Get_One: RequestHandler = async (req, res) => {
     try {
       const data = await Product.findById(req.params.id).populate('category');
       res.status(200).json({
@@ -23,7 +23,7 @@ class ProductController {
       res.status(500).json(error);
     }
   };
-  update: RequestHandler = async (req, res) => {
+  Update: RequestHandler = async (req, res) => {
     try {
       const data = await Product.findByIdAndUpdate(req.params.id, req.body);
       res.status(200).json({
@@ -33,7 +33,7 @@ class ProductController {
       res.status(500).json(error);
     }
   };
-  delete: RequestHandler = async (req, res) => {
+  Delete: RequestHandler = async (req, res) => {
     try {
       const data = await Product.findByIdAndDelete(req.params.id);
       res.status(200).json({
@@ -43,7 +43,7 @@ class ProductController {
       res.status(500).json(error);
     }
   };
-  create: RequestHandler = async (req, res) => {
+  Create: RequestHandler = async (req, res) => {
     try {
       const data = await Product.create(req.body);
       res.status(200).json({
