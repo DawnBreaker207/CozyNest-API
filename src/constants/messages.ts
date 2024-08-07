@@ -45,6 +45,21 @@ export const messagesSuccess = Object.freeze({
   CREATE_CATEGORY_SUCCESS: 'Create category successfully!',
   UPDATE_CATEGORY_SUCCESS: 'Update category successfully!',
   DELETE_CATEGORY_SUCCESS: 'Delete category successfully!',
+  // Colors
+  GET_COLOR_SUCCESS: 'Get colors successfully!',
+  CREATE_COLOR_SUCCESS: 'Create color successfully!',
+  UPDATE_COLOR_SUCCESS: 'Update color successfully!',
+  DELETE_COLOR_SUCCESS: 'Delete color successfully!',
+  // Size
+  GET_SIZE_SUCCESS: 'Get size successfully!',
+  CREATE_SIZE_SUCCESS: 'Create size successfully!',
+  UPDATE_SIZE_SUCCESS: 'Update size successfully!',
+  DELETE_SIZE_SUCCESS: 'Delete size successfully!',
+  // Variants
+  GET_VARIANT_SUCCESS: 'Get variant successfully!',
+  CREATE_VARIANT_SUCCESS: 'Create variant successfully!',
+  UPDATE_VARIANT_SUCCESS: 'Update variant successfully!',
+  DELETE_VARIANT_SUCCESS: 'Delete variant successfully!',
   // Images
   GET_IMAGES_SUCCESS: 'Get images successfully!',
   CREATE_IMAGES_SUCCESS: 'Create images successfully!',
@@ -52,14 +67,14 @@ export const messagesSuccess = Object.freeze({
   DELETE_IMAGES_SUCCESS: 'Delete images successfully!',
   // Cart
   GET_CART_SUCCESS: 'Get cart successfully!',
-  CREATE_CART_SUCCESS: 'Create cart successfully!',
+  ADD_CART_SUCCESS: 'Add to cart successfully!',
   UPDATE_CART_SUCCESS: 'Update cart successfully!',
   REMOVE_CART_SUCCESS: 'Delete cart successfully!',
-  INCREASE_PRODUCTS_CART_SUCCESS: 'Increase products cart successfully!',
-  DECREASE_PRODUCTS_CART_SUCCESS: 'Decrease products cart successfully!',
+  REMOVE_CART_ITEMS_SUCCESS: 'Delete items in cart successfully!',
   // Order
-  GET_ORDER_SUCCESS: 'Get cart successfully!',
-  CREATE_ORDER_SUCCESS: 'Get cart successfully!',
-  UPDATE_ORDER_SUCCESS: 'Get cart successfully!',
-  UPDATE_ORDER_STATUS_SUCCESS: 'Get cart successfully!',
+  GET_ORDER_SUCCESS: 'Get order successfully!',
+  CREATE_ORDER_SUCCESS: 'Create order successfully!',
+  UPDATE_ORDER_SUCCESS: 'Update order successfully!',
+  UPDATE_ORDER_STATUS_SUCCESS: 'Update order status successfully!',
+  REMOVE_ORDER_SUCCESS: 'Remove order successfully!',
 });

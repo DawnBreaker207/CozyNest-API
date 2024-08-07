@@ -1,10 +1,6 @@
-import {
-  ErrorRequestHandler,
-  RequestHandler,
-  RequestParamHandler,
-} from 'express';
-import { messageError } from '../constants/messages';
+import { ErrorRequestHandler, RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { messageError } from '../constants/messages';
 
 export const errorHandleNotFound: RequestHandler = (req, res, next) => {
   const error = new Error(messageError.NOT_FOUND);

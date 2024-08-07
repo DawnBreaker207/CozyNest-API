@@ -1,55 +1,139 @@
 import { RequestHandler } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import { messageError, messagesSuccess } from '../constants/messages';
+import Category from '../models/Category';
 import { Product } from '../models/Product';
 
-const Get_All: RequestHandler = async (req, res) => {
+//* Products
+const Get_All_Product: RequestHandler = async (req, res, next) => {
   try {
     const data = await Product.find().populate('category');
-    res.status(200).json({
+    if (!data) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: messageError.BAD_REQUEST });
+    }
+    res.status(StatusCodes.OK).json({
+      message: messagesSuccess.GET_PRODUCT_SUCCESS,
       data: data,
     });
   } catch (error) {
-    res.status(500).json(error);
+    next(error);
   }
 };
-const Get_One: RequestHandler = async (req, res) => {
+const Get_One_Product: RequestHandler = async (req, res, next) => {
   try {
     const data = await Product.findById(req.params.id).populate('category');
-    res.status(200).json({
+    if (!data) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: messageError.BAD_REQUEST });
+    }
+    res.status(StatusCodes.CREATED).json({
+      res: messagesSuccess.GET_PRODUCT_SUCCESS,
       data: data,
     });
   } catch (error) {
-    res.status(500).json(error);
+    next(error);
   }
 };
-const Create: RequestHandler = async (req, res) => {
+const Create_Product: RequestHandler = async (req, res, next) => {
   try {
     const data = await Product.create(req.body);
+    const updateCategory = await Category.findByIdAndUpdate(
+      data.category,
+      {
+        $push: { products: data._id },
+      },
+      { new: true }
+    );
+    if (!data || !updateCategory) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: messageError.BAD_REQUEST,
+      });
+    }
     res.status(200).json({
-      data: data,
+      message: messagesSuccess.CREATE_PRODUCT_SUCCESS,
+      res: data,
     });
   } catch (error) {
-    res.status(500).json(error);
+    next(error);
   }
 };
-const Update: RequestHandler = async (req, res) => {
+const Update_Product: RequestHandler = async (req, res, next) => {
   try {
-    const data = await Product.findByIdAndUpdate(req.params.id, req.body);
-    res.status(200).json({
-      data: data,
+    const data = await Product.findByIdAndUpdate(`${req.params.id}`, req.body, {
+      new: true,
+    });
+    if (!data) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: messageError.BAD_REQUEST });
+    }
+    const updateCategory = await Category.findByIdAndUpdate(
+      data.category,
+      {
+        $push: { products: data._id },
+      },
+      { new: true }
+    );
+    if (!data || !updateCategory) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: messageError.BAD_REQUEST,
+      });
+    }
+    res.status(StatusCodes.CREATED).json({
+      message: messagesSuccess.UPDATE_PRODUCT_SUCCESS,
+      res: data,
     });
   } catch (error) {
-    res.status(500).json(error);
+    next(error);
   }
 };
-const Delete: RequestHandler = async (req, res) => {
+const Hide_Product: RequestHandler = async (req, res, next) => {
+  try {
+    const data = await Product.findByIdAndUpdate(
+      `${req.params.id}`,
+      {
+        isHidden: true,
+      },
+      { new: true }
+    );
+
+    if (!data) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: messageError.BAD_REQUEST,
+      });
+    }
+    res.status(StatusCodes.OK).json({
+      message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
+      res: data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+const Delete_Product: RequestHandler = async (req, res, next) => {
   try {
     const data = await Product.findByIdAndDelete(req.params.id);
-    res.status(200).json({
-      data: data,
+    if (!data) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: messageError.BAD_REQUEST,
+      });
+    }
+    res.status(StatusCodes.OK).json({
+      message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
     });
   } catch (error) {
-    res.status(500).json(error);
+    next(error);
   }
 };
 
-export { Get_All, Get_One, Create, Update, Delete };
+export {
+  Create_Product,
+  Delete_Product,
+  Get_All_Product,
+  Get_One_Product,
+  Hide_Product,
+  Update_Product
+};

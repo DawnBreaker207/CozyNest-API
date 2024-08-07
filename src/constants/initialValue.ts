@@ -60,3 +60,7 @@ export const rolePermission: RolePermissions = {
   manager: roles.manager,
   user: roles.user,
 };
+
+export const sizes = ['S', 'M', 'L', 'XL'];
+
+export const colors = ['Red', 'Blue', 'Green', 'Yellow', 'Green'];

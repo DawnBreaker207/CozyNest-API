@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Schema, ZodType } from 'zod';
+import { ZodType } from 'zod';
 import { messageError } from '../constants/messages';
 
 const validBodyRequest = (schema: ZodType<any>) => {

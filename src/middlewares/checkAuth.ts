@@ -20,9 +20,11 @@ export const checkAuth: RequestHandler = async (req, res, next) => {
       });
     }
     const user: UserType | null = await User.findById(decode._id);
+
     if (user) {
       req.user = user;
     }
+
     next();
   } catch (error) {
     next(error);
