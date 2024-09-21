@@ -10,17 +10,17 @@ import {
   Get_One_Product,
   Hide_Product,
   Update_Product,
-} from '../controllers/product.controllers';
+} from '../controllers/product.controller';
 import validBodyRequest from '../middlewares/validBodyRequest';
 import { productSchema } from '../validations/product.validation';
-import routeVariant from './variant.route';
+// import routeVariant from './variant.route';
 
 const routeProduct = Router();
 
 
 routeProduct.get('/', Get_All_Product);
 routeProduct.get('/:id', Get_One_Product);
-routeProduct.use('/', routeVariant);
+// routeProduct.use('/', routeVariant);
 routeProduct.use(checkAuth, checkPermission(['manager', 'admin']));
 routeProduct.use(validBodyRequest(productSchema));
 routeProduct.post('/', Create_Product);
