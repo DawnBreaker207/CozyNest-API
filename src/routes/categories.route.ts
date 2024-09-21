@@ -1,4 +1,9 @@
 import { Router } from 'express';
+
+import { checkAuth } from '../middlewares/checkAuth';
+import { checkPermission } from '../middlewares/checkPermission';
+import validBodyRequest from '../middlewares/validBodyRequest';
+import { categorySchema } from '../validations/product.validation';
 import {
   Create_Category,
   Delete_Category,
@@ -6,11 +11,7 @@ import {
   Get_One_Category,
   Hide_Category,
   Update_Category,
-} from '../controllers/category.controllers';
-import { checkAuth } from '../middlewares/checkAuth';
-import { checkPermission } from '../middlewares/checkPermission';
-import validBodyRequest from '../middlewares/validBodyRequest';
-import { categorySchema } from '../validations/product.validation';
+} from '../controllers/category.controller';
 
 const routeCategory = Router();
 routeCategory.use(checkAuth, checkPermission(['manager', 'admin']));
