@@ -1,11 +1,12 @@
 import { Router } from 'express';
+
+import validBodyRequest from '../middlewares/validBodyRequest';
+import { loginSchema, registerSchema } from '../validations/auth.validation';
 import {
   Forgot_Pass,
   Login,
   Register,
-} from '../controllers/authentication.controllers';
-import validBodyRequest from '../middlewares/validBodyRequest';
-import { loginSchema, registerSchema } from '../validations/auth.validation';
+} from '../controllers/authentication.controller';
 
 const routeAuthentication = Router();
 

@@ -5,7 +5,7 @@ import { messageError, messagesSuccess } from '../constants/messages';
 
 const Get_All_Category: RequestHandler = async (req, res, next) => {
   try {
-    const data = await Category.find().populate('product');
+    const data = await Category.find().populate('products');
     if (!data) {
       return res.status(StatusCodes.BAD_GATEWAY).json({
         message: messageError.BAD_REQUEST,
@@ -21,7 +21,7 @@ const Get_All_Category: RequestHandler = async (req, res, next) => {
 };
 const Get_One_Category: RequestHandler = async (req, res, next) => {
   try {
-    const data = await Category.findById(req.params.id).populate('product');
+    const data = await Category.findById(req.params.id).populate('products');
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messageError.BAD_REQUEST,
