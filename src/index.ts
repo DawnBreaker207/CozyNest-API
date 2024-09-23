@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import router from './routes/index';
 import { PORT } from './utils/env';
 import { errorHandle, errorHandleNotFound } from './utils/errorHandle';
+import redirectPath from './middlewares/redirectPath';
 import cors from 'cors';
 
 const app = express();
