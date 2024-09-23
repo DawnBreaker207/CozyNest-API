@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import router from './routes/index';
 import { PORT } from './utils/env';
 import { errorHandle, errorHandleNotFound } from './utils/errorHandle';
+import redirectPath from './middlewares/redirectPath';
 import cors from 'cors';
 
 const app = express();
@@ -23,7 +24,6 @@ app.use(morgan('dev'));
 app.use(redirectPath);
 //* Init Database
 import './db/init.mongo';
-import redirectPath from './middlewares/redirectPath';
 
 //* Init Route
 app.use('/api/v1', router);
