@@ -24,7 +24,6 @@ app.use(morgan('dev'));
 app.use(redirectPath);
 //* Init Database
 import './db/init.mongo';
-import redirectPath from './middlewares/redirectPath';
 
 //* Init Route
 app.use('/api/v1', router);
