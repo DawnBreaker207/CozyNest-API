@@ -1,24 +1,25 @@
 import nodemailer from 'nodemailer';
-import { EMAIL_PASSWORD, EMAIL_USERNAME } from './env';
-export const sendMail = async (
-  email: string,
-  subject: string,
-  text: string
-) => {
+import { EMAIL_PASSWORD, EMAIL_USERNAME } from '../utils/env';
+export const sendMail = async (input: {
+  email: string;
+  subject: string;
+  text: string;
+}) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: 'Gmail',
       auth: {
         user: EMAIL_USERNAME,
         pass: EMAIL_PASSWORD,
       },
+      authMethod: 'PLAIN',
     });
 
     const mailOptions = {
       from: EMAIL_USERNAME,
-      to: email,
-      subject: subject,
-      text: text,
+      to: input.email,
+      subject: input.subject,
+      text: input.text,
     };
     await transporter.sendMail(mailOptions);
   } catch (error) {

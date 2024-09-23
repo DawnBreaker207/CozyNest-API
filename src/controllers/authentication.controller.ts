@@ -5,7 +5,7 @@ import { messageError, messagesSuccess } from '../constants/messages';
 import { Role, User } from '../models/User';
 import { comparePassword, hashPassword } from '../utils/hashPassword';
 import { createToken } from '../utils/jwt';
-import { sendMail } from '../utils/sendMail';
+import { sendMail } from '../configs/configMail';
 
 const Register: RequestHandler = async (req, res, next) => {
   try {
@@ -87,9 +87,12 @@ const Forgot_Pass: RequestHandler = async (req, res, next) => {
       });
     }
     findUser.password = hashPass;
-    const emailSubject = 'Password reset from CozyNest';
-    const emailText = `Your new password is ${newPassword}`;
-    await sendMail(email, emailSubject, emailText);
+    const emailOption = {
+      email: email,
+      subject: 'Password reset from CozyNest',
+      text: `Your new password is ${newPassword}`,
+    };
+    await sendMail(emailOption);
   } catch (error) {
     next(error);
   }
