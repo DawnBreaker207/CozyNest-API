@@ -7,10 +7,17 @@ cloudinary.config({
   api_secret: API_SECRET,
 });
 
-export default async function handleUpload(file: string) {
+const handleUpload = async (file: string) => {
   const res = await cloudinary.uploader.upload(file, {
     resource_type: 'auto',
     folder: FOLDER_NAME,
   });
   return res;
-}
+};
+
+const handleDelete = async (id: string) => {
+  const res = await cloudinary.uploader.destroy(id);
+  return res;
+};
+
+export { handleUpload, handleDelete, cloudinary };
