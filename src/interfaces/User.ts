@@ -17,13 +17,14 @@ export interface UserType {
   full_name: string;
   email: string;
   password: string | undefined;
-  roles: RoleType[];
+  roles: string;
   phoneNumber: string;
   avatar: string;
   address: string;
   city: string;
   address_shipping: string;
   phone_shipping: string;
+  status: boolean;
 }
 
 export type Register_Type = Pick<UserType, 'username' | 'email' | 'password'>;

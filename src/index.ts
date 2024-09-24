@@ -8,11 +8,13 @@ import { PORT } from './utils/env';
 import { errorHandle, errorHandleNotFound } from './utils/errorHandle';
 import redirectPath from './middlewares/redirectPath';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 //* Init Middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   express.urlencoded({
     extended: true,

@@ -5,7 +5,7 @@ import { messageError, messagesSuccess } from '../constants/messages';
 import { Role, User } from '../models/User';
 import { comparePassword, hashPassword } from '../utils/hashPassword';
 import { createToken } from '../utils/jwt';
-import { sendMail } from '../utils/sendMail';
+import { SECRET_ACCESS_TOKEN, SECRET_REFRESH_TOKEN } from '../utils/env';
 
 const Register: RequestHandler = async (req, res, next) => {
   try {
@@ -28,9 +28,41 @@ const Register: RequestHandler = async (req, res, next) => {
       password: hashPass,
       roles: [defaultRole],
     });
+
+    if (!newUser) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        message: messageError.UNAUTHORIZED,
+      });
+    }
+
+    const accessToken = createToken(
+      { _id: newUser.id },
+      SECRET_ACCESS_TOKEN as string,
+      '5m'
+    );
+
+    const refreshToken = createToken(
+      { _id: newUser.id },
+      SECRET_REFRESH_TOKEN as string,
+      '1d'
+    );
+
+    res.cookie('accessToken', accessToken, {
+      expires: new Date(Date.now() + 5 * 60 * 1000),
+      httpOnly: true,
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      httpOnly: true,
+    });
+
     newUser.password = undefined;
+
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.REGISTER_SUCCESS,
+      accessToken,
+      expires: 10 * 60 * 1000,
       res: newUser,
     });
   } catch (error) {
@@ -47,6 +79,11 @@ const Login: RequestHandler = async (req, res, next) => {
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messageError.EMAIL_NOT_FOUND });
     }
+    if (!userExist.status) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        message: messageError.FORBIDDEN,
+      });
+    }
 
     if (!(await comparePassword(password, userExist.password as string))) {
       return res
@@ -54,44 +91,57 @@ const Login: RequestHandler = async (req, res, next) => {
         .json({ message: messageError.INVALID_PASSWORD });
     }
 
-    userExist.password = undefined;
+    if (!userExist) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: messageError.BAD_REQUEST,
+      });
+    }
 
-    const token = createToken({ _id: userExist.id }, '10d');
+    const accessToken = createToken(
+      { _id: userExist.id },
+      SECRET_ACCESS_TOKEN as string,
+      '5m'
+    );
+
+    const refreshToken = createToken(
+      { _id: userExist.id },
+      SECRET_REFRESH_TOKEN as string,
+      '1d'
+    );
+
+    res.cookie('accessToken', accessToken, {
+      expires: new Date(Date.now() + 5 * 60 * 1000),
+      httpOnly: true,
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      httpOnly: true,
+    });
+
+    userExist.password = undefined;
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.LOGIN_SUCCESS,
-      res: {
-        user: userExist,
-        accessToken: token,
-      },
+      accessToken: accessToken,
+      expires: 10 * 60 * 1000,
+      res: userExist,
     });
   } catch (error) {
     next(error);
   }
 };
-const Forgot_Pass: RequestHandler = async (req, res, next) => {
-  try {
-    const { email } = req.body;
-    const findUser = await User.findOne({ email });
 
-    if (!findUser) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
-      });
-    }
-    const newPassword = Math.random().toString(36).slice(-8);
-    const hashPass = await hashPassword(newPassword);
-    if (!hashPass) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: messageError.ERROR_SERVER,
-      });
-    }
-    findUser.password = hashPass;
-    const emailSubject = 'Password reset from CozyNest';
-    const emailText = `Your new password is ${newPassword}`;
-    await sendMail(email, emailSubject, emailText);
+const clearToken: RequestHandler = async (req, res, next) => {
+  try {
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
+
+    res.status(StatusCodes.NO_CONTENT).json({
+      message: messagesSuccess.CLEAR_TOKEN_SUCCESS,
+    });
   } catch (error) {
     next(error);
   }
 };
-export { Forgot_Pass, Login, Register };
+export { Login, Register, clearToken };

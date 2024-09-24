@@ -7,7 +7,8 @@ export const messageError = Object.freeze({
   EMAIL_NOT_FOUND: 'Email not found',
   PASSWORD_NOT_MATCH: 'Password not match',
   PERMISSION_DENIED: 'Permission denied !',
-
+  UNAUTHORIZED: 'Unauthorized !',
+  FORBIDDEN: 'Forbidden !',
   // Profile
   // Product
   INVALID_BODY_REQUEST: 'Invalid body request!',
@@ -77,4 +78,7 @@ export const messagesSuccess = Object.freeze({
   UPDATE_ORDER_SUCCESS: 'Update order successfully!',
   UPDATE_ORDER_STATUS_SUCCESS: 'Update order status successfully!',
   REMOVE_ORDER_SUCCESS: 'Remove order successfully!',
+
+  //
+  CLEAR_TOKEN_SUCCESS: 'Clear token successfully',
 });
