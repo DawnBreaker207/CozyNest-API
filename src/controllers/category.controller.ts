@@ -1,14 +1,14 @@
 import { RequestHandler } from 'express';
 import Category from '../models/Category';
 import { StatusCodes } from 'http-status-codes';
-import { messageError, messagesSuccess } from '../constants/messages';
+import { messagesError, messagesSuccess } from '../constants/messages';
 
 const Get_All_Category: RequestHandler = async (req, res, next) => {
   try {
     const data = await Category.find().populate('product');
     if (!data) {
       return res.status(StatusCodes.BAD_GATEWAY).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({
@@ -24,7 +24,7 @@ const Get_One_Category: RequestHandler = async (req, res, next) => {
     const data = await Category.findById(req.params.id).populate('product');
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({
@@ -40,7 +40,7 @@ const Create_Category: RequestHandler = async (req, res, next) => {
     const data = await Category.create(req.body);
     if (!data) {
       return res.status(StatusCodes.BAD_GATEWAY).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({
@@ -58,7 +58,7 @@ const Update_Category: RequestHandler = async (req, res, next) => {
     });
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({
@@ -80,7 +80,7 @@ const Hide_Category: RequestHandler = async (req, res, next) => {
     );
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.CREATED).json({
@@ -95,7 +95,7 @@ const Delete_Category: RequestHandler = async (req, res, next) => {
     const data = await Category.findByIdAndDelete(req.params.id);
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({

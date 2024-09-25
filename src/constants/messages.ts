@@ -1,4 +1,4 @@
-export const messageError = Object.freeze({
+export const messagesError = Object.freeze({
   // Auth
   INVALID_EMAIL: 'Invalid email',
   TOKEN_INVALID: 'Token invalid',
@@ -80,5 +80,9 @@ export const messagesSuccess = Object.freeze({
   REMOVE_ORDER_SUCCESS: 'Remove order successfully!',
 
   //
-  CLEAR_TOKEN_SUCCESS: 'Clear token successfully',
+  CLEAR_TOKEN_SUCCESS: 'Clear token successfully!',
+
+  //
+  CHANGE_PASSWORD_SUCCESS: 'Change password successfully!',
+  CHECK_TOKEN_SUCCESS: 'Token is valid and not expired !',
 });

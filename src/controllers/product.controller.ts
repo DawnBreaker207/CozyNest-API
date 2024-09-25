@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { messageError, messagesSuccess } from '../constants/messages';
+import { messagesError, messagesSuccess } from '../constants/messages';
 import Category from '../models/Category';
 import { Product } from '../models/Product';
 
@@ -11,7 +11,7 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
     if (!data) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messageError.BAD_REQUEST });
+        .json({ message: messagesError.BAD_REQUEST });
     }
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_PRODUCT_SUCCESS,
@@ -27,7 +27,7 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
     if (!data) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messageError.BAD_REQUEST });
+        .json({ message: messagesError.BAD_REQUEST });
     }
     res.status(StatusCodes.CREATED).json({
       res: messagesSuccess.GET_PRODUCT_SUCCESS,
@@ -49,7 +49,7 @@ const Create_Product: RequestHandler = async (req, res, next) => {
     );
     if (!data || !updateCategory) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(200).json({
@@ -68,7 +68,7 @@ const Update_Product: RequestHandler = async (req, res, next) => {
     if (!data) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messageError.BAD_REQUEST });
+        .json({ message: messagesError.BAD_REQUEST });
     }
     const updateCategory = await Category.findByIdAndUpdate(
       data.category,
@@ -79,7 +79,7 @@ const Update_Product: RequestHandler = async (req, res, next) => {
     );
     if (!data || !updateCategory) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.CREATED).json({
@@ -102,7 +102,7 @@ const Hide_Product: RequestHandler = async (req, res, next) => {
 
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({
@@ -118,7 +118,7 @@ const Delete_Product: RequestHandler = async (req, res, next) => {
     const data = await Product.findByIdAndDelete(req.params.id);
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({
@@ -135,5 +135,5 @@ export {
   Get_All_Product,
   Get_One_Product,
   Hide_Product,
-  Update_Product
+  Update_Product,
 };

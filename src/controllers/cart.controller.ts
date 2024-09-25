@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
-import { messageError, messagesSuccess } from '../constants/messages';
+import { messagesError, messagesSuccess } from '../constants/messages';
 import { ProductCart } from '../interfaces/Cart';
 import Cart from '../models/Cart';
 import { Product } from '../models/Product';
@@ -43,7 +43,7 @@ const AddToCart: RequestHandler = async (req, res, next) => {
     // If not found return error
     if (!productPrice) {
       return res.status(StatusCodes.NOT_FOUND).json({
-        message: messageError.NOT_FOUND,
+        message: messagesError.NOT_FOUND,
       });
     }
 
@@ -84,7 +84,7 @@ const RemoveFromCart: RequestHandler = async (req, res, next) => {
     if (!cart) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: messageError.NOT_FOUND });
+        .json({ message: messagesError.NOT_FOUND });
     }
 
     // If found, filter cart
@@ -106,7 +106,7 @@ const RemoveCart: RequestHandler = async (req, res, next) => {
     // If not find id product in cart
     if (!data) {
       return res.status(StatusCodes.NOT_FOUND).json({
-        message: messageError.NOT_FOUND,
+        message: messagesError.NOT_FOUND,
       });
     }
     res.status(StatusCodes.NO_CONTENT).json({
@@ -126,7 +126,7 @@ const UpdateCart: RequestHandler = async (req, res, next) => {
     if (!cart) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: messageError.NOT_FOUND });
+        .json({ message: messagesError.NOT_FOUND });
     }
 
     // Find product in cart
@@ -221,7 +221,7 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
 //     if (!cart) {
 //       return res
 //         .status(StatusCodes.NOT_FOUND)
-//         .json({ message: messageError.NOT_FOUND });
+//         .json({ message: messagesError.NOT_FOUND });
 //     }
 
 //     const subtotal = cart.products.reduce((total, item) => {
@@ -236,7 +236,7 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
 //     if (!order) {
 //       return res
 //         .status(StatusCodes.BAD_REQUEST)
-//         .json({ message: messageError.BAD_REQUEST });
+//         .json({ message: messagesError.BAD_REQUEST });
 //     }
 
 //     await Cart.findByIdAndDelete(userId);
@@ -257,6 +257,5 @@ export {
   increaseQuantity,
   RemoveCart,
   RemoveFromCart,
-  UpdateCart
+  UpdateCart,
 };
-

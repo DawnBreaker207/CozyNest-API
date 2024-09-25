@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { PermissionType, RoleType, UserType } from '../interfaces/User';
-import { paginate } from 'mongoose-paginate-v2';
+import mongoosePaginate from 'mongoose-paginate-v2';
+
 const permissionSchema = new mongoose.Schema<PermissionType>({
   name: { type: String, required: true, unique: true },
 });
@@ -14,9 +15,13 @@ const userSchema = new mongoose.Schema<UserType>(
     full_name: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    roles: { type: String, enum: ['admin', 'member'], default: 'member' },
+    role: { type: String, enum: ['admin', 'member'], default: 'member' },
     phoneNumber: { type: String, default: null },
-    avatar: { type: String, default: '' },
+    avatar: {
+      type: String,
+      default:
+        'https://res.cloudinary.com/devr9hihw/image/upload/c_crop,g_auto,h_800,w_800/cld-sample.jpg',
+    },
     address: { type: String, default: null },
     city: { type: String },
     address_shipping: { type: String },
@@ -24,7 +29,7 @@ const userSchema = new mongoose.Schema<UserType>(
   },
   { timestamps: true, versionKey: false }
 );
-// userSchema.plugin(paginate);
+userSchema.plugin(mongoosePaginate);
 
 export const Permission = mongoose.model<PermissionType>(
   'Permission',
