@@ -19,7 +19,6 @@ const routeProduct = Router();
 routeProduct.get('/', Get_All_Product);
 routeProduct.get('/:id', Get_One_Product);
 // routeProduct.use('/', routeVariant);
-
 routeProduct.use(validBodyRequest(productSchema));
 routeProduct.post('/', Create_Product);
 routeProduct.put('/:id', Update_Product);
