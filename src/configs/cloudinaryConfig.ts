@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { API_KEY, API_SECRET, CLOUD_NAME, FOLDER_NAME } from '../utils/env';
-import { log } from 'console';
 
 cloudinary.config({
   cloud_name: CLOUD_NAME,
@@ -29,4 +28,4 @@ const handleDelete = async (id: string) => {
   }
 };
 
-export { handleUpload, handleDelete, cloudinary };
+export { cloudinary, handleDelete, handleUpload };
