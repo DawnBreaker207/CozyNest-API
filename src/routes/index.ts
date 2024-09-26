@@ -12,7 +12,7 @@ router.use('/products', routeProduct);
 router.use('/categories', routeCategory);
 router.use('/auth', routeAuthentication);
 router.use('/upload', routeUpload);
-router.use('mail', routeMail);
+router.use('/mail', routeMail);
 // router.use('/size', routeSize);
 // router.use('/color', routeColor);
 export default router;

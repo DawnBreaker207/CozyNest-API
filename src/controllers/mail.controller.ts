@@ -10,7 +10,7 @@ const sendMailRequest: RequestHandler = async (req, res, next) => {
       subject: req.body.subject,
       text: `
             <div style="margin-bottom: 10px;">
-            <img src="https://spacingtech.com/html/tm/freozy/freezy-ltr/image/logo/logo.png" style="width: 200px; height: auto; margin-right: 10px;" />
+            <img src="https://res.cloudinary.com/devr9hihw/image/upload/v1727368649/azvhqocb9cqex72p7rgb.png" style="width: 200px; height: auto; margin-right: 10px;" />
              <p>${req.body.content}</p>             
             </div>
           `,
