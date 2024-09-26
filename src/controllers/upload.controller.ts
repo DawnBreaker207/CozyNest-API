@@ -34,7 +34,7 @@ const uploadImages: RequestHandler = async (req, res, next) => {
 const uploadMultiple: RequestHandler = async (req, res, next) => {
   try {
     const files = req.files;
-    if (!Array.isArray.files) {
+    if (!Array.isArray(files)) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messageError.BAD_REQUEST,
       });
