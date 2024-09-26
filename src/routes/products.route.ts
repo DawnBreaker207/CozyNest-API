@@ -1,7 +1,5 @@
 import { Router } from 'express';
 
-import { checkAuth } from '../middlewares/checkAuth';
-import { checkPermission } from '../middlewares/checkPermission';
 
 import {
   Create_Product,
@@ -21,12 +19,11 @@ const routeProduct = Router();
 routeProduct.get('/', Get_All_Product);
 routeProduct.get('/:id', Get_One_Product);
 // routeProduct.use('/', routeVariant);
-routeProduct.use(checkAuth, checkPermission(['manager', 'admin']));
 routeProduct.use(validBodyRequest(productSchema));
 routeProduct.post('/', Create_Product);
 routeProduct.put('/:id', Update_Product);
 
-routeProduct.use(checkAuth, checkPermission(['admin']));
+
 routeProduct.patch('/:id', Hide_Product);
 routeProduct.delete('/:id', Delete_Product);
 

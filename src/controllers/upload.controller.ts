@@ -1,12 +1,7 @@
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import {
-  cloudinary,
-  handleDelete,
-  handleUpload,
-} from '../configs/cloudinaryConfig';
+import { handleDelete, handleUpload } from '../configs/cloudinaryConfig';
 import { messageError, messagesSuccess } from '../constants/messages';
-import { log } from 'console';
 
 const uploadImages: RequestHandler = async (req, res, next) => {
   try {
@@ -32,6 +27,7 @@ const uploadImages: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
 const uploadMultiple: RequestHandler = async (req, res, next) => {
   try {
     const files = req.files;
