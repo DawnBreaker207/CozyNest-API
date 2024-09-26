@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { API_KEY, API_SECRET, CLOUD_NAME, FOLDER_NAME } from '../utils/env';
+import { log } from 'console';
 
 cloudinary.config({
   cloud_name: CLOUD_NAME,
@@ -8,16 +9,24 @@ cloudinary.config({
 });
 
 const handleUpload = async (file: string) => {
-  const res = await cloudinary.uploader.upload(file, {
-    resource_type: 'auto',
-    folder: FOLDER_NAME,
-  });
-  return res;
+  try {
+    const res = await cloudinary.uploader.upload(file, {
+      resource_type: 'auto',
+      folder: FOLDER_NAME,
+    });
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const handleDelete = async (id: string) => {
-  const res = await cloudinary.uploader.destroy(id);
-  return res;
+  try {
+    const res = await cloudinary.uploader.destroy(id);
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export { handleUpload, handleDelete, cloudinary };
