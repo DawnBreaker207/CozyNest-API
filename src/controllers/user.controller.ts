@@ -256,7 +256,7 @@ export {
   forgotPass,
   generateVerifyToken,
   getOneUser,
+  getAllUser,
   updateUser,
-  verifyEmailToken
+  verifyEmailToken,
 };
-

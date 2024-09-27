@@ -1,4 +1,9 @@
-import { Login, Register } from '@/controllers/authentication.controller';
+import {
+  checkRefreshToken,
+  clearToken,
+  Login,
+  Register,
+} from '@/controllers/authentication.controller';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { loginSchema, registerSchema } from '@/validations/auth.validation';
 import { Router } from 'express';
@@ -11,5 +16,7 @@ routeAuthentication.post(
   Register
 );
 routeAuthentication.post('/login', validBodyRequest(loginSchema), Login);
+routeAuthentication.get('/token', checkRefreshToken);
+routeAuthentication.delete('/token', clearToken);
 
 export default routeAuthentication;
