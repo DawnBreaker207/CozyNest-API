@@ -1,6 +1,3 @@
-import { Router } from 'express';
-import validBodyRequest from '../middlewares/validBodyRequest';
-import { categorySchema } from '../validations/product.validation';
 import {
   Create_Category,
   Delete_Category,
@@ -8,7 +5,10 @@ import {
   Get_One_Category,
   Hide_Category,
   Update_Category,
-} from '../controllers/category.controller';
+} from '@/controllers/category.controller';
+import validBodyRequest from '@/middlewares/validBodyRequest';
+import { categorySchema } from '@/validations/product.validation';
+import { Router } from 'express';
 
 const routeCategory = Router();
 

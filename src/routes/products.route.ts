@@ -1,6 +1,3 @@
-import { Router } from 'express';
-
-
 import {
   Create_Product,
   Delete_Product,
@@ -8,13 +5,13 @@ import {
   Get_One_Product,
   Hide_Product,
   Update_Product,
-} from '../controllers/product.controller';
-import validBodyRequest from '../middlewares/validBodyRequest';
-import { productSchema } from '../validations/product.validation';
+} from '@/controllers/product.controller';
+import validBodyRequest from '@/middlewares/validBodyRequest';
+import { productSchema } from '@/validations/product.validation';
+import { Router } from 'express';
 // import routeVariant from './variant.route';
 
 const routeProduct = Router();
-
 
 routeProduct.get('/', Get_All_Product);
 routeProduct.get('/:id', Get_One_Product);
@@ -22,7 +19,6 @@ routeProduct.get('/:id', Get_One_Product);
 routeProduct.use(validBodyRequest(productSchema));
 routeProduct.post('/', Create_Product);
 routeProduct.put('/:id', Update_Product);
-
 
 routeProduct.patch('/:id', Hide_Product);
 routeProduct.delete('/:id', Delete_Product);

@@ -1,5 +1,5 @@
+import { EMAIL_PASSWORD, EMAIL_USERNAME } from '@/utils/env';
 import nodemailer from 'nodemailer';
-import { EMAIL_PASSWORD, EMAIL_USERNAME } from '../utils/env';
 export const sendMail = async (input: {
   email: string;
   subject: string;

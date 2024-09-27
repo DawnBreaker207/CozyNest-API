@@ -1,10 +1,10 @@
-import { Router } from 'express';
 import {
   deleteImage,
   uploadImages,
   uploadMultiple,
-} from '../controllers/upload.controller';
-import { upload } from '../middlewares/uploadImages';
+} from '@/controllers/upload.controller';
+import { upload } from '@/middlewares/uploadImages';
+import { Router } from 'express';
 
 const routeUpload = Router();
 routeUpload.post('/', upload.single('upload'), uploadImages);

@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import routeAuthentication from './authentication.route';
 import routeCategory from './categories.route';
+import routeMail from './mail';
 import routeProduct from './products.route';
 import routeUpload from './upload.route';
-import routeMail from './mail';
 // import routeColor from './color.route';
 // import routeSize from './size.route';
 

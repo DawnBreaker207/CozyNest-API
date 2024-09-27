@@ -1,7 +1,7 @@
+import { sendMail } from '@/configs/configMail';
+import { messagesSuccess } from '@/constants/messages';
 import { RequestHandler } from 'express';
-import { sendMail } from '../configs/configMail';
 import { StatusCodes } from 'http-status-codes';
-import { messagesSuccess } from '../constants/messages';
 
 const sendMailRequest: RequestHandler = async (req, res, next) => {
   try {
@@ -25,3 +25,4 @@ const sendMailRequest: RequestHandler = async (req, res, next) => {
 };
 
 export { sendMailRequest };
+
