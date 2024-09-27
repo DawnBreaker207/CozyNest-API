@@ -1,7 +1,7 @@
+import { messagesError, messagesSuccess } from '@/constants/messages';
+import Order from '@/models/Order';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { messageError, messagesSuccess } from '../constants/messages';
-import Order from '../models/Order';
 
 const GetAllOrder: RequestHandler = async (req, res, next) => {
   try {
@@ -9,7 +9,7 @@ const GetAllOrder: RequestHandler = async (req, res, next) => {
     if (!data) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messageError.BAD_REQUEST });
+        .json({ message: messagesError.BAD_REQUEST });
     }
     res
       .status(StatusCodes.OK)
@@ -27,7 +27,7 @@ const GetOrder: RequestHandler = async (req, res, next) => {
     if (!order) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messageError.BAD_REQUEST });
+        .json({ message: messagesError.BAD_REQUEST });
     }
 
     res.status(StatusCodes.OK).json({
@@ -46,7 +46,7 @@ const CreateOrder: RequestHandler = async (req, res, next) => {
     if (!order) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messageError.BAD_REQUEST });
+        .json({ message: messagesError.BAD_REQUEST });
     }
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.CREATE_ORDER_SUCCESS,

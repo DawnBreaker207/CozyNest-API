@@ -1,6 +1,6 @@
+import { URI } from '@/utils/env';
 import mongoose from 'mongoose';
-import { URI } from '../utils/env';
-import { seedData } from '../utils/seedDatas';
+// import { seedData } from '../utils/seedDatas';
 
 // const URI: dot = process.env.URI;
 // const connectDB = async (URI: string | undefined) => {
@@ -27,7 +27,7 @@ class Database {
       .connect(URI || '')
       .then((_) => {
         console.log(`Connect DB success`);
-        return seedData();
+        // return seedData();
       })
       .catch((err) => console.log(`Error Connect ${err}`));
   }

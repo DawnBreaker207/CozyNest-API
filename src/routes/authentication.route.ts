@@ -1,12 +1,12 @@
-import { Router } from 'express';
-
-import validBodyRequest from '../middlewares/validBodyRequest';
-import { loginSchema, registerSchema } from '../validations/auth.validation';
 import {
-  Forgot_Pass,
+  checkRefreshToken,
+  clearToken,
   Login,
   Register,
-} from '../controllers/authentication.controller';
+} from '@/controllers/authentication.controller';
+import validBodyRequest from '@/middlewares/validBodyRequest';
+import { loginSchema, registerSchema } from '@/validations/auth.validation';
+import { Router } from 'express';
 
 const routeAuthentication = Router();
 
@@ -16,6 +16,7 @@ routeAuthentication.post(
   Register
 );
 routeAuthentication.post('/login', validBodyRequest(loginSchema), Login);
-routeAuthentication.post('/forgot-password', Forgot_Pass);
+routeAuthentication.get('/token', checkRefreshToken);
+routeAuthentication.delete('/token', clearToken);
 
 export default routeAuthentication;

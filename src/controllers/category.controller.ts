@@ -1,7 +1,7 @@
+import { messagesError, messagesSuccess } from '@/constants/messages';
+import Category from '@/models/Category';
 import { RequestHandler } from 'express';
-import Category from '../models/Category';
 import { StatusCodes } from 'http-status-codes';
-import { messageError, messagesSuccess } from '../constants/messages';
 import { Product } from '../models/Product';
 
 const Get_All_Category: RequestHandler = async (req, res, next) => {
@@ -14,7 +14,7 @@ const Get_All_Category: RequestHandler = async (req, res, next) => {
     }).populate('product');
     if (!category || category.length === 0) {
       return res.status(StatusCodes.BAD_GATEWAY).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({
@@ -30,7 +30,7 @@ const Get_One_Category: RequestHandler = async (req, res, next) => {
     const category = await Category.findById(req.params.id).populate('product');
     if (!category) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({
@@ -44,17 +44,17 @@ const Get_One_Category: RequestHandler = async (req, res, next) => {
 const Create_Category: RequestHandler = async (req, res, next) => {
   try {
     // Check if there have any initial value
-    const defaultCategory = await Category.find({ type: req.body.type });
-    if (defaultCategory && defaultCategory.type == 'default') {
+    const defaultCategory = await Category.findOne({ type: req.body.type });
+    if (defaultCategory && defaultCategory.type === 'default') {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
 
     const category = await Category.create(req.body);
     if (!category) {
       return res.status(StatusCodes.BAD_GATEWAY).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({
@@ -72,7 +72,7 @@ const Update_Category: RequestHandler = async (req, res, next) => {
 
     if (!existCategory) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
 
@@ -99,7 +99,7 @@ const Hide_Category: RequestHandler = async (req, res, next) => {
     );
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.CREATED).json({
@@ -117,12 +117,12 @@ const Delete_Category: RequestHandler = async (req, res, next) => {
     const defaultCategory = await Category.findOne({ type: 'default' });
     if (!defaultCategory) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     if (category?.type === 'default') {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     const defaultCategoryId = defaultCategory._id;
@@ -147,10 +147,10 @@ const Delete_Category: RequestHandler = async (req, res, next) => {
     const removeCategory = await Category.findByIdAndDelete({
       _id: req.params.id,
     });
-    
+
     if (!removeCategory) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messageError.BAD_REQUEST,
+        message: messagesError.BAD_REQUEST,
       });
     }
     res.status(StatusCodes.OK).json({
@@ -162,10 +162,10 @@ const Delete_Category: RequestHandler = async (req, res, next) => {
 };
 
 export {
+  Create_Category,
+  Delete_Category,
   Get_All_Category,
   Get_One_Category,
-  Create_Category,
-  Update_Category,
   Hide_Category,
-  Delete_Category,
+  Update_Category,
 };
