@@ -1,9 +1,9 @@
+import Cart from '@/models/Cart';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 import { messagesError, messagesSuccess } from '../constants/messages';
 import { ProductCart } from '../interfaces/Cart';
-import Cart from '../models/Cart';
 import { Product } from '../models/Product';
 
 const GetById: RequestHandler = async (req, res, next) => {
@@ -257,5 +257,6 @@ export {
   increaseQuantity,
   RemoveCart,
   RemoveFromCart,
-  UpdateCart,
+  UpdateCart
 };
+

@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import { PermissionType, RoleType, UserType } from '../interfaces/User';
+import mongoose, { PaginateModel } from 'mongoose';
+import { PermissionType, RoleType, UserType } from '@/interfaces/User';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 const permissionSchema = new mongoose.Schema<PermissionType>({
@@ -15,7 +15,11 @@ const userSchema = new mongoose.Schema<UserType>(
     full_name: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['admin', 'member'], default: 'member' },
+    role: {
+      type: String,
+      enum: ['admin', 'manager', 'member'],
+      default: 'member',
+    },
     phoneNumber: { type: String, default: null },
     avatar: {
       type: String,
@@ -31,9 +35,9 @@ const userSchema = new mongoose.Schema<UserType>(
 );
 userSchema.plugin(mongoosePaginate);
 
-export const Permission = mongoose.model<PermissionType>(
-  'Permission',
-  permissionSchema
+// export const Permission =  mongoose.model<PermissionType>('Permission', permissionSchema);
+// export const Role = mongoose.model<RoleType>('Role', roleSchema);
+export default mongoose.model<UserType, PaginateModel<UserType>>(
+  'User',
+  userSchema
 );
-export const Role = mongoose.model<RoleType>('Role', roleSchema);
-export const User = mongoose.model<UserType>('User', userSchema);

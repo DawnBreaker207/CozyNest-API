@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { OrderType } from '../interfaces/Order';
+import { OrderType } from '@/interfaces/Order';
 
 const orderItem = new mongoose.Schema(
   {

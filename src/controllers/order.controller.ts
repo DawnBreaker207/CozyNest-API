@@ -1,7 +1,7 @@
+import { messagesError, messagesSuccess } from '@/constants/messages';
+import Order from '@/models/Order';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { messagesError, messagesSuccess } from '../constants/messages';
-import Order from '../models/Order';
 
 const GetAllOrder: RequestHandler = async (req, res, next) => {
   try {
@@ -67,3 +67,4 @@ const RemoveOrder: RequestHandler = async (req, res, next) => {
   }
 };
 export { CreateOrder, GetAllOrder, GetOrder, RemoveOrder };
+

@@ -1,12 +1,12 @@
+import { timeCounts } from '@/constants/initialValue';
+import { messagesError, messagesSuccess } from '@/constants/messages';
+import User from '@/models/User';
+import { SECRET_ACCESS_TOKEN, SECRET_REFRESH_TOKEN } from '@/utils/env';
+import { comparePassword, hashPassword } from '@/utils/hashPassword';
+import { createToken, verifyToken } from '@/utils/jwt';
 import 'dotenv/config';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { messagesError, messagesSuccess } from '../constants/messages';
-import { Role, User } from '../models/User';
-import { comparePassword, hashPassword } from '../utils/hashPassword';
-import { createToken, verifyToken } from '../utils/jwt';
-import { SECRET_ACCESS_TOKEN, SECRET_REFRESH_TOKEN } from '../utils/env';
-import { timeCounts } from '../constants/initialValue';
 
 const Register: RequestHandler = async (req, res, next) => {
   try {
@@ -20,14 +20,10 @@ const Register: RequestHandler = async (req, res, next) => {
     }
     const hashPass = await hashPassword(password);
 
-    const defaultRole = await User.countDocuments({}).then((count) =>
-      Role.findOne({ name: count === 0 ? 'admin' : 'user' })
-    );
-
     const newUser = await User.create({
       ...req.body,
       password: hashPass,
-      roles: [defaultRole],
+      roles: 'member',
     });
 
     if (!newUser) {
@@ -139,7 +135,7 @@ const Login: RequestHandler = async (req, res, next) => {
 
 const checkRefreshToken: RequestHandler = (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
       res.status(StatusCodes.CREATED).json({
         accessToken: '',
@@ -149,10 +145,10 @@ const checkRefreshToken: RequestHandler = (req, res, next) => {
     verifyToken(
       refreshToken,
       SECRET_REFRESH_TOKEN as string,
-      async (error, decode) => {
+      async (error: any, decode: any) => {
         if (error) {
           return res.status(StatusCodes.BAD_REQUEST).json({
-            message: error,
+            message: error || 'Invalid Token',
           });
         } else {
           const user = await User.findById(decode._id);
@@ -200,4 +196,5 @@ const clearToken: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-export { Login, Register, clearToken, checkRefreshToken };
+export { checkRefreshToken, clearToken, Login, Register };
+

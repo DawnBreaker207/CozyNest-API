@@ -1,11 +1,11 @@
+import { messagesError, messagesSuccess } from '@/constants/messages';
+import Category from '@/models/Category';
 import { RequestHandler } from 'express';
-import Category from '../models/Category';
 import { StatusCodes } from 'http-status-codes';
-import { messagesError, messagesSuccess } from '../constants/messages';
 
 const Get_All_Category: RequestHandler = async (req, res, next) => {
   try {
-    const data = await Category.find().populate('product');
+    const data = await Category.find().populate('products');
     if (!data) {
       return res.status(StatusCodes.BAD_GATEWAY).json({
         message: messagesError.BAD_REQUEST,
@@ -21,7 +21,7 @@ const Get_All_Category: RequestHandler = async (req, res, next) => {
 };
 const Get_One_Category: RequestHandler = async (req, res, next) => {
   try {
-    const data = await Category.findById(req.params.id).populate('product');
+    const data = await Category.findById(req.params.id).populate('products');
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
@@ -107,10 +107,7 @@ const Delete_Category: RequestHandler = async (req, res, next) => {
 };
 
 export {
-  Get_All_Category,
-  Get_One_Category,
-  Create_Category,
-  Update_Category,
-  Hide_Category,
-  Delete_Category,
+  Create_Category, Delete_Category, Get_All_Category,
+  Get_One_Category, Hide_Category, Update_Category
 };
+

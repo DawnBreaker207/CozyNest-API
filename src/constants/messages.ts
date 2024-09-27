@@ -78,11 +78,13 @@ export const messagesSuccess = Object.freeze({
   UPDATE_ORDER_SUCCESS: 'Update order successfully!',
   UPDATE_ORDER_STATUS_SUCCESS: 'Update order status successfully!',
   REMOVE_ORDER_SUCCESS: 'Remove order successfully!',
-
   //
   CLEAR_TOKEN_SUCCESS: 'Clear token successfully!',
 
   //
   CHANGE_PASSWORD_SUCCESS: 'Change password successfully!',
   CHECK_TOKEN_SUCCESS: 'Token is valid and not expired !',
+
+  // Email
+  SEND_EMAIL_SUCCESS: 'Send email successfully!',
 });

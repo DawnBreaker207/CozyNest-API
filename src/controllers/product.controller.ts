@@ -1,12 +1,24 @@
+import { messagesError, messagesSuccess } from '@/constants/messages';
+import Category from '@/models/Category';
+import { Product } from '@/models/Product';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { messagesError, messagesSuccess } from '../constants/messages';
-import Category from '../models/Category';
-import { Product } from '../models/Product';
 
 //* Products
 const Get_All_Product: RequestHandler = async (req, res, next) => {
   try {
+    const {
+      _page = 1,
+      _order = 'desc',
+      _limit = 9999,
+      _sort = 'createdAt',
+      _q = '',
+      _categoryId = '',
+      _originId = '',
+      _minPrice = '',
+      _maxPrice = '',
+    } = req.query;
+
     const data = await Product.find().populate('category');
     if (!data) {
       return res
@@ -39,22 +51,22 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
 };
 const Create_Product: RequestHandler = async (req, res, next) => {
   try {
-    const data = await Product.create(req.body);
+    const product = await Product.create(req.body);
     const updateCategory = await Category.findByIdAndUpdate(
-      data.category,
+      product.category,
       {
-        $push: { products: data._id },
+        $push: { products: product._id },
       },
       { new: true }
     );
-    if (!data || !updateCategory) {
+    if (!product || !updateCategory) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
     res.status(200).json({
       message: messagesSuccess.CREATE_PRODUCT_SUCCESS,
-      res: data,
+      res: product,
     });
   } catch (error) {
     next(error);
@@ -135,5 +147,6 @@ export {
   Get_All_Product,
   Get_One_Product,
   Hide_Product,
-  Update_Product,
+  Update_Product
 };
+

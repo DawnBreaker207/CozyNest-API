@@ -11,7 +11,11 @@ const createToken = (
   return token;
 };
 
-const verifyToken = (token: string, SECRET_CODE: string, options?: any) => {
+const verifyToken = (
+  token: string,
+  SECRET_CODE: string = JWT as string,
+  options?: any
+) => {
   return jwt.verify(token, SECRET_CODE, options);
 };
 export { createToken, verifyToken };

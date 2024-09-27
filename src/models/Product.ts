@@ -4,7 +4,7 @@ import {
   ProductType,
   // SizeType,
   // VariantType,
-} from '../interfaces/Product';
+} from '@/interfaces/Product';
 
 // const sizeSchema = new mongoose.Schema<SizeType>(
 //   {
