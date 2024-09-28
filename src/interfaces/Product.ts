@@ -16,14 +16,24 @@ import { Category_Id } from './Category';
 //   thumbnail: string;
 //   stock: number;
 // }
+
+export interface Image {
+  url: string;
+  public_id: string;
+}
 export interface ProductType {
   _id: Types.ObjectId;
-  category: Category_Id[];
+  originId: Types.ObjectId | null;
   name: string;
-  brand: string;
   thumbnail: string;
+  images: Image[];
+  categoryId: Category_Id;
+  brand: string;
   description: string;
-  base_price: number;
+  price: number;
+  discount: number;
+  sold: number;
+  isSale: boolean;
   isHidden: boolean;
   // variants: VariantType[];
 }
