@@ -5,7 +5,9 @@ import routeMail from './mail';
 import routeProduct from './products.route';
 import routeUpload from './upload.route';
 import routeUser from './user.route';
+import routeOrder from './order';
 import routeCart from './cart';
+
 // import routeColor from './color.route';
 // import routeSize from './size.route';
 
@@ -16,7 +18,9 @@ router.use('/auth', routeAuthentication);
 router.use('/upload', routeUpload);
 router.use('/mail', routeMail);
 router.use('/users', routeUser);
+router.use('/orders', routeOrder);
 router.use('/cart', routeCart);
+
 // router.use('/size', routeSize);
 // router.use('/color', routeColor);
 export default router;

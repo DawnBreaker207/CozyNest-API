@@ -1,5 +1,34 @@
 export const messagesError = Object.freeze({
-  // Auth
+  //! Common HTTP status
+  //!* 4xx: Client error
+  //* 400: Bad request
+  BAD_REQUEST: 'Bad request!',
+  //* 401: Unauthorized
+  UNAUTHORIZED: 'Unauthorized!',
+  //* 402: Payment required
+  PAYMENT_REQUIRED: 'Payment required!',
+  //* 403: Forbidden
+  FORBIDDEN: 'Forbidden!',
+  //* 404: Not found
+  NOT_FOUND: 'Not found!',
+  //* 405: Method not allowed
+  METHOD_NOT_ALLOWED: 'Method not allowed',
+  //* 408: Request timeout
+  REQUEST_TIMEOUT: 'Request timeout',
+  //* 422: Unprocessable content
+  UNPROCESSABLE_CONTENT: 'Unprocessable content',
+
+  //!* 5xx: Server error
+  //* 500: Internal server error
+  ERROR_SERVER: 'Server error!',
+  //* 502: Bad gateway
+  BAD_GATEWAY: 'Bad gateway!',
+  //* Gateway timeout
+  GATEWAY_TIMEOUT: 'Gateway timeout',
+  //!Status Custom
+  //!* Common
+  INVALID_BODY_REQUEST: 'Invalid body request!',
+  //!* Auth
   INVALID_EMAIL: 'Invalid email',
   TOKEN_INVALID: 'Token invalid',
   INVALID_PASSWORD: 'Invalid password',
@@ -7,23 +36,34 @@ export const messagesError = Object.freeze({
   EMAIL_NOT_FOUND: 'Email not found',
   PASSWORD_NOT_MATCH: 'Password not match',
   PERMISSION_DENIED: 'Permission denied !',
-  UNAUTHORIZED: 'Unauthorized !',
-  FORBIDDEN: 'Forbidden !',
-  // Profile
-  // Product
-  INVALID_BODY_REQUEST: 'Invalid body request!',
-  // Category
-  // Images
+  //!* Profile
+  //!* Product
+  DELETE_PRODUCT_FAILED: 'Delete product failed!',
+  //!* Category
+  DELETE_CATEGORY_FAILED: 'Delete category failed!',
+  //!* Images
   UPLOAD_IMAGES_FAIL: 'Update images failed!',
-  // Cart
-  // Order
-  NOT_FOUND: 'Not found',
-  ERROR_SERVER: 'Server error',
-  BAD_REQUEST: 'Bad request',
-  DELETE_FAIL: 'Delete fail',
+  DELETE_IMAGES_FAILED: 'Delete images failed!',
+  //!* Cart
+  DELETE_CART_FAILED: 'Delete cart failed!',
+  //!* Order
+  ORDER_FAILED: 'Order failed!',
+  ORDER_CANCELED: 'Order canceled',
 });
 
 export const messagesSuccess = Object.freeze({
+  //! Common HTTP status
+  //!* 2xx: Success response
+  //!* 200: OK
+  OK: 'OK',
+  //!* 201: Created
+  CREATED: 'Created',
+  //!* 202: Accepted
+  ACCEPTED: 'Accepted',
+
+  //!* 3xx : Redirection
+  //!* 304: Not modified
+  NOT_MODIFIED: 'Not modified',
   // Auth
   REGISTER_SUCCESS: 'Register successfully!',
   LOGIN_SUCCESS: 'Login successfully!',
@@ -78,10 +118,17 @@ export const messagesSuccess = Object.freeze({
   UPDATE_ORDER_SUCCESS: 'Update order successfully!',
   UPDATE_ORDER_STATUS_SUCCESS: 'Update order status successfully!',
   REMOVE_ORDER_SUCCESS: 'Remove order successfully!',
-  //
-  CLEAR_TOKEN_SUCCESS: 'Clear token successfully!',
 
-  //
+  ORDER_DONE: 'Order was complete',
+  PENDING: 'Order is pending',
+  ORDER_CREATE_SUBJECT: 'Order subject created successfully!',
+  ORDER_UPDATE_SUBJECT: 'Order subject updated successfully!',
+  ORDER_CREATE_MESSAGE: 'Order message created successfully!',
+  ORDER_UPDATE_MESSAGE: 'Order message updated successfully!',
+  ORDER_SUCCESS_MESSAGE: 'Order message success',
+
+  //Token
+  CLEAR_TOKEN_SUCCESS: 'Clear token successfully!',
   CHANGE_PASSWORD_SUCCESS: 'Change password successfully!',
   CHECK_TOKEN_SUCCESS: 'Token is valid and not expired !',
 

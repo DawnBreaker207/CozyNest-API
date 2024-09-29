@@ -251,4 +251,5 @@ export {
   Hide_Product,
   Update_Product,
   getRelatedProducts,
+
 };
