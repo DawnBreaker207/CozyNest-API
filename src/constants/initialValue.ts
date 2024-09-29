@@ -72,4 +72,15 @@ export const timeCounts = Object.freeze({
   hours_24: 24 * 60 * 60 * 1000,
 });
 
-
+export const statusOrder: readonly string[] = [
+  'Pending', //Chờ xác nhận
+  'Shipping', //Đang vận chuyển
+  'Delivered', //Giao hàng thành công
+  'Completed', //Đơn hàng hoàn thành
+  'Canceled', //Đã hủy đơn hàng
+];
+export const paymentMethod: readonly string[] = [
+  'COD', // Thanh toán khi nhận hàng
+  'MoMo', //Thanh toán qua MoNo
+  'VNPay', //Thanh toán VnPay
+];

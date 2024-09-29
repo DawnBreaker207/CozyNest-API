@@ -147,6 +147,5 @@ export {
   Get_All_Product,
   Get_One_Product,
   Hide_Product,
-  Update_Product
+  Update_Product,
 };
-
