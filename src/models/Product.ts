@@ -1,4 +1,5 @@
-import mongoose from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
+import mongoose, { PaginateModel } from 'mongoose';
 import {
   // ColorType,
   ProductType,
@@ -28,8 +29,20 @@ import {
 // });
 const productSchema = new mongoose.Schema<ProductType>(
   {
+    // Information product
+
+    // Original id for original products
+    originId: { type: mongoose.Types.ObjectId, default: null },
     name: { type: String, required: true },
-    category: [
+    thumbnail: { type: String },
+    images: [
+      {
+        url: { type: String, required: true },
+        public_id: { type: String, require: true },
+        _id: false,
+      },
+    ],
+    categoryId: [
       {
         type: mongoose.Schema.ObjectId,
         ref: 'Category',
@@ -37,15 +50,27 @@ const productSchema = new mongoose.Schema<ProductType>(
       },
     ],
     brand: { type: String },
-    thumbnail: { type: String },
     description: { type: String, required: true },
-    base_price: { type: Number, required: true },
+    price: { type: Number, required: true },
+    // Sale and Sold
+    discount: { type: Number, default: 0 },
+    sold: { type: Number, default: 0 },
+
+    isSale: {
+      type: Boolean,
+      default: false,
+    },
+    // Status products
     isHidden: { type: Boolean, default: false },
-    // variants: [variantProductSchema],
   },
   { timestamps: true, versionKey: false }
 );
 
 // export const Size = mongoose.model<SizeType>('Size', sizeSchema);
 // export const Color = mongoose.model<ColorType>('Color', colorSchema);
-export const Product = mongoose.model<ProductType>('Product', productSchema);
+productSchema.plugin(mongoosePaginate);
+
+export const Product = mongoose.model<ProductType, PaginateModel<ProductType>>(
+  'Product',
+  productSchema
+);
