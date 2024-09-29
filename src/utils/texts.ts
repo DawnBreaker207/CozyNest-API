@@ -77,7 +77,7 @@ const sendOrder = (
                       }" style="width: 90px; height: 90px;border-radius:5px">
                       <p>${product.name} (${product.name})</p>
                 </td>
-                <td style="padding: 10px;">${product.base_price.toLocaleString(
+                <td style="padding: 10px;">${product.price.toLocaleString(
                   'vi-VN'
                 )}VNĐ/kg</td>
               </tr>

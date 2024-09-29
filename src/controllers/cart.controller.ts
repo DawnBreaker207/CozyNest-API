@@ -61,7 +61,7 @@ const AddToCart: RequestHandler = async (req, res, next) => {
       cart.products.push({
         productId,
         quantity: quantity,
-        price: productPrice.base_price,
+        price: productPrice.price,
       });
     }
 
