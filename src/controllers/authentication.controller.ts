@@ -8,7 +8,18 @@ import 'dotenv/config';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Register: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.body.email Email user input
+   * @param {string} req.body.password Password user input
+   */
   try {
     const { email, password } = req.body;
     const checkEmail = await User.findOne({ email });
@@ -68,8 +79,20 @@ const Register: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Login: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string} req.body.email Email user input
+     * @param {string} req.body.password Password user input
+     */
     const { email, password } = req.body;
 
     const userExist = await User.findOne({ email });
@@ -133,8 +156,17 @@ const Login: RequestHandler = async (req, res, next) => {
   }
 };
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
 const checkRefreshToken: RequestHandler = (req, res, next) => {
   try {
+    /**
+     * @param {string} req.cookies.refreshToken Refresh token take from cookies
+     */
     const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
       res.status(StatusCodes.CREATED).json({
@@ -184,6 +216,13 @@ const checkRefreshToken: RequestHandler = (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
 const clearToken: RequestHandler = async (req, res, next) => {
   try {
     res.clearCookie('refreshToken');
@@ -196,5 +235,5 @@ const clearToken: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-export { checkRefreshToken, clearToken, Login, Register };
 
+export { checkRefreshToken, clearToken, Login, Register };

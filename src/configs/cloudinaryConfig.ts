@@ -7,6 +7,11 @@ cloudinary.config({
   api_secret: API_SECRET,
 });
 
+/**
+ *
+ * @param {string} file File input
+ * @returns
+ */
 const handleUpload = async (file: string) => {
   try {
     const res = await cloudinary.uploader.upload(file, {
@@ -19,6 +24,11 @@ const handleUpload = async (file: string) => {
   }
 };
 
+/**
+ *
+ * @param {string} id Image id
+ * @returns
+ */
 const handleDelete = async (id: string) => {
   try {
     const res = await cloudinary.uploader.destroy(id);

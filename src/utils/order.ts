@@ -5,6 +5,11 @@ import { sendOrder } from '@/utils/texts';
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+/**
+ *
+ * @param dateTime
+ * @returns
+ */
 const formatDateTime = (dateTime: Date) => {
   const date = new Date(dateTime);
   const formattedDate = `${date.getDay()}/${
@@ -16,6 +21,15 @@ const formatDateTime = (dateTime: Date) => {
   return `${formattedDate} ${formattedTime}`;
 };
 
+/**
+ *
+ * @param data
+ * @param day
+ * @param res
+ * @param from
+ * @param to
+ * @returns
+ */
 const filterOrderDay = async (
   data: any,
   day: number,
@@ -68,6 +82,12 @@ const filterOrderDay = async (
   });
 };
 
+/**
+ *
+ * @param email
+ * @param data
+ * @param amountReduced
+ */
 const sendOrderMail = async (
   email?: string,
   data?: any,

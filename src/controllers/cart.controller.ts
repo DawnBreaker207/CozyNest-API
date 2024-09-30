@@ -7,6 +7,13 @@ import { ProductCart } from '../interfaces/Cart';
 import { Product } from '../models/Product';
 import Order from '@/models/Order';
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const GetById: RequestHandler = async (req, res, next) => {
   const { userId } = req.params;
   try {
@@ -28,6 +35,14 @@ const GetById: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const AddToCart: RequestHandler = async (req, res, next) => {
   const { userId, productId, quantity } = req.body;
   try {
@@ -76,6 +91,14 @@ const AddToCart: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const RemoveFromCart: RequestHandler = async (req, res, next) => {
   const { userId, productId } = req.body;
   try {
@@ -101,6 +124,14 @@ const RemoveFromCart: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const RemoveCart: RequestHandler = async (req, res, next) => {
   try {
     const data = await Cart.findByIdAndDelete(req.params.id);
@@ -117,6 +148,14 @@ const RemoveCart: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const UpdateCart: RequestHandler = async (req, res, next) => {
   const { userId, productId, quantity } = req.body;
   try {
@@ -151,6 +190,14 @@ const UpdateCart: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const increaseQuantity: RequestHandler = async (req, res, next) => {
   const { userId, productId } = req.body;
   try {
@@ -182,6 +229,14 @@ const increaseQuantity: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const decreaseQuantity: RequestHandler = async (req, res, next) => {
   const { userId, productId } = req.body;
   try {
@@ -215,6 +270,14 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const checkoutOrder: RequestHandler = async (req, res, next) => {
   const { userId } = req.body;
   try {

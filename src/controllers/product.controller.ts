@@ -7,7 +7,24 @@ import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 //* Products
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Get_All_Product: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {number} req.query._page
+   * @param {string} req.query._order
+   * @param {number} req.query._limit
+   * @param {string} req.query._sort
+   * @param {string} req.query.categoryId
+   * @param {string} req.query.originId
+   * @param {string} req.query.minPrice
+   * @param {string} req.query.maxPrice
+   */
   const {
     _page = 1,
     _order = 'desc',
@@ -92,7 +109,18 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Get_One_Product: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.params.id
+   */
   try {
     const data = await Product.findById(req.params.id).populate('category');
     if (!data) {
@@ -110,7 +138,18 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Create_Product: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {ProductType} req.body
+   */
   try {
     const product = await Product.create(req.body);
     const updateCategory = await Category.findByIdAndUpdate(
@@ -133,8 +172,19 @@ const Create_Product: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Update_Product: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string} req.params.id
+     */
     const currentData = await Product.findById(req.params.id);
     const data = await Product.findByIdAndUpdate(`${req.params.id}`, req.body, {
       new: true,
@@ -162,8 +212,19 @@ const Update_Product: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Hide_Product: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string} req.params.id
+     */
     const data = await Product.findByIdAndUpdate(
       `${req.params.id}`,
       {
@@ -185,8 +246,19 @@ const Hide_Product: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Delete_Product: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string} req.params.id
+     */
     const data = await Product.findByIdAndDelete(req.params.id);
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -200,8 +272,20 @@ const Delete_Product: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const getRelatedProducts: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string} cate_id
+     * @param {string} product_id
+     */
     const { cate_id, product_id } = req.params;
 
     if (!cate_id || !product_id) {
@@ -243,6 +327,7 @@ const getRelatedProducts: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
 export {
   Create_Product,
   Delete_Product,
@@ -251,5 +336,4 @@ export {
   Hide_Product,
   Update_Product,
   getRelatedProducts,
-
 };

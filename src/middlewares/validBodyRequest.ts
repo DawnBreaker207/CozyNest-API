@@ -2,6 +2,12 @@ import { messagesError } from '@/constants/messages';
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { ZodType } from 'zod';
+
+/**
+ *
+ * @param schema
+ * @returns
+ */
 const validBodyRequest = (schema: ZodType<any>) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {

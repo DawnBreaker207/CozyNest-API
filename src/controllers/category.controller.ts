@@ -4,6 +4,13 @@ import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Product } from '../models/Product';
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Get_All_Category: RequestHandler = async (req, res, next) => {
   try {
     const category = await Category.find({
@@ -25,8 +32,19 @@ const Get_All_Category: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Get_One_Category: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string} req.params.id Param id input
+     */
     const category = await Category.findById(req.params.id).populate('product');
     if (!category) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -41,8 +59,19 @@ const Get_One_Category: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Create_Category: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string} req.body.type Input type of category
+     */
     // Check if there have any initial value
     const defaultCategory = await Category.findOne({ type: req.body.type });
     if (defaultCategory && defaultCategory.type === 'default') {
@@ -65,7 +94,18 @@ const Create_Category: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Update_Category: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.params.id Id of the category
+   */
   try {
     const { id } = req.params;
     const existCategory = await Category.findById({ _id: id });
@@ -88,8 +128,19 @@ const Update_Category: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Hide_Category: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string} req.params.id Id of the category
+     */
     const data = await Category.findByIdAndUpdate(
       `${req.params.id}`,
       {
@@ -109,8 +160,19 @@ const Hide_Category: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const Delete_Category: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string} req.params.id Id of the category
+     */
     const category = await Category.findOne({ _id: req.params.id });
 
     // Can't delete default category

@@ -1,5 +1,13 @@
 import jwt from 'jsonwebtoken';
 import { JWT } from './env';
+
+/**
+ *
+ * @param payload
+ * @param SECRET_CODE
+ * @param expiresIn
+ * @returns
+ */
 const createToken = (
   payload: Object,
   SECRET_CODE: string,
@@ -11,6 +19,13 @@ const createToken = (
   return token;
 };
 
+/**
+ *
+ * @param token
+ * @param SECRET_CODE
+ * @param options
+ * @returns
+ */
 const verifyToken = (
   token: string,
   SECRET_CODE: string = JWT as string,

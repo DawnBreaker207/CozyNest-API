@@ -1,6 +1,11 @@
 import { ProductType } from '@/interfaces/Product';
 import { formatDateTime } from '@/utils/order';
 
+/**
+ *
+ * @param content
+ * @returns
+ */
 const sendExportMail = (content: string): string => {
   return /*html*/ ` 
             <div style="margin-bottom: 10px;">
@@ -11,6 +16,12 @@ const sendExportMail = (content: string): string => {
             <p>${content}</p>             
             </div>`;
 };
+
+/**
+ *
+ * @param content
+ * @returns
+ */
 const sendVerifyMail = (content: string): string => {
   return /*html*/ `
            <div style="margin-bottom: 10px;">
@@ -28,6 +39,12 @@ const sendVerifyMail = (content: string): string => {
          </div>
                `;
 };
+
+/**
+ *
+ * @param content
+ * @returns
+ */
 const sendResetMail = (content: string): string => {
   return /*html*/ `
                 <div>
@@ -35,6 +52,15 @@ const sendResetMail = (content: string): string => {
                 <div>
                   `;
 };
+
+/**
+ *
+ * @param data
+ * @param message
+ * @param amountReduced
+ * @param code
+ * @returns
+ */
 const sendOrder = (
   data: any,
   message: string,

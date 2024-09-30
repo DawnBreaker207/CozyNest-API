@@ -23,6 +23,14 @@ import { StatusCodes } from 'http-status-codes';
 //     next();
 //   };
 // };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const checkPermission: RequestHandler = async (req, res, next) => {
   try {
     const token = req.cookies.refreshToken;

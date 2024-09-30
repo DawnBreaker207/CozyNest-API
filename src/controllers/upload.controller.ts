@@ -3,8 +3,19 @@ import { messagesError, messagesSuccess } from '@/constants/messages';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const uploadImages: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string} req.file file input
+     */
+
     const file = req.file;
     if (!file) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -28,8 +39,19 @@ const uploadImages: RequestHandler = async (req, res, next) => {
   }
 };
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const uploadMultiple: RequestHandler = async (req, res, next) => {
   try {
+    /**
+     * @param {string[]} req.files array of files
+     */
+
     const files = req.files;
 
     if (!files || !Array.isArray(files) || files.length === 0) {
@@ -61,7 +83,19 @@ const uploadMultiple: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 const deleteImage: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.params.publicId publicId of a image
+   */
+
   const publicId = req.params.publicId;
   try {
     await handleDelete(publicId);
@@ -75,4 +109,3 @@ const deleteImage: RequestHandler = async (req, res, next) => {
 };
 
 export { deleteImage, uploadImages, uploadMultiple };
-
