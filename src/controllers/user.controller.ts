@@ -68,7 +68,7 @@ const getAllUser: RequestHandler = async (req, res, next) => {
  */
 const getOneUser: RequestHandler = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.params.id);
     if (!user) {
       res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,

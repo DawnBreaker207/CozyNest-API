@@ -1,8 +1,6 @@
 import { messagesError, messagesSuccess } from '@/constants/messages';
 import Category from '@/models/Category';
 import { Product } from '@/models/Product';
-import { productSchema } from '@/validations/product.validation';
-import { populate } from 'dotenv';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -122,7 +120,7 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
    * @param {string} req.params.id
    */
   try {
-    const data = await Product.findById(req.params.id).populate('category');
+    const data = await Product.findById(req.params.id).populate('categoryId');
     if (!data) {
       return res
         .status(StatusCodes.BAD_REQUEST)
@@ -159,6 +157,8 @@ const Create_Product: RequestHandler = async (req, res, next) => {
       },
       { new: true }
     );
+    console.log(updateCategory);
+
     if (!product || !updateCategory) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
@@ -333,7 +333,7 @@ export {
   Delete_Product,
   Get_All_Product,
   Get_One_Product,
+  getRelatedProducts,
   Hide_Product,
   Update_Product,
-  getRelatedProducts,
 };
