@@ -8,6 +8,8 @@ import routeUser from './user.route';
 import routeOrder from './order';
 import routeCart from './cart';
 import routeVnpay from './vnpay.router';
+import momoRouter from './momo-pay';
+
 
 // import routeColor from './color.route';
 // import routeSize from './size.route';
@@ -22,6 +24,9 @@ router.use('/users', routeUser);
 router.use('/orders', routeOrder);
 router.use('/cart', routeCart);
 router.use('/payment', routeVnpay);
+router.use('/paymentMomo',momoRouter);
+
+
 // router.use('/size', routeSize);
 // router.use('/color', routeColor);
 export default router;

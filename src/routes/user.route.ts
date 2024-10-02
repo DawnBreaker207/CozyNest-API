@@ -1,6 +1,5 @@
 import {
   changePassword,
-  createUser,
   forgotPass,
   generateVerifyToken,
   getAllUser,
@@ -14,7 +13,6 @@ const routeUser = Router();
 
 routeUser.get('/', getAllUser);
 routeUser.get('/:id', getOneUser);
-routeUser.post('/', createUser);
 routeUser.patch('/:id', updateUser);
 
 routeUser.post('/generateVerificationToken', generateVerifyToken);

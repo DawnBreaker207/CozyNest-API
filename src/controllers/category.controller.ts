@@ -15,12 +15,12 @@ const Get_All_Category: RequestHandler = async (req, res, next) => {
   try {
     const category = await Category.find({
       name: {
-        $regexp: req.query['_q'] || '',
-        $option: 'i',
+        $regex: req.query['_q'] || '',
+        $options: 'i',
       },
-    }).populate('product');
+    }).populate('products');
     if (!category || category.length === 0) {
-      return res.status(StatusCodes.BAD_GATEWAY).json({
+      return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
@@ -45,7 +45,9 @@ const Get_One_Category: RequestHandler = async (req, res, next) => {
     /**
      * @param {string} req.params.id Param id input
      */
-    const category = await Category.findById(req.params.id).populate('product');
+    const category = await Category.findById(req.params.id).populate(
+      'products'
+    );
     if (!category) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
@@ -174,36 +176,42 @@ const Delete_Category: RequestHandler = async (req, res, next) => {
      * @param {string} req.params.id Id of the category
      */
     const category = await Category.findOne({ _id: req.params.id });
-
-    // Can't delete default category
-    const defaultCategory = await Category.findOne({ type: 'default' });
-    if (!defaultCategory) {
+    if (!category) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
+
+    // Can't delete default category
+    const defaultCategory = await Category.findOne({ type: 'default' });
+
     if (category?.type === 'default') {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
-    const defaultCategoryId = defaultCategory._id;
 
-    // Update multiple products
-    await Product.updateMany(
-      { category: category?._id },
-      { $set: { category: defaultCategoryId } }
-    );
+    if (defaultCategory) {
+      // Update multiple products
+      const defaultCategoryId = defaultCategory._id;
+      if (category._id) {
+        await Product.updateMany(
+          { category: category._id },
+          { $set: { category: defaultCategoryId } }
+        );
 
-    // Add product Id to default category
-
-    await Category.findByIdAndUpdate(
-      defaultCategoryId,
-      {
-        $push: { products: category?.products },
-      },
-      { new: true }
-    );
+        // Add product Id to default category
+        if (category.products && category.products.length > 0) {
+          await Category.findByIdAndUpdate(
+            defaultCategoryId,
+            {
+              $push: { products: { $each: category?.products } },
+            },
+            { new: true }
+          );
+        }
+      }
+    }
 
     // Remove category with id
     const removeCategory = await Category.findByIdAndDelete({

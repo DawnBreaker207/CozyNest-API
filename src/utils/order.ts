@@ -107,10 +107,17 @@ const sendOrderMail = async (
   }
 
   let code = null;
+
+  const totalPayment = data.totalPayment != null ? data.totalPayment : 0;
+  const formattedTotalPayment =
+    typeof totalPayment === 'number'
+      ? totalPayment.toLocaleString('vi-VN') + ' VND'
+      : '0 VND';
+
   await sendMail({
     email: email as string,
     subject: subject,
-    text: sendOrder(data, message, amountReduced, code),
+    text: sendOrder(data, message, amountReduced, formattedTotalPayment),
   });
   // await sendMail({
   //   email: email as string,
