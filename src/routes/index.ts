@@ -7,6 +7,7 @@ import routeUpload from './upload.route';
 import routeUser from './user.route';
 import routeOrder from './order';
 import routeCart from './cart';
+import routeVnpay from './vnpay.router';
 
 // import routeColor from './color.route';
 // import routeSize from './size.route';
@@ -20,7 +21,7 @@ router.use('/mail', routeMail);
 router.use('/users', routeUser);
 router.use('/orders', routeOrder);
 router.use('/cart', routeCart);
-
+router.use('/payment', routeVnpay);
 // router.use('/size', routeSize);
 // router.use('/color', routeColor);
 export default router;
