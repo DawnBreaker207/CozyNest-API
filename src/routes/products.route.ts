@@ -20,7 +20,7 @@ routeProduct.get('/', Get_All_Product);
 routeProduct.get('/:id', Get_One_Product);
 routeProduct.get('/:cate_id/:product_id', getRelatedProducts);
 // routeProduct.use('/', routeVariant);
-routeProduct.use(checkAuth, checkPermission);
+// routeProduct.use(checkAuth, checkPermission);
 routeProduct.use(validBodyRequest(productSchema));
 routeProduct.post('/', Create_Product);
 routeProduct.put('/:id', Update_Product);

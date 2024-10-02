@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import { Image, Product_Id } from './Product';
 
 export interface CategoryType {
-  _id?: Types.ObjectId;
+  _id?: Types.ObjectId | string;
   name: string;
   thumbnail?: Image;
   isHidden: boolean;

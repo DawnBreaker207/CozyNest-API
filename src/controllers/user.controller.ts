@@ -68,7 +68,7 @@ const getAllUser: RequestHandler = async (req, res, next) => {
  */
 const getOneUser: RequestHandler = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.params.id);
     if (!user) {
       res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
@@ -77,35 +77,6 @@ const getOneUser: RequestHandler = async (req, res, next) => {
     res
       .status(StatusCodes.OK)
       .json({ message: messagesSuccess.GET_PROFILE_SUCCESS, res: user });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
-const createUser: RequestHandler = async (req, res, next) => {
-  try {
-    const hashPass = await hashPassword(req.body.password);
-
-    const user = await User.create({
-      ...req.body,
-      password: hashPass,
-    });
-    if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
-    return res.status(StatusCodes.OK).json({
-      message: messagesSuccess.CREATE_USER_SUCCESS,
-      res: user,
-    });
   } catch (error) {
     next(error);
   }
@@ -197,6 +168,11 @@ const generateVerifyToken: RequestHandler = async (req, res, next) => {
     });
   }
   const verification = crypto.randomBytes(3).toString('hex');
+  if (!verification) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: messagesError.NOT_FOUND,
+    });
+  }
   const verificationExpire = timeCounts.mins_5 || 5 * 60 * 1000; //Expire in 5 min
   const mailOptions = {
     email: req.body.email,
@@ -237,7 +213,6 @@ const forgotPass: RequestHandler = async (req, res, next) => {
   try {
     const { email } = req.body;
     const findUser = await User.findOne({ email });
-
     if (!findUser) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
@@ -250,10 +225,16 @@ const forgotPass: RequestHandler = async (req, res, next) => {
         message: messagesError.ERROR_SERVER,
       });
     }
-    const user = await User.findByIdAndUpdate(
+    const user = await User.findOneAndUpdate(
       { email: email },
-      { password: hashPass }
+      { $set: { password: hashPass } },
+      { new: true }
     );
+    if (!user) {
+      return res.status(StatusCodes.BAD_GATEWAY).json({
+        message: messagesError.BAD_GATEWAY,
+      });
+    }
 
     const emailOptions = {
       email: email,
@@ -285,9 +266,9 @@ const forgotPass: RequestHandler = async (req, res, next) => {
  */
 const changePassword: RequestHandler = async (req, res, next) => {
   try {
-    const { currentPassword, password } = req.body;
+    const { email, currentPassword, password } = req.body;
 
-    const userExist = await User.findById(req.user._id);
+    const userExist = await User.findOne({ email: email });
 
     const passwordExist = await comparePassword(
       currentPassword,
@@ -299,9 +280,12 @@ const changePassword: RequestHandler = async (req, res, next) => {
       });
     }
     const hashPass = await hashPassword(password);
-    const user = await User.findByIdAndUpdate(req.user._id, {
-      password: hashPass,
-    });
+    const user = await User.findOneAndUpdate(
+      { email: email },
+      {
+        password: hashPass,
+      }
+    );
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.CHANGE_PASSWORD_SUCCESS,
       res: user,
@@ -313,7 +297,6 @@ const changePassword: RequestHandler = async (req, res, next) => {
 
 export {
   changePassword,
-  createUser,
   forgotPass,
   generateVerifyToken,
   getOneUser,

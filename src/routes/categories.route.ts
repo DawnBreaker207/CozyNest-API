@@ -17,7 +17,7 @@ const routeCategory = Router();
 routeCategory.get('/', Get_All_Category);
 routeCategory.get('/:id', Get_One_Category);
 
-routeCategory.use(checkAuth, checkPermission);
+// routeCategory.use(checkAuth, checkPermission);
 routeCategory.use(validBodyRequest(categorySchema));
 routeCategory.post('/', Create_Category);
 routeCategory.put('/:id', Update_Category);
