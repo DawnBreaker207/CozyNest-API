@@ -89,35 +89,6 @@ const getOneUser: RequestHandler = async (req, res, next) => {
  * @param next
  * @returns
  */
-const createUser: RequestHandler = async (req, res, next) => {
-  try {
-    const hashPass = await hashPassword(req.body.password);
-
-    const user = await User.create({
-      ...req.body,
-      password: hashPass,
-    });
-    if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
-    return res.status(StatusCodes.OK).json({
-      message: messagesSuccess.CREATE_USER_SUCCESS,
-      res: user,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const updateUser: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -326,7 +297,6 @@ const changePassword: RequestHandler = async (req, res, next) => {
 
 export {
   changePassword,
-  createUser,
   forgotPass,
   generateVerifyToken,
   getOneUser,

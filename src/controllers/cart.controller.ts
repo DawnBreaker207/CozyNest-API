@@ -158,10 +158,12 @@ const RemoveCart: RequestHandler = async (req, res, next) => {
  */
 const UpdateCart: RequestHandler = async (req, res, next) => {
   const { userId, productId, quantity } = req.body;
+  console.log(req.body);
+
   try {
     // Find cart user
     const cart = await Cart.findOne({ userId });
-
+    
     // if not found
     if (!cart) {
       return res

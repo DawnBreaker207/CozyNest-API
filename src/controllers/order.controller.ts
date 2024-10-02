@@ -179,7 +179,20 @@ const GetOrder: RequestHandler = async (req, res, next) => {
 const UpdateOrder: RequestHandler = async (req, res, next) => {
   try {
     const orderId = req.params.id;
-    const { status } = req.body;
+    const {
+      status,
+      userId,
+      customerName,
+      phoneNumber,
+      email,
+      addressShipping,
+    } = req.body;
+
+    if (!status) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: messagesError.BAD_REQUEST,
+      });
+    }
 
     const currentOrder = await Order.findById(orderId);
     if (!currentOrder) {
@@ -189,44 +202,51 @@ const UpdateOrder: RequestHandler = async (req, res, next) => {
       });
     }
 
-    let data = null;
-
-    if (status == messagesError.ORDER_FAILED) {
-      if (currentOrder.status != '' && currentOrder.status != '') {
-        data = await Order.findByIdAndUpdate(
-          orderId,
-          {
-            ...req.body,
-            userId: new mongoose.Types.ObjectId(req.body.userId),
-          },
-          {
-            new: true,
-          }
-        );
-      } else {
-        return res.status(StatusCodes.FORBIDDEN).json({
-          message: messagesError.FORBIDDEN,
-        });
-      }
+    if (
+      status === messagesError.ORDER_FAILED &&
+      (currentOrder.status === 'Completed' ||
+        currentOrder.status === 'Delivered')
+    ) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        message: messagesError.FORBIDDEN,
+      });
     }
-    if (!statusOrder.includes(status) && status != messagesError.ORDER_FAILED) {
+
+    if (
+      !statusOrder.includes(status) &&
+      status !== messagesError.ORDER_FAILED
+    ) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
-    data = await Order.findByIdAndUpdate(
+
+    const updateData = await Order.findByIdAndUpdate(
       orderId,
       {
         ...req.body,
-        userId: new mongoose.Types.ObjectId(req.body.userId),
+        userId: userId ? new mongoose.Types.ObjectId(userId) : null,
+        customerName: customerName || currentOrder.customerName,
+        phoneNumber: phoneNumber || currentOrder.phoneNumber,
+        email: email || currentOrder.email,
+        addressShipping: addressShipping || currentOrder.addressShipping,
       },
       { new: true }
     );
 
-    sendOrderMail(data?.email, data);
+    if (status === messagesError.ORDER_CANCELED) {
+    }
+    if (updateData?.email) {
+      try {
+        await sendOrderMail(updateData?.email, updateData);
+      } catch (error) {
+        next(error);
+      }
+    }
 
-    return res.status(200).json({
-      res: data,
+    res.status(StatusCodes.OK).json({
+      message: messagesSuccess.UPDATE_ORDER_SUCCESS,
+      res: updateData,
     });
   } catch (error) {
     next(error);

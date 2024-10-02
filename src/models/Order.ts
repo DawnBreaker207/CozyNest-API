@@ -22,7 +22,11 @@ const orderSchema = new mongoose.Schema<OrderType>(
       },
       required: true,
     },
-    userId: { type: mongoose.Schema.Types.Mixed, default: null },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
     products: [
       {
         productId: {
