@@ -4,11 +4,11 @@ import {
   vnpayReturn,
 } from '@/controllers/payment.controller';
 import { Router } from 'express';
+const routeVNPay = Router();
 
-const routeVnpay = Router();
+routeVNPay.post('/create-vnpay', vnpayCreate);
+routeVNPay.get('/vnpay-ipn', vnpayIpn);
+routeVNPay.get('/vnpay-return', vnpayReturn);
 
-routeVnpay.post('/create-vnpay', vnpayCreate);
-routeVnpay.get('/vnpay-ipn', vnpayIpn);
-routeVnpay.get('/vnpay-return', vnpayReturn);
+export default routeVNPay;
 
-export default routeVnpay;
