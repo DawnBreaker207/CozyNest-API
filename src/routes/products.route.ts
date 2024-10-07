@@ -21,9 +21,9 @@ routeProduct.get('/:id', Get_One_Product);
 routeProduct.get('/:cate_id/:product_id', getRelatedProducts);
 // routeProduct.use('/', routeVariant);
 // routeProduct.use(checkAuth, checkPermission);
-routeProduct.use(validBodyRequest(productSchema));
-routeProduct.post('/', Create_Product);
-routeProduct.put('/:id', Update_Product);
+
+routeProduct.post('/', validBodyRequest(productSchema), Create_Product);
+routeProduct.put('/:id', validBodyRequest(productSchema), Update_Product);
 
 routeProduct.patch('/:id', Hide_Product);
 routeProduct.delete('/:id', Delete_Product);
