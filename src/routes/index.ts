@@ -7,9 +7,8 @@ import routeUpload from './upload.route';
 import routeUser from './user.route';
 import routeOrder from './order';
 import routeCart from './cart';
-import routeVNPay from './vnpay.router';
-import momoRouter from './momo-pay';
-import routerZalo from './zalo-pay';
+import routePayment from './payment.route';
+
 
 // import routeColor from './color.route';
 // import routeSize from './size.route';
@@ -23,9 +22,7 @@ router.use('/mail', routeMail);
 router.use('/users', routeUser);
 router.use('/orders', routeOrder);
 router.use('/cart', routeCart);
-router.use('/paymentZalo', routerZalo);
-router.use('/paymentvnpay', routeVNPay);
-router.use('/payment', momoRouter);
+router.use('/payment', routePayment);
 
 // router.use('/size', routeSize);
 // router.use('/color', routeColor);
