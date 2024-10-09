@@ -1,96 +1,200 @@
-import { Request, Response, NextFunction } from "express";
-import moment from "moment";
-import querystring from "qs";
-import crypto from "crypto";
+import { configzalo, sortObject } from '@/utils/payments';
+import axios from 'axios';
+import config from 'config';
+import * as crypto from 'crypto';
+import CryptoJS from 'crypto-js';
+import { RequestHandler } from 'express';
+import moment from 'moment';
+import qs from 'qs';
 
+//* VNPay
 // Hàm tạo yêu cầu thanh toán VNPay
-export const vnpayCreate = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const createVnPay: RequestHandler = async (req, res, next) => {
   try {
-    // Thiết lập múi giờ
-    process.env.TZ = "Asia/Ho_Chi_Minh";
+    process.env.TZ = 'Asia/Ho_Chi_Minh';
 
-    // Lấy thời gian hiện tại và định dạng
-    const date = new Date();
-    const createDate = moment(date).format("YYYYMMDDHHmmss");
-    const orderId = moment(date).format("DDHHmmss");
+    let date: Date = new Date();
+    let createDate: string = moment(date).format('YYYYMMDDHHmmss');
 
-    // Lấy địa chỉ IP của khách hàng
-    let ipAddr =
-      req.headers["x-forwarded-for"] ||
-      req.connection.remoteAddress ||
+    let ipAddr: string | undefined =
+      (req.headers['x-forwarded-for'] as string) ||
       req.socket.remoteAddress ||
-      req.connection.remoteAddress;
+      req.ip;
 
-    // Cấu hình VNPay từ file config
-    const tmnCode: string = "X5NX5EN5";
-    const secretKey: string = "RNRIQQQUPZTWBTBBTAXZEHQFRYMKOVII";
-    let vnpUrl: string = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    const returnUrl: string =
-      "http://localhost:3000/api/v1/payment/vnpay-return";
+    let tmnCode: string = config.get('vnp_TmnCode');
+    let secretKey: string = config.get('vnp_HashSecret');
+    let vnpUrl: string = config.get('vnp_Url');
+    let returnUrl: string = config.get('vnp_ReturnUrl');
+    let orderId: string = moment(date).format('DDHHmmss');
+    let amount: number = req.body.amount;
+    let bankCode: string = req.body.bankCode;
 
-    // Thông tin đơn hàng từ body của request
-    const amount: number = req.body.amount;
-    const bankCode: string = req.body.bankCode || "";
-    let locale: string = req.body.language || "vn";
-    const currCode = "VND";
+    let locale: string = req.body.language || 'vn';
+    let currCode: string = 'VND';
 
-    // Khởi tạo tham số VNPay
-    const vnp_Params: Record<string, string | number> = {
-      vnp_Version: "2.1.0",
-      vnp_Command: "pay",
-      vnp_TmnCode: tmnCode,
-      vnp_Locale: locale,
-      vnp_CurrCode: currCode,
-      vnp_TxnRef: orderId,
-      vnp_OrderInfo: `Thanh toan cho ma GD: ${orderId}`,
-      vnp_OrderType: "other",
-      vnp_Amount: amount * 100, // Số tiền (đơn vị nhỏ nhất)
-      vnp_ReturnUrl: returnUrl,
-      vnp_IpAddr: String(ipAddr) || "127.0.0.1", // default to localhost if ipAddr is undefined
-      vnp_CreateDate: createDate,
-    };
+    let vnp_Params: { [key: string]: string | number } = {};
+    vnp_Params['vnp_Version'] = '2.1.0';
+    vnp_Params['vnp_Command'] = 'pay';
+    vnp_Params['vnp_TmnCode'] = tmnCode;
+    vnp_Params['vnp_Locale'] = locale;
+    vnp_Params['vnp_CurrCode'] = currCode;
+    vnp_Params['vnp_TxnRef'] = orderId;
+    vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId;
+    vnp_Params['vnp_OrderType'] = 'other';
+    vnp_Params['vnp_Amount'] = amount * 100;
+    vnp_Params['vnp_ReturnUrl'] = returnUrl;
+    vnp_Params['vnp_IpAddr'] = ipAddr || '';
+    vnp_Params['vnp_CreateDate'] = createDate;
 
-    // Thêm mã ngân hàng nếu có
     if (bankCode) {
-      vnp_Params["vnp_BankCode"] = bankCode;
+      vnp_Params['vnp_BankCode'] = bankCode;
     }
 
-    // Sắp xếp các tham số
-    const sortedParams = sortObject(vnp_Params);
+    vnp_Params = sortObject(vnp_Params);
 
-    // Tạo chữ ký bảo mật
-    const signData = querystring.stringify(sortedParams, { encode: false });
-    const hmac = crypto.createHmac("sha512", secretKey);
-    const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
-    sortedParams["vnp_SecureHash"] = signed;
+    let signData = qs.stringify(vnp_Params, { encode: false });
+    let hmac = crypto.createHmac('sha512', secretKey);
+    let signed: string = hmac
+      .update(Buffer.from(signData, 'utf-8'))
+      .digest('hex');
 
-    // Tạo URL thanh toán
-    const paymentUrl = `${vnpUrl}?${querystring.stringify(sortedParams, {
-      encode: false,
-    })}`;
+    vnp_Params['vnp_SecureHash'] = signed;
+    vnpUrl += '?' + qs.stringify(vnp_Params, { encode: false });
 
-    // Chuyển hướng người dùng đến VNPay
-    res.redirect(paymentUrl);
+    res.redirect(vnpUrl);
   } catch (error) {
-    // Xử lý lỗi
-    console.error("Lỗi khi tạo yêu cầu VNPay:", error);
-    next(error); // Chuyển lỗi sang middleware tiếp theo
+    next(error);
   }
 };
 
-// Hàm sắp xếp đối tượng theo thứ tự alphabet
-const sortObject = (obj: Record<string, any>): Record<string, any> => {
-  return Object.keys(obj)
-    .sort() // Sắp xếp các khóa theo thứ tự alphabet
-    .reduce((sortedObj: Record<string, any>, key) => {
-      sortedObj[key] = obj[key]; // Thêm cặp key-value đã sắp xếp vào đối tượng mới
-      return sortedObj;
-    }, {});
+//* MoMo
+const createMomo: RequestHandler = async (req, res, next) => {
+  //https://developers.momo.vn/#/docs/en/aiov2/?id=payment-method
+  //parameters
+  const accessKey = 'F8BBA842ECF85';
+  const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
+  const orderInfo = 'pay with MoMo';
+  const partnerCode = 'MOMO';
+  const redirectUrl =
+    'https://test-payment.momo.vn/v2/gateway/pay?t=TU9NT3xNT01PMTcyNzc2ODQzNTU0Mw&s=425503bbad6dda6a15a62bfa11d2a365def1511da16b47a6b3f70843760d3c1d';
+  const ipnUrl =
+    '   https://f396-2402-800-61ae-ad78-ac2c-6cfa-4402-79e0.ngrok-free.app/callback';
+  const requestType = 'payWithMethod';
+  const amount = '1000';
+  const orderId = `${partnerCode}${new Date().getTime()}`;
+  const requestId = orderId;
+  const extraData = '';
+  const orderGroupId = '';
+  const autoCapture = true;
+  const lang = 'vi';
+
+  //before sign HMAC SHA256 with format
+  //accessKey=$accessKey&amount=$amount&extraData=$extraData&ipnUrl=$ipnUrl&orderId=$orderId&orderInfo=$orderInfo&partnerCode=$partnerCode&redirectUrl=$redirectUrl&requestId=$requestId&requestType=$requestType
+  const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
+
+  //puts raw signature
+  console.log('--------------------RAW SIGNATURE----------------');
+  console.log(rawSignature);
+  //signature
+  const crypto = require('crypto');
+  const signature = crypto
+    .createHmac('sha256', secretKey)
+    .update(rawSignature)
+    .digest('hex');
+  console.log('--------------------SIGNATURE----------------');
+  console.log(signature);
+
+  //json object send to MoMo endpoint
+  const requestBody = JSON.stringify({
+    partnerCode,
+    partnerName: 'Test',
+    storeId: 'MomoTestStore',
+    requestId,
+    amount,
+    orderId,
+    orderInfo,
+    redirectUrl,
+    ipnUrl,
+    lang,
+    requestType,
+    autoCapture,
+    extraData,
+    orderGroupId,
+    signature,
+  });
+
+  const options = {
+    method: 'POST',
+    url: 'https://test-payment.momo.vn/v2/gateway/api/create',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(requestBody),
+    },
+    data: requestBody,
+  };
+
+  let result;
+  try {
+    result = await axios(options);
+    return res.status(200).json(result.data);
+  } catch (error) {
+    return next(error);
+  }
 };
 
-export const vnpayIpn = async (req: any, res: any, next: any) => {};
-export const vnpayReturn = async (req: any, res: any, next: any) => {};
+//* Zalo
+
+const createZalo: RequestHandler = async (req, res, next) => {
+  const embed_data = {
+    //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
+    redirecturl: '/',
+  };
+
+  const items: { id: number; name: string; price: number }[] = [];
+  const transID = Math.floor(Math.random() * 1000000);
+
+  const order = {
+    app_id: configzalo.app_id,
+    app_trans_id: `${moment().format('YYMMDD')}_${transID}`, // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
+    app_user: 'user123',
+    app_time: Date.now(), // miliseconds
+    item: JSON.stringify(items),
+    embed_data: JSON.stringify(embed_data),
+    amount: 50000,
+    //khi thanh toán xong, zalopay server sẽ POST đến url này để thông báo cho server của mình
+    //Chú ý: cần dùng ngrok để public url thì Zalopay Server mới call đến được
+    callback_url:
+      'https://f396-2402-800-61ae-ad78-ac2c-6cfa-4402-79e0.ngrok-free.app/callback',
+    description: `Lazada - Payment for the order #${transID}`,
+    bank_code: '',
+  };
+
+  // appid|app_trans_id|appuser|amount|apptime|embeddata|item
+  const data =
+    configzalo.app_id +
+    '|' +
+    order.app_trans_id +
+    '|' +
+    order.app_user +
+    '|' +
+    order.amount +
+    '|' +
+    order.app_time +
+    '|' +
+    order.embed_data +
+    '|' +
+    order.item;
+  (order as any).mac = CryptoJS.HmacSHA256(data, configzalo.key1).toString();
+
+  try {
+    const result = await axios.post(configzalo.endpoint, null, {
+      params: order,
+    });
+
+    return res.status(200).json(result.data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { createMomo, createVnPay, createZalo };
