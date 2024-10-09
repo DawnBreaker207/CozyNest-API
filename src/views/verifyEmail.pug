@@ -1,0 +1,9 @@
+extends baseEmail
+
+block content
+  div(style ="margin-bottom: 10px;")
+    img(src="https://res.cloudinary.com/devr9hihw/image/upload/v1727368649/azvhqocb9cqex72p7rgb.png" alt="Logo")
+    p Mã xác nhận của bạn là: 
+      strong(style="color:#f12; background-color:#bedaef; font-size:20px; border-radius:5px; padding:10px;")
+        | #{content}
+      br Mã này sẽ hết hiệu lực sau 5 phút. Vui lòng không để lộ mã xác nhận để bảo vệ tài khoản của bạn!

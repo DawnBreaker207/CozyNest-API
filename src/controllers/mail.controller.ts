@@ -16,7 +16,7 @@ const sendMailRequest: RequestHandler = async (req, res, next) => {
     const emailOption = {
       email: req.body.email,
       subject: req.body.subject,
-      text: sendExportMail(req.body.content),
+      text: sendExportMail(req.body.subject, req.body.content),
       // text: `
       //       <div style="margin-bottom: 10px;">
       //       <img src="https://res.cloudinary.com/devr9hihw/image/upload/v1727368649/azvhqocb9cqex72p7rgb.png" style="width: 200px; height: auto; margin-right: 10px;" />
