@@ -20,6 +20,7 @@ const createVnPay: RequestHandler = async (req, res, next) => {
       req.ip;
 
     let tmnCode: string = config.get('vnp_TmnCode');
+
     // let secretKey: string = config.get('vnp_HashSecret');
     let secretKey: string = 'J81W79Q18JMFS7H71ZB9RQI5CUVZ571U';
 
@@ -55,7 +56,6 @@ const createVnPay: RequestHandler = async (req, res, next) => {
     vnp_Params = sortObject(vnp_Params);
 
     let signData = qs.stringify(vnp_Params, { encode: false });
-
     let hmac = crypto.createHmac('sha512', secretKey);
     let signed: string = hmac
       .update(Buffer.from(signData, 'utf-8'))
@@ -146,7 +146,6 @@ const createMomo: RequestHandler = async (req, res, next) => {
 };
 
 //* Zalo
-
 const createZalo: RequestHandler = async (req, res, next) => {
   const embed_data = {
     //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
@@ -202,5 +201,4 @@ const createZalo: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
 export { createMomo, createVnPay, createZalo };
