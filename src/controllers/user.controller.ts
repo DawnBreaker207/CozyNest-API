@@ -177,13 +177,7 @@ const generateVerifyToken: RequestHandler = async (req, res, next) => {
   const mailOptions = {
     email: req.body.email,
     subject: 'CozyNest - Forget password',
-    text: sendVerifyMail(verification),
-    // text: `
-    //        <div style="margin-bottom: 10px;">
-    //        <img style="width: 80px; height: auto; margin-right: 10px;" src="https://res.cloudinary.com/diqyzhuc2/image/upload/v1700971559/logo_ssgtuy_1_dktoff.png" />
-    //        <p>Mã xác nhận của bạn là: <strong style="color:#f12; background-color:#bedaef; font-size:20px; border-radius:5px; padding:10px;">${verification}</strong>.<br/> Mã này sẽ hết hiệu lực sau 5 phút. Vui lòng không để lộ mã xác nhận để bảo vệ tài khoản của bạn!</p>
-    //      </div>
-    //            `
+    text: sendVerifyMail('CozyNest - Forget password', verification),
   };
 
   await sendMail(mailOptions);
@@ -239,8 +233,7 @@ const forgotPass: RequestHandler = async (req, res, next) => {
     const emailOptions = {
       email: email,
       subject: 'Password reset from CozyNest',
-      text: sendResetMail(newPassword),
-      // text: `Your new password is ${newPassword}`,
+      text: sendResetMail('Password reset from CozyNest', newPassword),
     };
     await sendMail(emailOptions);
 
