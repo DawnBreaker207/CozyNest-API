@@ -2,7 +2,6 @@ import { configzalo, sortObject } from '@/utils/payments';
 import axios from 'axios';
 import config from 'config';
 import * as crypto from 'crypto';
-import CryptoJS from 'crypto-js';
 import { RequestHandler } from 'express';
 import moment from 'moment';
 import qs from 'qs';
@@ -21,10 +20,14 @@ const createVnPay: RequestHandler = async (req, res, next) => {
       req.socket.remoteAddress ||
       req.ip;
 
-    let tmnCode: string = config.get('vnp_TmnCode');
-    let secretKey: string = config.get('vnp_HashSecret');
-    let vnpUrl: string = config.get('vnp_Url');
-    let returnUrl: string = config.get('vnp_ReturnUrl');
+    // let tmnCode: string = config.get('vnp_TmnCode');
+    let tmnCode: string = '61CXFDAH';
+    // let secretKey: string = config.get('vnp_HashSecret');
+    let secretKey: string = 'SWTRE3G32LFK47S0GK7EJQ3JWREEJDH3';
+    // let vnpUrl: string = config.get('vnp_Url');
+    let vnpUrl: string = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
+    // let returnUrl: string = config.get('vnp_ReturnUrl');
+    let returnUrl: string = 'http://localhost:3000/vnpay_return';
     let orderId: string = moment(date).format('DDHHmmss');
     let amount: number = req.body.amount;
     let bankCode: string = req.body.bankCode;
@@ -96,7 +99,6 @@ const createMomo: RequestHandler = async (req, res, next) => {
   console.log('--------------------RAW SIGNATURE----------------');
   console.log(rawSignature);
   //signature
-  const crypto = require('crypto');
   const signature = crypto
     .createHmac('sha256', secretKey)
     .update(rawSignature)
@@ -184,8 +186,11 @@ const createZalo: RequestHandler = async (req, res, next) => {
     order.embed_data +
     '|' +
     order.item;
-  (order as any).mac = CryptoJS.HmacSHA256(data, configzalo.key1).toString();
 
+  (order as any).mac = crypto
+    .createHmac('sha256', configzalo.key1)
+    .update(data)
+    .digest('hex');
   try {
     const result = await axios.post(configzalo.endpoint, null, {
       params: order,

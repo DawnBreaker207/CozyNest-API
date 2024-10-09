@@ -1,7 +1,6 @@
 import axios from 'axios';
 import config from 'config';
 import * as crypto from 'crypto';
-import CryptoJS from 'crypto-js';
 import { RequestHandler } from 'express';
 import qs from 'qs';
 
@@ -176,7 +175,11 @@ const handleCallbackZaloPay: RequestHandler = async (req, res, next) => {
     let dataStr = req.body.data;
     let reqMac = req.body.mac;
 
-    let mac = CryptoJS.HmacSHA256(dataStr, configzalo.key2).toString();
+    // let mac = CryptoJS.HmacSHA256(dataStr, configzalo.key2).toString();
+    let mac = crypto
+      .createHmac('sha256', configzalo.key2)
+      .update(dataStr)
+      .digest('hex');
     console.log('mac =', mac);
 
     // kiểm tra callback hợp lệ (đến từ ZaloPay server)
@@ -211,7 +214,11 @@ const checkStatusZaloPay: RequestHandler = async (req, res, next) => {
 
   let data =
     postData.app_id + '|' + postData.app_trans_id + '|' + configzalo.key1; // appid|app_trans_id|key1
-  (postData as any).mac = CryptoJS.HmacSHA256(data, configzalo.key1).toString();
+  // (postData as any).mac = CryptoJS.HmacSHA256(data, configzalo.key1).toString();
+  (postData as any).mac = crypto
+    .createHmac('sha256', configzalo.key1)
+    .update(data)
+    .digest('hex');
 
   let postConfig = {
     method: 'post',
@@ -246,12 +253,13 @@ const checkStatusZaloPay: RequestHandler = async (req, res, next) => {
 };
 
 export {
-  configzalo,
-  sortObject,
-  vnPayReturn,
-  vnPayIpn,
-  handleCallbackMomo,
   checkStatusMomo,
-  handleCallbackZaloPay,
   checkStatusZaloPay,
+  configzalo,
+  handleCallbackMomo,
+  handleCallbackZaloPay,
+  sortObject,
+  vnPayIpn,
+  vnPayReturn
 };
+
