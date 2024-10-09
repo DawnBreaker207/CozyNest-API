@@ -1,11 +1,10 @@
 import { configzalo, sortObject } from '@/utils/payments';
 import axios from 'axios';
-import config from 'config';
 import * as crypto from 'crypto';
 import { RequestHandler } from 'express';
 import moment from 'moment';
 import qs from 'qs';
-
+import config from 'config';
 //* VNPay
 // Hàm tạo yêu cầu thanh toán VNPay
 const createVnPay: RequestHandler = async (req, res, next) => {
@@ -20,17 +19,17 @@ const createVnPay: RequestHandler = async (req, res, next) => {
       req.socket.remoteAddress ||
       req.ip;
 
-    // let tmnCode: string = config.get('vnp_TmnCode');
-    let tmnCode: string = '61CXFDAH';
+    let tmnCode: string = config.get('vnp_TmnCode');
     // let secretKey: string = config.get('vnp_HashSecret');
-    let secretKey: string = 'SWTRE3G32LFK47S0GK7EJQ3JWREEJDH3';
-    // let vnpUrl: string = config.get('vnp_Url');
-    let vnpUrl: string = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-    // let returnUrl: string = config.get('vnp_ReturnUrl');
-    let returnUrl: string = 'http://localhost:3000/vnpay_return';
+    let secretKey: string = 'J81W79Q18JMFS7H71ZB9RQI5CUVZ571U';
+
+    let vnpUrl: string = config.get('vnp_Url');
+    let returnUrl: string = config.get('vnp_ReturnUrl');
     let orderId: string = moment(date).format('DDHHmmss');
-    let amount: number = req.body.amount;
-    let bankCode: string = req.body.bankCode;
+    // let amount: number = req.body.amount;
+    let amount: number = req.body.amount || 1000;
+    // let bankCode: string = req.body.bankCode;
+    let bankCode: string = req.body.backCode || 'NCB';
 
     let locale: string = req.body.language || 'vn';
     let currCode: string = 'VND';
@@ -56,6 +55,7 @@ const createVnPay: RequestHandler = async (req, res, next) => {
     vnp_Params = sortObject(vnp_Params);
 
     let signData = qs.stringify(vnp_Params, { encode: false });
+
     let hmac = crypto.createHmac('sha512', secretKey);
     let signed: string = hmac
       .update(Buffer.from(signData, 'utf-8'))
@@ -99,6 +99,7 @@ const createMomo: RequestHandler = async (req, res, next) => {
   console.log('--------------------RAW SIGNATURE----------------');
   console.log(rawSignature);
   //signature
+
   const signature = crypto
     .createHmac('sha256', secretKey)
     .update(rawSignature)

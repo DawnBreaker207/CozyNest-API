@@ -16,7 +16,7 @@ import { Router } from 'express';
 const routePayment = Router();
 //* Zalo-pay
 // 1. Create zalo-pay
-routePayment.post('/create-zalo', createZalo);
+routePayment.post('/create-zalopay', createZalo);
 // 2. Check transaction
 routePayment.post('/zalopay-ipn/:id', checkStatusZaloPay);
 // 3. callback
