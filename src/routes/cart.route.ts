@@ -15,6 +15,6 @@ routeCart.post('/add-to-cart', AddToCart);
 routeCart.put('/update-product-quantity', UpdateCart);
 routeCart.post('/increase', increaseQuantity);
 routeCart.post('/decrease', decreaseQuantity);
-routeCart.delete('/:id', RemoveFromCart);
+routeCart.post('/remove-from-cart', RemoveFromCart);
 routeCart.delete('/remove-cart/:id', RemoveCart);
 export default routeCart;

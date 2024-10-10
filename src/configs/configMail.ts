@@ -24,7 +24,7 @@ export const sendMail = async (input: {
       from: EMAIL_USERNAME,
       to: input.email,
       subject: input.subject,
-      text: input.text,
+      html: input.text,
     };
     await transporter.sendMail(mailOptions);
   } catch (error) {
