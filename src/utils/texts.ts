@@ -1,5 +1,6 @@
 import path from 'path';
 import pug from 'pug';
+import { formatDateTime } from './order';
 /**
  *
  * @param content
@@ -69,9 +70,11 @@ const sendOrder = (
     formattedTotalPayment,
     totalPayment,
     formattedTotalPaymentValue,
+    formatDateTime,
   });
 
   return html;
 };
 
 export { sendExportMail, sendOrder, sendResetMail, sendVerifyMail };
+

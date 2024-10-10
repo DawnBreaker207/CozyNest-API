@@ -4,21 +4,15 @@ import { OrderType } from '@/interfaces/Order';
 import { sendOrder } from '@/utils/texts';
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import moment from 'moment';
 
 /**
  *
  * @param dateTime
  * @returns
  */
-const formatDateTime = (dateTime: Date) => {
-  const date = new Date(dateTime);
-  const formattedDate = `${date.getDay()}/${
-    date.getMonth() + 1
-  }/${date.getFullYear()}`;
-  const formattedTime = `${date.getHours()}:${date.getMinutes()}:${
-    date.getSeconds
-  }`;
-  return `${formattedDate} ${formattedTime}`;
+const formatDateTime = (date: Date): string => {
+  return moment(date).format('DD/MM/YYYY HH:mm:ss');
 };
 
 /**
