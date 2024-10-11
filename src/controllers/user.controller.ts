@@ -1,4 +1,4 @@
-import { sendMail } from '@/configs/configMail';
+import { configSendMail } from '@/configs/configMail';
 import { timeCounts } from '@/constants/initialValue';
 import { messagesError, messagesSuccess } from '@/constants/messages';
 import User from '@/models/User';
@@ -180,7 +180,7 @@ const generateVerifyToken: RequestHandler = async (req, res, next) => {
     text: sendVerifyMail('CozyNest - Forget password', verification),
   };
 
-  await sendMail(mailOptions);
+  await configSendMail(mailOptions);
 
   res.cookie('verify', verification, {
     maxAge: 60 * 60 * 1000,
@@ -235,7 +235,7 @@ const forgotPass: RequestHandler = async (req, res, next) => {
       subject: 'Password reset from CozyNest',
       text: sendResetMail('Password reset from CozyNest', newPassword),
     };
-    await sendMail(emailOptions);
+    await configSendMail(emailOptions);
 
     res.clearCookie('email');
     res.clearCookie('verify');

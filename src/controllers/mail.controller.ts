@@ -1,4 +1,4 @@
-import { sendMail } from '@/configs/configMail';
+import { configSendMail } from '@/configs/configMail';
 import { messagesSuccess } from '@/constants/messages';
 import { sendExportMail } from '@/utils/texts';
 import { RequestHandler } from 'express';
@@ -17,14 +17,8 @@ const sendMailRequest: RequestHandler = async (req, res, next) => {
       email: req.body.email,
       subject: req.body.subject,
       text: sendExportMail(req.body.subject, req.body.content),
-      // text: `
-      //       <div style="margin-bottom: 10px;">
-      //       <img src="https://res.cloudinary.com/devr9hihw/image/upload/v1727368649/azvhqocb9cqex72p7rgb.png" style="width: 200px; height: auto; margin-right: 10px;" />
-      //        <p>${req.body.content}</p>
-      //       </div>
-      //     `,
     };
-    await sendMail(emailOption);
+    await configSendMail(emailOption);
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.SEND_EMAIL_SUCCESS,
     });

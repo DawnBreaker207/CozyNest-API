@@ -1,4 +1,4 @@
-import { sendMail } from '@/configs/configMail';
+import { configSendMail } from '@/configs/configMail';
 import { messagesError, messagesSuccess } from '@/constants/messages';
 import { OrderType } from '@/interfaces/Order';
 import { sendOrder } from '@/utils/texts';
@@ -108,7 +108,7 @@ const sendOrderMail = async (
       ? totalPayment.toLocaleString('vi-VN') + ' VND'
       : '0 VND';
 
-  await sendMail({
+  await configSendMail({
     email: email as string,
     subject: subject,
     text: sendOrder(

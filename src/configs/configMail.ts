@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer';
  *
  * @param input
  */
-export const sendMail = async (input: {
+export const configSendMail = async (input: {
   email: string;
   subject: string;
   text: string;
