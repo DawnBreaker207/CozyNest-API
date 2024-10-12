@@ -1,11 +1,14 @@
-import { calculateShippingFee, createOrder, trackOrder } from "@/controllers/ghn.controller";
-import { Router } from "express";
+import {
+  calShippingFee,
+  createOrder,
+  trackOrder,
+} from '@/controllers/ghn.controller';
+import { Router } from 'express';
 
+const routeShipment = Router();
 
- const ghnRoute = Router();
+routeShipment.post('/calculate-fee', calShippingFee);
+routeShipment.post('/create-order', createOrder);
+routeShipment.get('/track-order/:orderCode', trackOrder);
 
-ghnRoute.post('/calculate-fee', calculateShippingFee);
-ghnRoute.post('/create-order', createOrder);
-ghnRoute.get('/track-order/:orderCode', trackOrder);
-
-export default ghnRoute;
+export default routeShipment;

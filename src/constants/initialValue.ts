@@ -81,6 +81,7 @@ export const statusOrder: readonly string[] = [
 ];
 export const paymentMethod: readonly string[] = [
   'COD', // Thanh toán khi nhận hàng
-  'MoMo', //Thanh toán qua MoNo
+  'MoMo', //Thanh toán qua Momo
   'VNPay', //Thanh toán VnPay
+  'ZaloPay' //Thanh toán ZaloPay
 ];

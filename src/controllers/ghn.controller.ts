@@ -1,43 +1,13 @@
+import { SHIPMENT_SHOP, TOKEN_SHIPMENT } from '@/utils/env';
 import axios from 'axios';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
+import { StatusCodes } from 'http-status-codes';
 
 const GHN_API_BASE_URL =
   'https://dev-online-gateway.ghn.vn/shiip/public-api/v2';
-
-// Gọi API tính phí vận chuyển và xử lý request/response từ client
-export const calculateShippingFee = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const shippingData = req.body;
-  const endpoint = `${GHN_API_BASE_URL}/shipping-order/fee`;
-
-  try {
-    const response = await axios.post(endpoint, shippingData, {
-      headers: {
-        Token: '0c2c6b3c-8797-11ef-8e53-0a00184fe694',
-        'Content-Type': 'application/json',
-      },
-    });
-    res.status(200).json(response.data);
-  } catch (error: any) {
-    next(
-      new Error(
-        error.response?.data?.message || 'Error calculating shipping fee'
-      )
-    );
-  }
-};
-
 // Gọi API tạo đơn hàng và xử lý request/response từ client
-export const createOrder = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const createOrder: RequestHandler = async (req, res, next) => {
   const orderData = req.body;
-  console.log(orderData);
   // Kiểm tra các trường bắt buộc
   if (
     !orderData.product_name || // Tên hàng hoá
@@ -47,45 +17,63 @@ export const createOrder = async (
     !orderData.weight || // Trọng lượng
     !orderData.required_note // Ghi chú bắt buộc
   ) {
-    return res.status(400).json({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       error:
         'Thiếu thông tin bắt buộc: Name, ToName, ToPhone, ToAddress, Weight, RequiredNote',
     });
   }
 
-  const endpoint = `${GHN_API_BASE_URL}/shipping-order/create`;
+  const URL = `${GHN_API_BASE_URL}/shipping-order/create`;
   // 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create';
-
   try {
-    const response = await axios.post(endpoint, orderData, {
+    const response = await axios.post(URL, orderData, {
       headers: {
-        Token: '0c2c6b3c-8797-11ef-8e53-0a00184fe694',
-        'shop-id': '194743',
+        Token: TOKEN_SHIPMENT,
+        'shop-id': SHIPMENT_SHOP,
         'Content-Type': 'application/json',
       },
     });
     res.status(200).json(response.data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Gọi API tính phí vận chuyển và xử lý request/response từ client
+const calShippingFee: RequestHandler = async (req, res, next) => {
+  const shippingData = req.body;
+
+  const URL = `${GHN_API_BASE_URL}/shipping-order/fee`;
+
+  try {
+    const response = await axios.post(URL, shippingData, {
+      headers: {
+        Token: TOKEN_SHIPMENT,
+        'Content-Type': 'application/json',
+      },
+    });
+    res.status(StatusCodes.OK).json(response.data);
   } catch (error: any) {
-    next(new Error(error.response?.data?.message || 'Error creating order'));
+    next(
+      new Error(
+        error.response?.data?.message || 'Error calculating shipping fee'
+      )
+    );
   }
 };
 
 // Gọi API theo dõi đơn hàng và xử lý request/response từ client
-export const trackOrder = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const trackOrder: RequestHandler = async (req, res, next) => {
   const { orderCode } = req.params;
-  const endpoint = `${GHN_API_BASE_URL}/shipping-order/detail`;
+  const URL = `${GHN_API_BASE_URL}/shipping-order/detail`;
 
   try {
     const response = await axios.post(
-      endpoint,
+      URL,
       { order_code: orderCode },
       {
         headers: {
-          Token: '0c2c6b3c-8797-11ef-8e53-0a00184fe694',
+          Token: TOKEN_SHIPMENT,
           'Content-Type': 'application/json',
         },
       }
@@ -95,3 +83,5 @@ export const trackOrder = async (
     next(new Error(error.response?.data?.message || 'Error tracking order'));
   }
 };
+
+export { createOrder, calShippingFee, trackOrder };
