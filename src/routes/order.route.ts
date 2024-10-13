@@ -9,10 +9,10 @@ import { Router } from 'express';
 
 const routeOrder = Router();
 
-routeOrder.get('/getAllOrders', GetAllOrders);
+routeOrder.get('/', GetAllOrders);
 routeOrder.get('/orderByOrderId/:id', GetOneOrder);
 routeOrder.get('/orderByUserId', GetOrderByUserId);
-routeOrder.post('/createOrder', CreateOrder);
+routeOrder.post('/', CreateOrder);
 routeOrder.patch('/updateOrder/:id', UpdateOrder);
 
 export default routeOrder;
