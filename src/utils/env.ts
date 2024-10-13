@@ -38,6 +38,8 @@ const {
   // GHN configs
   TOKEN_SHIPMENT,
   SHIPMENT_SHOP,
+  DISTRICT_ID,
+  WARD_CODE,
 } = process.env;
 export {
   PORT,
@@ -66,4 +68,6 @@ export {
   ZALO_PAY_ENDPOINT,
   TOKEN_SHIPMENT,
   SHIPMENT_SHOP,
+  DISTRICT_ID,
+  WARD_CODE,
 };

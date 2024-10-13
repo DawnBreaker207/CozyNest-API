@@ -8,7 +8,7 @@ import routeUser from './user.route';
 import routeOrder from './order.route';
 import routeCart from './cart.route';
 import routePayment from './payment.route';
-import ghnRoute from './ghn.route';
+import ghnRoute from './shipment.route';
 
 // import routeColor from './color.route';
 // import routeSize from './size.route';

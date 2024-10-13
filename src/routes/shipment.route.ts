@@ -2,7 +2,7 @@ import {
   calShippingFee,
   createOrder,
   trackOrder,
-} from '@/controllers/ghn.controller';
+} from '@/controllers/shipment.controller';
 import { Router } from 'express';
 
 const routeShipment = Router();
