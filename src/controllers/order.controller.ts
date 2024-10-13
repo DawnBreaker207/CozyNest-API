@@ -171,6 +171,7 @@ const GetOneOrder: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
 const GetOrderByUserId: RequestHandler = async (req, res, next) => {
   try {
     const {
@@ -302,6 +303,59 @@ const UpdateOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
+const CancelOrder: RequestHandler = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const ordered = await Order.findById(id);
+    // Cancel
+    if (ordered?.status === 'Canceled') {
+      return res.status(StatusCodes.ACCEPTED).json({
+        message: messagesSuccess.ORDER_SUCCESS_MESSAGE,
+      });
+    }
+    if (ordered?.status === 'Delivering') {
+      return res.status(StatusCodes.ACCEPTED).json({
+        message: messagesSuccess.ORDER_SUCCESS_MESSAGE,
+      });
+    }
+    if (ordered?.status === 'Return') {
+      return res.status(StatusCodes.ACCEPTED).json({
+        message: messagesSuccess.ORDER_SUCCESS_MESSAGE,
+      });
+    }
+    if (!ordered) {
+      return res.status(StatusCodes.ACCEPTED).json({
+        message: messagesSuccess.ORDER_SUCCESS_MESSAGE,
+      });
+    }
+    const order = await Order.findByIdAndUpdate(
+      id,
+      {
+        $set: { status: 'cancelled' },
+        $push: {
+          status: 'cancelled',
+        },
+      },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: messagesError.BAD_REQUEST,
+      });
+    }
+    // Check order was shipped. If shipped cancel order
+    // if (order.shipping_method === 'shipped') {
+    //   await cancelled_order(order.shipping_info.order_code);
+    // }
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: messagesSuccess.REMOVE_ORDER_SUCCESS, data: order });
+  } catch (error) {
+    next(error);
+  }
+};
 export {
   CreateOrder,
   GetAllOrders,
