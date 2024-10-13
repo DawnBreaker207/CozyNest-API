@@ -149,9 +149,12 @@ const GetAllOrders: RequestHandler = async (req, res, next) => {
  * @param next
  * @returns
  */
-const GetOrder: RequestHandler = async (req, res, next) => {
+const GetOneOrder: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
+    if (!id) {
+      return res.status(StatusCodes.NOT_FOUND).json;
+    }
     const order = await Order.findById(id).exec();
 
     if (!order) {
@@ -168,7 +171,53 @@ const GetOrder: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+const GetOrderByUserId: RequestHandler = async (req, res, next) => {
+  try {
+    const {
+      _page = 1,
+      _sort = 'created_at',
+      _order = 'desc',
+      _limit = 10,
+      status,
+      userId,
+    } = req.query;
 
+    const query: any = {};
+    if (status) {
+      query.status = status;
+    }
+    if (userId && mongoose.Types.ObjectId.isValid(userId as string)) {
+      query.userId = new mongoose.Types.ObjectId(userId as string);
+    }
+    const page = typeof _page === 'string' ? parseInt(_page, 10) : 1;
+    const limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 9999;
+    const sortField = typeof _sort === 'string' ? _sort : 'createAt';
+    const options = {
+      page: page,
+      limit: limit,
+      sort: {
+        [sortField]: _order === 'desc' ? -1 : 1,
+      },
+      select: ['-deleted', '-deleted_at'],
+    };
+    const { docs, ...paginate } = await Order.paginate(query, options);
+    if (!docs || docs.length === 0) {
+      return res.status(StatusCodes.NO_CONTENT).json({
+        message: messagesSuccess.NO_CONTENT,
+      });
+    }
+
+    res.status(StatusCodes.OK).json({
+      message: messagesSuccess.GET_ORDER_SUCCESS,
+      res: {
+        orders: docs,
+        paginate,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 /**
  *
  * @param req
@@ -253,4 +302,11 @@ const UpdateOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
-export { CreateOrder, GetAllOrders, GetOrder, RemoveOrder, UpdateOrder };
+export {
+  CreateOrder,
+  GetAllOrders,
+  GetOneOrder,
+  RemoveOrder,
+  UpdateOrder,
+  GetOrderByUserId,
+};
