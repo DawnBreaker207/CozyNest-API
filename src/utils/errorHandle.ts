@@ -31,6 +31,8 @@ export const errorHandle: ErrorRequestHandler = (err, req, res) => {
     error: {
       name: err || 'Error',
       message: err.message || messagesError.ERROR_SERVER,
+      // Throw stack error when throwing custom error
+      stack: err.stack,
     },
   });
 };
