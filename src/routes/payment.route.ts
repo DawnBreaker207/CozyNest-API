@@ -18,15 +18,15 @@ const routePayment = Router();
 // 1. Create zalo-pay
 routePayment.post('/create-zalopay', createZaloPay);
 // 2. callback
-routePayment.post('/zalopay-callback', zaloPayCallback);
+routePayment.get('/zalopay-callback', zaloPayCallback);
 // 3. Check transaction
-routePayment.post('/zalopay-ipn/:id', zaloPayStatus);
+routePayment.get('/zalopay-ipn/:id', zaloPayStatus);
 
 //* MoMo-pay
 // 1. Create momo
 routePayment.post('/create-momo', createMomo);
 // 2. callback
-routePayment.post('/momo-callback', momoCallback);
+routePayment.get('/momo-callback', momoCallback);
 // 3. Check transaction
 routePayment.get('/transaction-status', momoStatus);
 

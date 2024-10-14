@@ -16,6 +16,7 @@ import { sortObject } from '@/utils/payments';
 import axios from 'axios';
 import * as crypto from 'crypto';
 import { RequestHandler } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import moment from 'moment';
 import qs from 'qs';
 
@@ -40,10 +41,10 @@ const createVnPay: RequestHandler = async (req, res, next) => {
     let vnpUrl: string = VN_PAY_URL as string;
 
     let returnUrl: string = VN_PAY_RETURN_URL as string;
-    
+
     let orderId: string = moment(date).format('DDHHmmss');
 
-    let amount: number = req.body.amount || 1000;
+    let amount: number = req.body.amount || 100000;
 
     let bankCode: string = req.body.backCode || 'NCB';
 
@@ -83,7 +84,7 @@ const createVnPay: RequestHandler = async (req, res, next) => {
 
     vnpUrl += '?' + qs.stringify(vnp_Params, { encode: false });
 
-    res.redirect(vnpUrl);
+    res.status(StatusCodes.OK).json({ res: vnpUrl });
   } catch (error) {
     next(error);
   }
@@ -92,7 +93,7 @@ const createVnPay: RequestHandler = async (req, res, next) => {
 const vnPayCallback: RequestHandler = async (req, res, next) => {
   try {
     let vnp_Params = req.query as Record<string, string>;
-
+    
     let secureHash = vnp_Params['vnp_SecureHash'];
 
     delete vnp_Params['vnp_SecureHash'];
@@ -113,9 +114,15 @@ const vnPayCallback: RequestHandler = async (req, res, next) => {
     if (secureHash === signed) {
       //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
 
-      res.render('success', { code: vnp_Params['vnp_ResponseCode'] });
+      res.status(200).json({
+        mesage: 'success',
+        code: vnp_Params['vnp_ResponseCode'],
+      });
     } else {
-      res.render('success', { code: '97' });
+      return res.status(400).json({
+        code: '97',
+        message: 'Checksum failed',
+      });
     }
   } catch (error) {
     next(error);
