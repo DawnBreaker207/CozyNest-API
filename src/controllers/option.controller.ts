@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes';
 import { messagesSuccess, messagesError } from '@/constants/messages';
 import { OptionType } from '@/interfaces/Option';
 import { Types } from 'mongoose';
-import { optionSchema } from '@/validations/product.validation';
+import { optionSchema } from '@/validations/option.validation';
 
 /**
  * Lấy tất cả các option của sản phẩm

@@ -12,7 +12,7 @@ import { sortOptions } from "@/utils/sortOption";
 import { SkuType } from "@/interfaces/Sku";
 import { Types } from "mongoose";
 import { OptionType } from "@/interfaces/Option";
-import { variantSchema } from "@/validations/product.validation";
+import { variantSchema } from "@/validations/variant.validation";
 
 // Hàm để lấy tất cả biến thể cho một sản phẩm
 export const getAllVariant: RequestHandler = async (req, res, next) => {
@@ -53,6 +53,7 @@ export const getAllVariant: RequestHandler = async (req, res, next) => {
             ...item.toObject(),
             name: optionFind?.name,
             position: optionFind?.position ?? 0,
+            option_value_id: item.option_value_id
           };
         })
       );

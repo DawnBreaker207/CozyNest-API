@@ -1,10 +1,10 @@
 import { RequestHandler } from 'express';
 import { Product } from '@/models/Product';
 import { OptionValue } from '@/models/OptionValue';
-import { optionValuesSchema } from '@/validations/product.validation';
 import moment from 'moment';
 import { StatusCodes } from 'http-status-codes';
-import { messagesError } from '@/constants/messages';
+import { messagesError, messagesSuccess } from '@/constants/messages';
+import { optionValuesSchema } from '@/validations/optionValue.validation';
 
 
 export const getAllOptionValue: RequestHandler = async (req, res, next) => {
@@ -25,7 +25,7 @@ export const getAllOptionValue: RequestHandler = async (req, res, next) => {
 
     return res.json({
       status: StatusCodes.OK,
-      message: 'Thành công',
+      message: messagesSuccess.GET_OPTIONVALUE_SUCCESS,
       data: optionValues,
     });
   } catch (error) {
@@ -48,7 +48,7 @@ export const getOneOptionValue: RequestHandler = async (req, res, next) => {
 
     return res.json({
       status: StatusCodes.OK,
-      message: 'Thành công',
+      message: messagesSuccess.GET_OPTIONVALUE_SUCCESS,
       data: optionValue,
     });
   } catch (error) {
@@ -86,7 +86,7 @@ export const createOptionValue: RequestHandler = async (req, res, next) => {
 
     return res.status(StatusCodes.CREATED).json({
       status: StatusCodes.CREATED,
-      message: 'Thành công',
+      message: messagesSuccess.CREATE_OPTIONVALUE_SUCCESS,
       data: doc,
     });
   } catch (error) {
@@ -129,7 +129,7 @@ export const updateOptionValue: RequestHandler = async (req, res, next) => {
 
     return res.json({
       status: StatusCodes.OK,
-      message: 'Thành công',
+      message: messagesSuccess.UPDATE_OPTIONVALUE_SUCCESS,
       data: doc,
     });
   } catch (error) {
@@ -152,7 +152,7 @@ export const deleteOptionValue: RequestHandler = async (req, res, next) => {
 
     return res.json({
       status: StatusCodes.OK,
-      message: 'Thành công',
+      message: messagesSuccess.DELETE_OPTIONVALUE_SUCCESS,
       data: doc,
     });
   } catch (error) {

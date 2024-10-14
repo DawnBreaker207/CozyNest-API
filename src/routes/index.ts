@@ -8,6 +8,9 @@ import routeUser from './user.route';
 import routeOrder from './order.route';
 import routeCart from './cart.route';
 import routePayment from './payment.route';
+import routeOption from './option.router';
+import routeOptionValue from './optionValue.route';
+import routeVariant from './variant.router';
 
 // import routeColor from './color.route';
 // import routeSize from './size.route';
@@ -22,6 +25,10 @@ router.use('/users', routeUser);
 router.use('/orders', routeOrder);
 router.use('/cart', routeCart);
 router.use('/payment', routePayment);
+router.use('/options', routeOption);
+router.use('/optionsValue', routeOptionValue);
+router.use('/variants', routeVariant);
+
 
 
 // router.use('/size', routeSize);
