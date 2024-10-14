@@ -60,7 +60,8 @@ export const messagesSuccess = Object.freeze({
   CREATED: 'Created',
   //!* 202: Accepted
   ACCEPTED: 'Accepted',
-
+  //!* 204: No Content
+  NO_CONTENT: 'No content',
   //!* 3xx : Redirection
   //!* 304: Not modified
   NOT_MODIFIED: 'Not modified',

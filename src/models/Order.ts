@@ -53,9 +53,9 @@ const orderSchema = new mongoose.Schema<OrderType>(
     email: { type: String, required: true },
     note: { type: String, default: null },
     addressShipping: { type: String, required: true },
-    orderTime: { type: Date },
+    orderTime: { type: Date, default: Date.now },
     receivedDate: {
-      type: String,
+      type: Date,
       default: null,
     },
     paid: {
