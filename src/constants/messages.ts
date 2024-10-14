@@ -127,6 +127,12 @@ export const messagesSuccess = Object.freeze({
   ORDER_UPDATE_MESSAGE: 'Order message updated successfully!',
   ORDER_SUCCESS_MESSAGE: 'Order message success',
 
+  // Option 
+  GET_OPTION_SUCCESS: 'Get option successfully!',
+  CREATE_OPTION_SUCCESS: 'Create option successfully!',
+  UPDATE_OPTION_SUCCESS: 'Update option successfully!',
+  DELETE_OPTION_SUCCESS: 'Delete option successfully!',
+
   //Token
   CLEAR_TOKEN_SUCCESS: 'Clear token successfully!',
   CHANGE_PASSWORD_SUCCESS: 'Change password successfully!',
