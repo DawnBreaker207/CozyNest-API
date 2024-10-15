@@ -7,12 +7,10 @@ import {
   Hide_Product,
   Update_Product,
 } from '@/controllers/product.controller';
-import { checkPermission } from '@/middlewares/checkPermission';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { productSchema } from '@/validations/product.validation';
 import { Router } from 'express';
 // import routeVariant from './variant.route';
-import { checkAuth } from '../middlewares/checkAuth';
 
 const routeProduct = Router();
 

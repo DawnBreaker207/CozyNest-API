@@ -29,8 +29,6 @@ import {
 // });
 const productSchema = new mongoose.Schema<ProductType>(
   {
-    // Information product
-
     // Original id for original products
     originId: { type: mongoose.Types.ObjectId, default: null },
     name: { type: String, required: true },
@@ -52,19 +50,18 @@ const productSchema = new mongoose.Schema<ProductType>(
     brand: { type: String },
     description: { type: String, required: true },
     price: { type: Number, required: true },
-    // Sale and Sold
     discount: { type: Number, default: 0 },
     sold: { type: Number, default: 0 },
-
-    isSale: {
-      type: Boolean,
-      default: false,
-    },
-    // Status products
+    isSale: { type: Boolean, default: false },
     isHidden: { type: Boolean, default: false },
+
+    // Thêm liên kết đến SKU và biến thể
+    skus: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sku' }],
+    variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }],
   },
   { timestamps: true, versionKey: false }
 );
+;
 
 // export const Size = mongoose.model<SizeType>('Size', sizeSchema);
 // export const Color = mongoose.model<ColorType>('Color', colorSchema);

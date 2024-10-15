@@ -1,5 +1,7 @@
 import { Types } from 'mongoose';
 import { Category_Id } from './Category';
+import { Sku_Id } from './Sku';
+import { Variant_Id } from '@/models/Variant';
 
 // export interface SizeType {
 //   name: string;
@@ -35,6 +37,8 @@ export interface ProductType {
   sold: number;
   isSale: boolean;
   isHidden: boolean;
-  // variants: VariantType[];
+  skus: Sku_Id[];           
+  variants: Variant_Id[];  
 }
+
 export type Product_Id = Pick<ProductType, '_id'>;
