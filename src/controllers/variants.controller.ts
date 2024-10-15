@@ -1,6 +1,6 @@
 // Type
 import { SkuType } from '@/interfaces/Sku';
-import { OptionType, VariantType } from '@/interfaces/Variant';
+import { OptionType } from '@/interfaces/Variant';
 import { RequestHandler } from 'express';
 import { Types } from 'mongoose';
 // Model
@@ -8,18 +8,13 @@ import { Product } from '@/models/Product';
 import { Sku } from '@/models/Sku';
 import { Option, OptionalValue, Variant } from '@/models/Variant';
 // Message & Status Code
-import { StatusCodes } from 'http-status-codes';
 import { messagesError, messagesSuccess } from '@/constants/messages';
+import { StatusCodes } from 'http-status-codes';
 // Helper functions, library & utils
+import { AppError } from '@/utils/errorHandle';
 import { sortOptions } from '@/utils/sortOption';
 import moment from 'moment';
-import { AppError } from '@/utils/errorHandle';
 // Validator schema
-import {
-  optionalValuesSchema,
-  optionSchema,
-  variantSchema,
-} from '@/validations/variant.validation';
 import createError from 'http-errors';
 
 //! Option controllers
@@ -183,7 +178,7 @@ const updateOption: RequestHandler = async (req, res, next) => {
     return res.status(StatusCodes.OK).json({
       status: StatusCodes.OK,
       message: messagesSuccess.UPDATE_OPTION_SUCCESS,
-      data: doc,
+      res: doc,
     });
   } catch (error) {
     next(error);
@@ -212,7 +207,7 @@ const deleteOption: RequestHandler = async (req, res, next) => {
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.DELETE_OPTION_SUCCESS,
-      data: option,
+      res: option,
     });
   } catch (error) {
     next(error);
@@ -238,7 +233,7 @@ const getAllOptionalValue: RequestHandler = async (req, res, next) => {
 
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_OPTION_VALUE_SUCCESS,
-      data: optionalValues,
+      res: optionalValues,
     });
   } catch (error) {
     next(error);
@@ -260,7 +255,7 @@ const getOneOptionalValue: RequestHandler = async (req, res, next) => {
 
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_OPTION_VALUE_SUCCESS,
-      data: optionValue,
+      res: optionValue,
     });
   } catch (error) {
     next(error);
@@ -526,15 +521,15 @@ const saveVariant: RequestHandler = async (req, res, next) => {
       });
     }
     const variants = generateVariant(docs);
-    const arraySkus = Array(variants.length).fill({
+    const arraySKUs = Array(variants.length).fill({
       ...product.toObject(),
       product_id,
       stock: 0,
       assets: [],
     });
 
-    const skus = await Promise.all(
-      arraySkus.map((item, index) =>
+    const SKUs = await Promise.all(
+      arraySKUs.map((item, index) =>
         Sku.create({
           ...item,
           image: {},
@@ -543,15 +538,15 @@ const saveVariant: RequestHandler = async (req, res, next) => {
       )
     );
 
-    const variantOptions = (variants: any[], skus: any[]) => {
+    const variantOptions = (variants: any[], SKUs: any[]) => {
       let result: any[] = [];
-      for (let index in skus) {
+      for (let index in SKUs) {
         for (let optionValue of variants[index]) {
           result.push({
             product_id,
             name: optionValue.name,
             label: optionValue.label,
-            sku_id: skus[index]._id,
+            sku_id: SKUs[index]._id,
             option_id: optionValue.option_id,
             option_value_id: optionValue.option_value_id,
           });
@@ -560,12 +555,14 @@ const saveVariant: RequestHandler = async (req, res, next) => {
       return result;
     };
 
-    const data = variantOptions(variants, skus);
-    const data1 = await Promise.all(data.map((item) => Variant.create(item)));
+    const data = variantOptions(variants, SKUs);
+    const createVariantData = await Promise.all(
+      data.map((item) => Variant.create(item))
+    );
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATED,
-      res: data1,
+      res: createVariantData,
     });
   } catch (error) {
     next(error);
@@ -729,22 +726,22 @@ const updateVariant: RequestHandler = async (req, res, next) => {
   }
 };
 export {
+  createOption,
+  createOptionalValue,
+  deleteOption,
+  deleteOptionalValue,
+  deleteVariant,
   // Option Properties
   getAllOption,
-  getOneOption,
-  createOption,
-  updateOption,
-  deleteOption,
   // Optional Value
   getAllOptionalValue,
-  getOneOptionalValue,
-  createOptionalValue,
-  updateOptionalValue,
-  deleteOptionalValue,
   // Variant
   getAllVariant,
+  getOneOption,
+  getOneOptionalValue,
   getOneVariant,
   saveVariant,
+  updateOption,
+  updateOptionalValue,
   updateVariant,
-  deleteVariant,
 };

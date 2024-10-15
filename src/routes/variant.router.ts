@@ -13,7 +13,7 @@ import routeOptionalValue from './optionalValue.route';
 
 const routeVariant = Router();
 
-// Option Route
+// Option Properties Route
 routeVariant.use('/options', routeOption);
 
 // Optional Value Route
