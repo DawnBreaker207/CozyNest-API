@@ -97,11 +97,7 @@ export const messagesSuccess = Object.freeze({
   CREATE_SIZE_SUCCESS: 'Create size successfully!',
   UPDATE_SIZE_SUCCESS: 'Update size successfully!',
   DELETE_SIZE_SUCCESS: 'Delete size successfully!',
-  // Variants
-  GET_VARIANT_SUCCESS: 'Get variant successfully!',
-  CREATE_VARIANT_SUCCESS: 'Create variant successfully!',
-  UPDATE_VARIANT_SUCCESS: 'Update variant successfully!',
-  DELETE_VARIANT_SUCCESS: 'Delete variant successfully!',
+
   // Images
   GET_IMAGES_SUCCESS: 'Get images successfully!',
   CREATE_IMAGES_SUCCESS: 'Create images successfully!',
@@ -127,6 +123,24 @@ export const messagesSuccess = Object.freeze({
   ORDER_CREATE_MESSAGE: 'Order message created successfully!',
   ORDER_UPDATE_MESSAGE: 'Order message updated successfully!',
   ORDER_SUCCESS_MESSAGE: 'Order message success',
+
+  // Option properties products
+  GET_OPTION_SUCCESS: 'Get option successfully!',
+  CREATE_OPTION_SUCCESS: 'Create option successfully!',
+  UPDATE_OPTION_SUCCESS: 'Update option successfully!',
+  DELETE_OPTION_SUCCESS: 'Delete option successfully!',
+
+  // Option properties value products
+  GET_OPTION_VALUE_SUCCESS: 'Get option value successfully!',
+  CREATE_OPTION_VALUE_SUCCESS: 'Create option value successfully!',
+  UPDATE_OPTION_VALUE_SUCCESS: 'Update option value successfully!',
+  DELETE_OPTION_VALUE_SUCCESS: 'Delete option value successfully!',
+
+  // Variants products
+  GET_VARIANT_SUCCESS: 'Get variant successfully!',
+  CREATE_VARIANT_SUCCESS: 'Create variant successfully!',
+  UPDATE_VARIANT_SUCCESS: 'Update variant successfully!',
+  DELETE_VARIANT_SUCCESS: 'Delete variant successfully!',
 
   //Token
   CLEAR_TOKEN_SUCCESS: 'Clear token successfully!',

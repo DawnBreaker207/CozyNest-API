@@ -1,5 +1,5 @@
-import mongoose, { PaginateModel } from 'mongoose';
 import { PermissionType, RoleType, UserType } from '@/interfaces/User';
+import mongoose, { PaginateModel } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 const permissionSchema = new mongoose.Schema<PermissionType>({
