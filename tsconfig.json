@@ -109,7 +109,7 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "types": ["jest", "node"]
   },
-  "include": ["./src/**/*", "test/**/*"],
+  "include": ["./src/**/*"],
   "files": ["./src/types/express/index.d.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

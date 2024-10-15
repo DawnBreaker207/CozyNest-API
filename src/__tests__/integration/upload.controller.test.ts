@@ -1,13 +1,13 @@
-import express from 'express';
-import multer from 'multer';
-import request from 'supertest';
+import { handleDelete, handleUpload } from '@/configs/cloudinaryConfig';
+import { messagesError, messagesSuccess } from '@/constants/messages';
 import {
   deleteImage,
   uploadImages,
   uploadMultiple,
-} from '../../src/controllers/upload.controller';
-import { handleDelete, handleUpload } from '../../src/configs/cloudinaryConfig';
-import { messagesError, messagesSuccess } from '../../src/constants/messages';
+} from '@/controllers/upload.controller';
+import express from 'express';
+import multer from 'multer';
+import request from 'supertest';
 
 const app = express();
 const upload = multer();
@@ -17,7 +17,7 @@ app.post('/upload/multiple', upload.array('upload'), uploadMultiple);
 app.delete('/upload/:publicId', deleteImage);
 
 // Mock Cloudinary functions
-jest.mock('../../src/configs/cloudinaryConfig.ts', () => ({
+jest.mock('@/configs/cloudinaryConfig.ts', () => ({
   handleUpload: jest.fn().mockResolvedValue({
     url: 'http://example.com/image.jpg',
     public_id: 'sample_id',
