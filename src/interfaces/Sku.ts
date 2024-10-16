@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 export interface SkuType {
   _id: Types.ObjectId;
   product_id: Types.ObjectId;
-  sku: string;
+  SKU: string;
   name: string;
   slug: string;
   shared_url: string;

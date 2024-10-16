@@ -16,6 +16,7 @@ import { sortOptions } from '@/utils/sortOption';
 import moment from 'moment';
 // Validator schema
 import createError from 'http-errors';
+import { slugify } from '@/utils/formatters';
 
 //! Option controllers
 //Lấy tất cả các option của sản phẩm
@@ -458,7 +459,7 @@ const saveVariant: RequestHandler = async (req, res, next) => {
     const { product_id } = req.params;
 
     const product = await Product.findById(product_id).select(
-      '-_id name SKU slug shared_url price price_before_discount price_discount_percent'
+      '-_id name SKU slug price price_before_discount price_discount_percent'
     );
 
     // Xóa tất cả SKUs và biến thể hiện có
@@ -529,13 +530,15 @@ const saveVariant: RequestHandler = async (req, res, next) => {
     });
 
     const SKUs = await Promise.all(
-      arraySKUs.map((item, index) =>
-        Sku.create({
+      arraySKUs.map(async (item, index) => {
+        const slug = slugify(item.name || `sku-${index + 1}`); // Tạo slug từ tên sản phẩm hoặc sử dụng giá trị mặc định
+        return Sku.create({
           ...item,
           image: {},
           SKU: `${item.SKU}-${index + 1}`,
-        })
-      )
+          slug, // Thêm slug vào tài liệu
+        });
+      })
     );
 
     const variantOptions = (variants: any[], SKUs: any[]) => {
@@ -577,8 +580,8 @@ const deleteVariant: RequestHandler = async (req, res, next) => {
 
     if (!sku) {
       throw new AppError(StatusCodes.NOT_ACCEPTABLE, messagesError.NOT_FOUND);
-      throw createError.NotFound('Biến thể sản phẩm không tồn tại');
     }
+
 
     const variants = await Variant.find({ sku_id });
 

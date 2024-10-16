@@ -8,16 +8,8 @@ import {
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { variantSchema } from '@/validations/variant.validation';
 import { Router } from 'express';
-import routeOption from './option.router';
-import routeOptionalValue from './optionalValue.route';
 
 const routeVariant = Router();
-
-// Option Properties Route
-routeVariant.use('/options', routeOption);
-
-// Optional Value Route
-routeVariant.use('/optionalValue', routeOptionalValue);
 
 // Variant Route
 routeVariant.get('/:product_id/:sku_id', getOneVariant);
