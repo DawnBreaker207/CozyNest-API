@@ -1,9 +1,8 @@
 extends baseEmail
 
 block content
-  div(style ="margin-bottom: 10px;")
-    img(src="https://res.cloudinary.com/devr9hihw/image/upload/v1727368649/azvhqocb9cqex72p7rgb.png" alt="Logo")
-    p Mã xác nhận của bạn là: 
-      strong(style="color:#f12; background-color:#bedaef; font-size:20px; border-radius:5px; padding:10px;")
-        | #{content}
-      br Mã này sẽ hết hiệu lực sau 5 phút. Vui lòng không để lộ mã xác nhận để bảo vệ tài khoản của bạn!
+  .message-container(style="padding: 20px; text-align: center;")
+    p(style="font-size: 18px;") Mã xác nhận của bạn là:
+    .confirmation-code(style="background-color: #bedaef; color: #f12; padding: 15px; border-radius: 5px; font-size: 24px; font-weight: bold; display: inline-block; margin: 20px 0;")
+      | 123456
+    p(style="font-size: 16px;") Mã này sẽ hết hiệu lực sau 5 phút. Vui lòng không chia sẻ mã này với ai để bảo vệ tài khoản của bạn!
