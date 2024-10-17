@@ -23,7 +23,6 @@ const sendVerifyMail = (subject: string, content: string): string => {
   const templatePath = path.resolve(__dirname, '../views/verifyEmail.pug');
 
   const html = pug.renderFile(templatePath, { subject, content });
-  console.log();
 
   return html;
 };
