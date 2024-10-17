@@ -56,7 +56,7 @@ const productSchema = new mongoose.Schema<ProductType>(
     isHidden: { type: Boolean, default: false },
 
     // Thêm liên kết đến SKU và biến thể
-    skus: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sku' }],
+    SKU: { type: String},
     variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }],
   },
   { timestamps: true, versionKey: false }

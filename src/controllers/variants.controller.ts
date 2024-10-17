@@ -531,12 +531,14 @@ const saveVariant: RequestHandler = async (req, res, next) => {
 
     const SKUs = await Promise.all(
       arraySKUs.map(async (item, index) => {
-        const slug = slugify(item.name || `sku-${index + 1}`); // Tạo slug từ tên sản phẩm hoặc sử dụng giá trị mặc định
+        const variantValues = variants[index].map(v => v.label).join('-');
+        // Nếu variantValues là chuỗi trống hoặc không hợp lệ, slug sẽ được đặt thành 'default-slug'
+        const slug = slugify(`${product.name}-${variantValues}`) || 'default-slug';
         return Sku.create({
           ...item,
           image: {},
           SKU: `${item.SKU}-${index + 1}`,
-          slug, // Thêm slug vào tài liệu
+           slug,
         });
       })
     );

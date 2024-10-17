@@ -37,7 +37,7 @@ export interface ProductType {
   sold: number;
   isSale: boolean;
   isHidden: boolean;
-  skus: Sku_Id[];           
+  SKU: string;           
   variants: Variant_Id[];  
 }
 
