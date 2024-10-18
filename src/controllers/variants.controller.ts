@@ -108,6 +108,7 @@ const getOneOption: RequestHandler = async (req, res, next) => {
 };
 
 // Tạo một option mới
+//TODO: Update check duplicate
 const createOption: RequestHandler = async (req, res, next) => {
   try {
     const { product_id } = req.params;
@@ -263,6 +264,7 @@ const getOneOptionalValue: RequestHandler = async (req, res, next) => {
   }
 };
 
+//TODO: Check the ref option label exist from optional models
 const createOptionalValue: RequestHandler = async (req, res, next) => {
   try {
     const { product_id, option_id } = req.params;
@@ -531,14 +533,16 @@ const saveVariant: RequestHandler = async (req, res, next) => {
 
     const SKUs = await Promise.all(
       arraySKUs.map(async (item, index) => {
-        const variantValues = variants[index].map(v => v.label).join('-');
+        const variantValues = variants[index].map((v) => v.label).join('-');
         // Nếu variantValues là chuỗi trống hoặc không hợp lệ, slug sẽ được đặt thành 'default-slug'
-        const slug = slugify(`${product.name}-${variantValues}`) || 'default-slug';
+        const slug =
+          slugify(`${product.name}-${variantValues}`) || 'default-slug';
+
         return Sku.create({
           ...item,
           image: {},
           SKU: `${item.SKU}-${index + 1}`,
-           slug,
+          slug,
         });
       })
     );
@@ -546,6 +550,8 @@ const saveVariant: RequestHandler = async (req, res, next) => {
     const variantOptions = (variants: any[], SKUs: any[]) => {
       let result: any[] = [];
       for (let index in SKUs) {
+        console.log(SKUs[index]._id);
+
         for (let optionValue of variants[index]) {
           result.push({
             product_id,
@@ -583,7 +589,6 @@ const deleteVariant: RequestHandler = async (req, res, next) => {
     if (!sku) {
       throw new AppError(StatusCodes.NOT_ACCEPTABLE, messagesError.NOT_FOUND);
     }
-
 
     const variants = await Variant.find({ sku_id });
 

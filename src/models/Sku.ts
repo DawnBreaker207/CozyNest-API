@@ -1,12 +1,12 @@
-import mongoose, { PaginateModel } from "mongoose";
-import mongoosePaginate from "mongoose-paginate-v2";
-import { SkuType } from "@/interfaces/Sku";
+import mongoose, { PaginateModel } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
+import { SkuType } from '@/interfaces/Sku';
 
 const skuSchema = new mongoose.Schema<SkuType>(
   {
     product_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: 'Product',
       required: true,
     },
     SKU: { type: String },
@@ -14,7 +14,7 @@ const skuSchema = new mongoose.Schema<SkuType>(
     slug: {
       type: String,
       unique: true,
-      slug: "name",
+      slug: 'name',
     },
     price: { type: Number, default: 0 },
     price_before_discount: { type: Number, default: 0 },
@@ -31,12 +31,12 @@ const skuSchema = new mongoose.Schema<SkuType>(
       },
     ],
   },
-  { timestamps: true,versionKey: false }
+  { timestamps: true, versionKey: false }
 );
 
 skuSchema.plugin(mongoosePaginate);
 
 export const Sku = mongoose.model<SkuType, PaginateModel<SkuType>>(
-  "Sku",
+  'Sku',
   skuSchema
 );

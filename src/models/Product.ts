@@ -56,13 +56,11 @@ const productSchema = new mongoose.Schema<ProductType>(
     isHidden: { type: Boolean, default: false },
 
     // Thêm liên kết đến SKU và biến thể
-    SKU: { type: String},
+    SKU: { type: String },
     variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }],
   },
   { timestamps: true, versionKey: false }
 );
-;
-
 // export const Size = mongoose.model<SizeType>('Size', sizeSchema);
 // export const Color = mongoose.model<ColorType>('Color', colorSchema);
 productSchema.plugin(mongoosePaginate);

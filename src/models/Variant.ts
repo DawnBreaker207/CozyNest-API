@@ -15,10 +15,10 @@ const optionSchema = new mongoose.Schema<OptionType>(
       required: true,
     },
     label: { type: String },
-    name: { type: String },
+    name: { type: String, unique: true },
     position: { type: Number },
   },
-  { timestamps: true,versionKey: false }
+  { timestamps: true, versionKey: false }
 );
 
 // OptionalValue Schema
@@ -37,29 +37,29 @@ const optionalValueSchema = new mongoose.Schema<OptionalValueType>(
     label: { type: String },
     value: { type: String },
   },
-  { timestamps: true,versionKey: false }
+  { timestamps: true, versionKey: false }
 );
 
 const variantSchema = new mongoose.Schema<VariantType>(
   {
     sku_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Sku'
+      ref: 'Sku',
     },
     option_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Option'
+      ref: 'Option',
     },
     option_value_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'OptionalValue'
+      ref: 'OptionalValue',
     },
     product_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product'
+      ref: 'Product',
     },
   },
-  { timestamps: true,versionKey: false }
+  { timestamps: true, versionKey: false }
 );
 
 // Paginate
