@@ -9,13 +9,6 @@ import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 // TODO CRUD user, forget password ,verify token , change password
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const getAllUser: RequestHandler = async (req, res, next) => {
   try {
     const {
@@ -60,12 +53,7 @@ const getAllUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- */
+
 const getOneUser: RequestHandler = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
@@ -82,13 +70,7 @@ const getOneUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
+
 const updateUser: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -119,14 +101,7 @@ const updateUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Check mail & Verify token from email
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
+
 const verifyEmailToken: RequestHandler = async (req, res, next) => {
   try {
     const { verify } = req.body;
@@ -153,13 +128,7 @@ const verifyEmailToken: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
+
 const generateVerifyToken: RequestHandler = async (req, res, next) => {
   const emailExist = await User.findOne({ email: req.body.email });
   if (!emailExist) {
@@ -196,13 +165,7 @@ const generateVerifyToken: RequestHandler = async (req, res, next) => {
   });
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
+
 const forgotPass: RequestHandler = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -250,13 +213,7 @@ const forgotPass: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
+
 const changePassword: RequestHandler = async (req, res, next) => {
   try {
     const { email, currentPassword, password } = req.body;
@@ -292,8 +249,9 @@ export {
   changePassword,
   forgotPass,
   generateVerifyToken,
-  getOneUser,
   getAllUser,
+  getOneUser,
   updateUser,
-  verifyEmailToken,
+  verifyEmailToken
 };
+

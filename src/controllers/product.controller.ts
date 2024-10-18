@@ -1,17 +1,12 @@
 import { messagesError, messagesSuccess } from '@/constants/messages';
 import Category from '@/models/Category';
 import { Product } from '@/models/Product';
+import { AppError } from '@/utils/errorHandle';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 //* Products
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
+
 const Get_All_Product: RequestHandler = async (req, res, next) => {
   /**
    * @param {number} req.query._page
@@ -70,20 +65,26 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
   try {
     const products = await Product.paginate(query, options);
 
+    // Check if any product exist
     if (!products || products.docs.length === 0) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.BAD_REQUEST });
     }
+    // Find data with the config
     const data = await Product.find();
+
     let maxPrice = 0;
     let minPrice = Number.MAX_SAFE_INTEGER;
 
+    // Check data with the min and max price with the discount
     for (const item of data) {
       const price = item.price - (item.price * item.discount) / 100;
       maxPrice = Math.max(maxPrice, price);
       minPrice = Math.min(minPrice, price);
     }
+
+    // If not found of error return error
     if (!data) {
       return res
         .status(StatusCodes.BAD_REQUEST)
@@ -105,24 +106,21 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Get_One_Product: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id
    */
   try {
     const data = await Product.findById(req.params.id).populate('categoryId');
+
+    // If data not exist
     if (!data) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.BAD_REQUEST });
     }
+
+    // Populate to category
     await data.populate('categoryId.productId');
 
     res.status(StatusCodes.CREATED).json({
@@ -134,19 +132,22 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Create_Product: RequestHandler = async (req, res, next) => {
   /**
    * @param {ProductType} req.body
    */
   try {
+    // Check if SKU exist
+    const checkSKU = await Product.findOne({ SKU: req.body.SKU });
+    if (checkSKU) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: messagesError.BAD_REQUEST,
+      });
+    }
+
     const product = await Product.create(req.body);
+
+    // Update product list in category
     const updateCategory = await Category.findByIdAndUpdate(
       product.categoryId,
       {
@@ -154,8 +155,8 @@ const Create_Product: RequestHandler = async (req, res, next) => {
       },
       { new: true }
     );
-    console.log(updateCategory);
 
+    // If not exist return error
     if (!product || !updateCategory) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
@@ -170,33 +171,36 @@ const Create_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Update_Product: RequestHandler = async (req, res, next) => {
   try {
     /**
      * @param {string} req.params.id
      */
+    // Check product id exist
     const currentData = await Product.findById(req.params.id);
+    if (!currentData) {
+      throw new AppError(StatusCodes.NOT_FOUND, messagesError.NOT_FOUND);
+    }
+    // Find product id and update new data
     const data = await Product.findByIdAndUpdate(`${req.params.id}`, req.body, {
       new: true,
     });
+
+    // Return error if not find
     if (!data) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.BAD_REQUEST });
     }
+
+    // Get current product data in category
     await Category.findByIdAndUpdate(currentData?.categoryId, {
       $pull: {
         products: req.params.id,
       },
     });
 
+    // Update new product data in category
     await Category.findByIdAndUpdate(data.categoryId, {
       $push: { products: req.params.id },
     });
@@ -210,18 +214,12 @@ const Update_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Hide_Product: RequestHandler = async (req, res, next) => {
   try {
     /**
      * @param {string} req.params.id
      */
+    // Find product exist and hidden
     const data = await Product.findByIdAndUpdate(
       `${req.params.id}`,
       {
@@ -244,24 +242,19 @@ const Hide_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Delete_Product: RequestHandler = async (req, res, next) => {
   try {
     /**
      * @param {string} req.params.id
      */
+
     const data = await Product.findByIdAndDelete(req.params.id);
     if (!data) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
+
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
     });
@@ -270,13 +263,6 @@ const Delete_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const getRelatedProducts: RequestHandler = async (req, res, next) => {
   try {
     /**
@@ -285,11 +271,14 @@ const getRelatedProducts: RequestHandler = async (req, res, next) => {
      */
     const { cate_id, product_id } = req.params;
 
+    // Check category id and product id exist
     if (!cate_id || !product_id) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
+
+    // Get related product by category id
     const relatedProducts = await Product.find({
       categoryId: cate_id,
       _id: { $ne: product_id }, //Not include product is watching
@@ -297,21 +286,24 @@ const getRelatedProducts: RequestHandler = async (req, res, next) => {
       .limit(10)
       .lean();
 
+    // If related product length = 0 return error
     if (relatedProducts.length === 0) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
-    // Random product
+    // Sort product to random
     const shuffledProducts = relatedProducts.sort(() => 0.5 - Math.random());
 
     // Choose first 10 products
     const selectedProducts = shuffledProducts.slice(0, 10);
 
+    // Populate product id to origin id
     const populatedProducts = await Product.populate(selectedProducts, [
       { path: 'originId' },
     ]);
 
+    // If populate not exist return error
     if (!populatedProducts) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,

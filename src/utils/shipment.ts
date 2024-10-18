@@ -23,6 +23,11 @@ interface AddressLocation {
   district: District;
 }
 
+/**
+ *
+ * @param location
+ * @returns
+ */
 const getAddressLocation = async (
   location: string
 ): Promise<AddressLocation | undefined> => {
@@ -95,6 +100,11 @@ const getAddressLocation = async (
   }
 };
 
+/**
+ *
+ * @param order_code
+ * @returns
+ */
 const getOrderInfo = async (order_code: string) => {
   try {
     const order_info = await axios.post(
@@ -108,6 +118,11 @@ const getOrderInfo = async (order_code: string) => {
   } catch (error) {}
 };
 
+/**
+ *
+ * @param order_code
+ * @returns
+ */
 const cancelledOrder = async (order_code: string) => {
   try {
     const order_info = await axios.post(
@@ -126,6 +141,11 @@ const cancelledOrder = async (order_code: string) => {
   }
 };
 
+/**
+ *
+ * @param info
+ * @returns
+ */
 const updateInfo = async (info: string[]) => {
   try {
     const order_info = await axios.post(
@@ -144,6 +164,11 @@ const updateInfo = async (info: string[]) => {
   }
 };
 
+/**
+ *
+ * @param info
+ * @returns
+ */
 const calculateTime = async (info: string[]) => {
   try {
     const expected_time = await axios.post(
@@ -163,6 +188,11 @@ const calculateTime = async (info: string[]) => {
   }
 };
 
+/**
+ *
+ * @param location
+ * @returns
+ */
 const calculateFee = async (location: string[]) => {
   try {
     const calculate = await axios.post(
@@ -181,6 +211,11 @@ const calculateFee = async (location: string[]) => {
   }
 };
 
+/**
+ *
+ * @param order_code
+ * @returns
+ */
 const getTokenPrintBill = async (order_code: string) => {
   try {
     const print_bill = await axios.post(

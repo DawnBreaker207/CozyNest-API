@@ -8,13 +8,6 @@ import 'dotenv/config';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Register: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.email Email user input
@@ -24,11 +17,13 @@ const Register: RequestHandler = async (req, res, next) => {
     const { email, password } = req.body;
     const checkEmail = await User.findOne({ email });
 
+    // Check if email exist in database
     if (checkEmail) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.EMAIL_EXIST });
     }
+
     const hashPass = await hashPassword(password);
 
     const newUser = await User.create({
@@ -43,12 +38,14 @@ const Register: RequestHandler = async (req, res, next) => {
       });
     }
 
+    // Create access token
     const accessToken = createToken(
       { _id: newUser.id },
       SECRET_ACCESS_TOKEN as string,
       '5m'
     );
 
+    // Create refresh token
     const refreshToken = createToken(
       { _id: newUser.id },
       SECRET_REFRESH_TOKEN as string,
@@ -80,13 +77,6 @@ const Register: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Login: RequestHandler = async (req, res, next) => {
   try {
     /**
@@ -96,35 +86,36 @@ const Login: RequestHandler = async (req, res, next) => {
     const { email, password } = req.body;
 
     const userExist = await User.findOne({ email });
+
+    //Check user exist in database
     if (!userExist) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.EMAIL_NOT_FOUND });
     }
+
+    // If user status = false, return forbidden
     if (!userExist.status) {
       return res.status(StatusCodes.FORBIDDEN).json({
         message: messagesError.FORBIDDEN,
       });
     }
 
+    // Check password valid
     if (!(await comparePassword(password, userExist.password as string))) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.INVALID_PASSWORD });
     }
 
-    if (!userExist) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
-
+    // Create access token
     const accessToken = createToken(
       { _id: userExist.id },
       SECRET_ACCESS_TOKEN as string,
       '5m'
     );
 
+    // Create refresh token
     const refreshToken = createToken(
       { _id: userExist.id },
       SECRET_REFRESH_TOKEN as string,
@@ -156,40 +147,42 @@ const Login: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- */
 const checkRefreshToken: RequestHandler = (req, res, next) => {
   try {
     /**
      * @param {string} req.cookies.refreshToken Refresh token take from cookies
      */
     const refreshToken = req.cookies?.refreshToken;
+    // If refresh token ot exist, return empty access token
     if (!refreshToken) {
-      res.status(StatusCodes.CREATED).json({
+      return res.status(StatusCodes.CREATED).json({
         accessToken: '',
         res: {},
       });
     }
+
+    // If refresh token exist, verify it
     verifyToken(
       refreshToken,
       SECRET_REFRESH_TOKEN as string,
       async (error: any, decode: any) => {
+        // If it error, return invalid token
         if (error) {
           return res.status(StatusCodes.BAD_REQUEST).json({
             message: error || 'Invalid Token',
           });
         } else {
+          // If exist, find user was decode in token
           const user = await User.findById(decode._id);
+
+          // If user not exist, return error
           if (!user) {
             return res.status(StatusCodes.BAD_REQUEST).json({
               message: messagesError.BAD_REQUEST,
             });
           }
 
+          // If exist create new access token and refresh token
           const accessToken = createToken(
             { _id: user.id },
             SECRET_ACCESS_TOKEN as string,
@@ -217,14 +210,9 @@ const checkRefreshToken: RequestHandler = (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- */
 const clearToken: RequestHandler = async (req, res, next) => {
   try {
+    // Clear token in browser
     res.clearCookie('refreshToken');
     res.clearCookie('accessToken');
 

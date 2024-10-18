@@ -5,32 +5,6 @@ import { verifyToken } from '@/utils/jwt';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-// const checkPermission = (roles: string[]) => {
-//   return async (req: Request, res: Response, next: NextFunction) => {
-//     const userRolesIds = req.user.roles || [];
-//     const userRoles = await Role.find({ _id: { $in: userRolesIds } });
-//     const hasPermission = userRoles.some((roleUser) =>
-//       roles.includes(roleUser.name)
-//     );
-
-//     console.log(hasPermission);
-
-//     if (!hasPermission) {
-//       return res.status(StatusCodes.FORBIDDEN).json({
-//         message: messageError.PERMISSION_DENIED,
-//       });
-//     }
-//     next();
-//   };
-// };
-
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const checkPermission: RequestHandler = async (req, res, next) => {
   try {
     const token = req.cookies.refreshToken;

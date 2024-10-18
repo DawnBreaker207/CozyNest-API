@@ -14,15 +14,23 @@ import { Router } from 'express';
 
 const routeCategory = Router();
 
+//* Get all categories
 routeCategory.get('/', Get_All_Category);
+//* Get one category
 routeCategory.get('/:id', Get_One_Category);
 
+// Check auth and permission
 // routeCategory.use(checkAuth, checkPermission);
 
-routeCategory.patch('/:id', Hide_Category);
-routeCategory.delete('/:id', Delete_Category);
-
+//* Create new category
 routeCategory.post('/', validBodyRequest(categorySchema), Create_Category);
+
+//* Update category
 routeCategory.put('/:id', validBodyRequest(categorySchema), Update_Category);
+
+//* Soft delete category
+routeCategory.patch('/:id', Hide_Category);
+//* Hard delete category
+routeCategory.delete('/:id', Delete_Category);
 
 export default routeCategory;

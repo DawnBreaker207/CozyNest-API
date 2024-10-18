@@ -14,8 +14,8 @@ const optionSchema = new mongoose.Schema<OptionType>(
       ref: 'Product',
       required: true,
     },
-    label: { type: String },
-    name: { type: String, unique: true },
+    label: { type: String, required: true },
+    name: { type: String, unique: true, required: true },
     position: { type: Number },
   },
   { timestamps: true, versionKey: false }
@@ -34,8 +34,8 @@ const optionalValueSchema = new mongoose.Schema<OptionalValueType>(
       ref: 'Option',
       required: true,
     },
-    label: { type: String },
-    value: { type: String },
+    label: { type: String, required: true },
+    value: { type: String, required: true },
   },
   { timestamps: true, versionKey: false }
 );

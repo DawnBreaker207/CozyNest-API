@@ -1,3 +1,8 @@
+/**
+ *
+ * @param val
+ * @returns
+ */
 const slugify = (val: string) => {
   if (!val) return '';
 

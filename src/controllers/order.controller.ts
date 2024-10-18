@@ -7,13 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 
 //! Client
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
+
 const CreateOrder: RequestHandler = async (req, res, next) => {
   const body = req.body;
   try {
@@ -32,12 +26,6 @@ const CreateOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- */
 const RemoveOrder: RequestHandler = async (req, res, next) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
@@ -50,13 +38,7 @@ const RemoveOrder: RequestHandler = async (req, res, next) => {
 };
 
 //! For admin
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
+
 const GetAllOrders: RequestHandler = async (req, res, next) => {
   const {
     _page = 1,
@@ -142,13 +124,6 @@ const GetAllOrders: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const GetOneOrder: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -219,13 +194,7 @@ const GetOrderByUserId: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
+
 const UpdateOrder: RequestHandler = async (req, res, next) => {
   try {
     const orderId = req.params.id;
@@ -360,7 +329,7 @@ export {
   CreateOrder,
   GetAllOrders,
   GetOneOrder,
+  GetOrderByUserId,
   RemoveOrder,
   UpdateOrder,
-  GetOrderByUserId,
 };
