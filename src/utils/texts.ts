@@ -77,4 +77,3 @@ const sendOrder = (
 };
 
 export { sendExportMail, sendOrder, sendResetMail, sendVerifyMail };
-
