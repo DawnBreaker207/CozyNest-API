@@ -33,7 +33,7 @@ const sendVerifyMail = (subject: string, content: string): string => {
  * @returns
  */
 const sendResetMail = (subject: string, content: string): string => {
-  const templatePath = path.resolve(__dirname, 'views/forgetPassword.pug');
+  const templatePath = path.resolve(__dirname, '../views/forgetPassword.pug');
 
   const html = pug.renderFile(templatePath, { content });
 
