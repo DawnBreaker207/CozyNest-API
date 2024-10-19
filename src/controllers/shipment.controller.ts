@@ -41,7 +41,7 @@ const createOrder: RequestHandler = async (req, res, next) => {
         'Content-Type': 'application/json',
       },
     });
-    res.status(StatusCodes.OK).json(response.data);
+    res.status(StatusCodes.OK).json({ res: response.data });
   } catch (error) {
     next(error);
   }
@@ -60,7 +60,7 @@ const calShippingFee: RequestHandler = async (req, res, next) => {
         'Content-Type': 'application/json',
       },
     });
-    res.status(StatusCodes.OK).json(response.data);
+    res.status(StatusCodes.OK).json({ res: response.data });
   } catch (error: any) {
     next(
       new AppError(
@@ -87,7 +87,7 @@ const trackOrder: RequestHandler = async (req, res, next) => {
         },
       }
     );
-    res.status(StatusCodes.OK).json(response.data);
+    res.status(StatusCodes.OK).json({ res: response.data });
   } catch (error: any) {
     next(
       new AppError(

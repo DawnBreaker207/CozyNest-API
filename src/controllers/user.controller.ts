@@ -53,7 +53,6 @@ const getAllUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-
 const getOneUser: RequestHandler = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
@@ -69,7 +68,6 @@ const getOneUser: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
 
 const updateUser: RequestHandler = async (req, res, next) => {
   try {
@@ -101,7 +99,6 @@ const updateUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-
 const verifyEmailToken: RequestHandler = async (req, res, next) => {
   try {
     const { verify } = req.body;
@@ -128,60 +125,68 @@ const verifyEmailToken: RequestHandler = async (req, res, next) => {
   }
 };
 
-
 const generateVerifyToken: RequestHandler = async (req, res, next) => {
-  const emailExist = await User.findOne({ email: req.body.email });
-  if (!emailExist) {
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: messagesError.EMAIL_NOT_FOUND,
-    });
-  }
-  const verification = crypto.randomBytes(3).toString('hex');
-  if (!verification) {
-    return res.status(StatusCodes.NOT_FOUND).json({
-      message: messagesError.NOT_FOUND,
-    });
-  }
-  const verificationExpire = timeCounts.mins_5 || 5 * 60 * 1000; //Expire in 5 min
-  const mailOptions = {
-    email: req.body.email,
-    subject: 'CozyNest - Forget password',
-    text: sendVerifyMail('CozyNest - Forget password', verification),
-  };
+  try {
+    const emailExist = await User.findOne({ email: req.body.email });
+    if (!emailExist) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: messagesError.EMAIL_NOT_FOUND,
+      });
+    }
 
-  await configSendMail(mailOptions);
+    const verification = crypto.randomBytes(3).toString('hex');
+    if (!verification) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: messagesError.NOT_FOUND,
+      });
+    }
 
-  res.cookie('verify', verification, {
-    maxAge: 60 * 60 * 1000,
-    httpOnly: true,
-  });
-  res.cookie('verificationExpire', Date.now() + verificationExpire, {
-    maxAge: 60 * 60 * 1000,
-    httpOnly: true,
-  });
-  res.cookie('email', req.body.email);
-  res.status(StatusCodes.OK).json({
-    message: 'Send verify token success',
-  });
+    const verificationExpire = timeCounts.mins_5 || 5 * 60 * 1000; //Expire in 5 min
+    const mailOptions = {
+      email: req.body.email,
+      subject: 'CozyNest - Forget password',
+      text: sendVerifyMail('CozyNest - Forget password', verification),
+    };
+
+    await configSendMail(mailOptions);
+
+    res.cookie('verify', verification, {
+      maxAge: 60 * 60 * 1000,
+      httpOnly: true,
+    });
+    res.cookie('verificationExpire', Date.now() + verificationExpire, {
+      maxAge: 60 * 60 * 1000,
+      httpOnly: true,
+    });
+    res.cookie('email', req.body.email);
+    res.status(StatusCodes.OK).json({
+      message: 'Send verify token success',
+    });
+  } catch (error) {
+    next(error);
+  }
 };
-
 
 const forgotPass: RequestHandler = async (req, res, next) => {
   try {
     const { email } = req.body;
+
     const findUser = await User.findOne({ email });
     if (!findUser) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
+
     const newPassword = Math.random().toString(36).slice(-8);
+
     const hashPass = await hashPassword(newPassword);
     if (!hashPass) {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: messagesError.ERROR_SERVER,
       });
     }
+
     const user = await User.findOneAndUpdate(
       { email: email },
       { $set: { password: hashPass } },
@@ -212,7 +217,6 @@ const forgotPass: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
 
 const changePassword: RequestHandler = async (req, res, next) => {
   try {
@@ -252,6 +256,5 @@ export {
   getAllUser,
   getOneUser,
   updateUser,
-  verifyEmailToken
+  verifyEmailToken,
 };
-
