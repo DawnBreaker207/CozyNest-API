@@ -6,18 +6,99 @@ import { Types } from 'mongoose';
 import { messagesError, messagesSuccess } from '../constants/messages';
 import { ProductCart } from '../interfaces/Cart';
 import { Product } from '../models/Product';
+import { AppError } from '@/utils/errorHandle';
+import { Sku } from '@/models/Sku';
+import { Variant } from '@/models/Variant';
+import { OptionalValueType } from '@/interfaces/Variant';
+import { countTotal, findFromCart, removeFromCart } from '@/utils/variants';
 
+// Create cart
+const createCart: RequestHandler = async (req, res, next) => {
+  try {
+    const newCart = await Cart.create({ ...req.body, isGuest: true });
+    newCart.totalPrice = countTotal(newCart.products);
+
+    await newCart.save();
+
+    return res.status(StatusCodes.CREATED).json({
+      message: messagesSuccess.CREATED,
+      res: newCart,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get cart by user id
+const GetCart: RequestHandler = async (req, res, next) => {
+  const { userId } = req.params;
+  try {
+    const cart = await Cart.findOne({ userId }).populate('products.sku_id');
+    if (!cart) {
+      throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
+    }
+    cart.totalPrice = countTotal(cart?.products);
+
+    await cart?.save();
+
+    const new_cart = cart?.toObject();
+
+    const SKUs = await Promise.all(
+      cart.products.map(async (item) => {
+        // Find SKU exist
+        const SKUData = await Sku.findById(String(item.sku_id)).select(
+          'name shared_url product_id slug image -_id'
+        );
+        // Take variant of sku
+        const variants = await Variant.find({
+          sku_id: item.sku_id,
+        }).populate(['optional_value_id']);
+
+        const optionValue = variants.map((option) => {
+          const optionalValue =
+            option.option_value_id as unknown as OptionalValueType;
+          return optionalValue.label;
+        });
+
+        return { ...item.toObject(), SKUData, optionValue };
+      })
+    );
+
+    // const cartData = {
+    //   cartId: cart?.id,
+    //   products: cart?.products.map((item) => ({
+    //     productId: item.productId,
+    //     quantity: item.quantity,
+    //     price: item.price,
+    //   })),
+    // };
+
+    return res.status(StatusCodes.OK).json({
+      message: messagesSuccess.GET_CART_SUCCESS,
+      // res: cartData,
+      res: { ...new_cart, products: SKUs },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get cart by user id
 const GetById: RequestHandler = async (req, res, next) => {
   const { userId } = req.params;
   try {
-    const cart = await Cart.findOne({ userId }).populate('products.productId');
+    const cart = await Cart.findOne({ userId }).populate('products.sku_id');
+    if (!cart) {
+      throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
+    }
     const cartData = {
-      cartId: cart?.id,
+      cartId: cart?._id.toString(),
       products: cart?.products.map((item) => ({
-        productId: item.productId,
+        sku_id: item.sku_id,
         quantity: item.quantity,
         price: item.price,
       })),
+      totalPrice: cart.totalPrice,
     };
 
     return res.status(StatusCodes.OK).json({
@@ -29,21 +110,24 @@ const GetById: RequestHandler = async (req, res, next) => {
   }
 };
 
+// Add product to cart = create cart
 const AddToCart: RequestHandler = async (req, res, next) => {
-  const { userId, productId, quantity } = req.body;
+  const { userId, guestId, sku_id, quantity } = req.body;
   try {
     // Check if cart exist by userId
-    let cart = await Cart.findOne({ userId });
+    let cart = await Cart.findOne({ $or: [{ userId }, { guestId }] }).select(
+      '-deleted_at -deleted -created_at -updated_at -createdAt -__v'
+    );
 
     // If cart not exist create new one
     if (!cart) {
-      cart = new Cart({ userId, products: [] });
+      cart = new Cart({ userId, guestId, products: [] });
     }
 
-    // Check product price by find product with Id
-    const productPrice = await Product.findById(productId);
+    // Check product exist in database
+    const product = await Product.findById(sku_id);
     // If not found return error
-    if (!productPrice) {
+    if (!product) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: messagesError.NOT_FOUND,
       });
@@ -51,7 +135,7 @@ const AddToCart: RequestHandler = async (req, res, next) => {
 
     // Find product exist in cart
     const existProductIndex = cart.products.findIndex(
-      (item) => item.productId.toString() === productId
+      (item) => item.sku_id.toString() === sku_id
     );
     // Check product exist in cart
     if (existProductIndex !== -1) {
@@ -60,10 +144,19 @@ const AddToCart: RequestHandler = async (req, res, next) => {
     } else {
       // If not create new
       cart.products.push({
-        productId,
+        sku_id,
         quantity: quantity,
-        price: productPrice.price,
+        price: product.price,
       });
+    }
+
+    // Count price in cart
+    cart.totalPrice = countTotal(cart.products);
+
+    // Check if user info have
+    if (userId) {
+      cart.userId = userId;
+      cart.guestId = '';
     }
 
     // Save cart
@@ -78,22 +171,22 @@ const AddToCart: RequestHandler = async (req, res, next) => {
   }
 };
 
+// Remove product from cart = delete product
 const RemoveFromCart: RequestHandler = async (req, res, next) => {
-  const { userId, productId } = req.body;
+  const { userId, sku_id } = req.body;
   try {
     //Find cart exist
     const cart = await Cart.findOne({ userId });
     // If not found
     if (!cart) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: messagesError.NOT_FOUND });
+      throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
     }
 
     // If found, filter cart
-    cart.products = cart.products.filter((product) => {
-      return product.productId && product.productId.toString() !== productId;
-    }) as Types.DocumentArray<ProductCart>;
+    cart.products = removeFromCart(cart, sku_id);
+    // cart.products = cart.products.filter((product) => {
+    //   return product.sku_id && product.sku_id.toString() !== sku_id;
+    // }) as Types.DocumentArray<ProductCart>;
     await cart.save();
 
     return res
@@ -104,15 +197,17 @@ const RemoveFromCart: RequestHandler = async (req, res, next) => {
   }
 };
 
+// Remove cart = delete cart
 const RemoveCart: RequestHandler = async (req, res, next) => {
   try {
-    const data = await Cart.findByIdAndDelete(req.params.id);
+    const data = await Cart.findByIdAndDelete({
+      cart_id: req.params.id,
+    }).select('-deleted_at -deleted -__v');
     // If not find id product in cart
     if (!data) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: messagesError.NOT_FOUND,
-      });
+      throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
     }
+
     res.status(StatusCodes.NO_CONTENT).json({
       message: messagesSuccess.REMOVE_CART_SUCCESS,
     });
@@ -121,57 +216,22 @@ const RemoveCart: RequestHandler = async (req, res, next) => {
   }
 };
 
-const UpdateCart: RequestHandler = async (req, res, next) => {
-  const { userId, productId, quantity } = req.body;
-  console.log(req.body);
-
-  try {
-    // Find cart user
-    const cart = await Cart.findOne({ userId });
-
-    // if not found
-    if (!cart) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: messagesError.NOT_FOUND });
-    }
-
-    // Find product in cart
-    const product = cart.products.find(
-      (item) => item.productId.toString() === productId
-    );
-
-    // If product not exist in cart
-    if (!product) {
-      return res.status(StatusCodes.NOT_FOUND);
-    }
-
-    // Update quantity
-    product.quantity = quantity;
-    await cart.save();
-    return res.status(StatusCodes.OK).json({
-      message: messagesSuccess.UPDATE_CART_SUCCESS,
-      res: cart,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
+// Increase quantity = add one product quantity
 const increaseQuantity: RequestHandler = async (req, res, next) => {
-  const { userId, productId } = req.body;
+  const { userId, sku_id } = req.body;
   try {
     // Check cart exist
     const cart = await Cart.findOne({ userId });
     // If not exist
     if (!cart) {
-      res.status(StatusCodes.NOT_FOUND);
+      throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
     }
-    // Find product exist in cart
-    const product = cart?.products.find(
-      (item) => item.productId.toString() === productId
-    ) as ProductCart;
 
+    // Find product exist in cart
+    const product = findFromCart(cart, sku_id);
+    // const product = cart?.products.find(
+    //   (item) => item.sku_id.toString() === sku_id
+    // ) as ProductCart;
     // If not exist
     if (!product) {
       res
@@ -180,6 +240,9 @@ const increaseQuantity: RequestHandler = async (req, res, next) => {
     }
     // If exist update quantity
     product.quantity++;
+    // Update total price
+    cart.totalPrice += product.price;
+
     await cart?.save();
 
     return res
@@ -190,19 +253,22 @@ const increaseQuantity: RequestHandler = async (req, res, next) => {
   }
 };
 
+// Decrease quantity = remove one product quantity
 const decreaseQuantity: RequestHandler = async (req, res, next) => {
-  const { userId, productId } = req.body;
+  const { userId, sku_id } = req.body;
   try {
     // Check cart exist
     const cart = await Cart.findOne({ userId });
     // If not exist
     if (!cart) {
-      res.status(StatusCodes.NOT_FOUND);
+      throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
     }
     // Find product exist in cart
-    const product = cart?.products.find(
-      (item) => item.productId.toString() === productId
-    ) as ProductCart;
+    const product = findFromCart(cart, sku_id);
+    // const product = cart?.products.find(
+    //   (item) => item.sku_id.toString() === sku_id
+    // ) as ProductCart;
+    // If not exist
 
     // If not exist
     if (!product) {
@@ -213,6 +279,14 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
     // If exist update quantity
     if (product.quantity > 1) {
       product.quantity--;
+      // Update total price
+      cart.totalPrice -= product.price;
+    } else {
+      // Remove product if quantity is 1
+      cart.products = removeFromCart(cart, sku_id);
+      // cart.products = cart.products.filter((product) => {
+      //   return product.sku_id && product.sku_id.toString() !== sku_id;
+      // }) as Types.DocumentArray<ProductCart>;
     }
     await cart?.save();
 
@@ -224,6 +298,7 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
   }
 };
 
+// Check out cart to orders
 const checkoutOrder: RequestHandler = async (req, res, next) => {
   const { userId } = req.body;
   try {
@@ -264,9 +339,10 @@ export {
   AddToCart,
   checkoutOrder,
   decreaseQuantity,
-  GetById,
+  GetCart,
   increaseQuantity,
   RemoveCart,
   RemoveFromCart,
-  UpdateCart,
+  createCart,
+  GetById,
 };

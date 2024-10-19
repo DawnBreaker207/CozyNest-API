@@ -5,7 +5,31 @@ import { AppError } from './errorHandle';
 import { StatusCodes } from 'http-status-codes';
 import { SkuType } from '@/interfaces/Sku';
 import { sortOptions } from './sortOption';
+import { ProductCart } from '@/interfaces/Cart';
 
+//* Cart
+
+// Count total price
+const countTotal = (arr: { price: number; quantity: number }[]) => {
+  return arr.reduce((sum, { price, quantity }) => {
+    return sum + price * quantity;
+  }, 0);
+};
+
+// Find product in cart
+const findFromCart = (cart: { products: ProductCart[] }, sku_id: string) => {
+  return cart.products.find(
+    (product) => product.sku_id.toString() === sku_id
+  ) as ProductCart;
+};
+// Remove product in cart
+const removeFromCart = (cart: { products: ProductCart[] }, sku_id: string) => {
+  return cart.products.filter((product) => {
+    return product.sku_id && product.sku_id.toString() !== sku_id;
+  }) as Types.DocumentArray<ProductCart>;
+};
+
+//* Options
 //* Get All Option
 // Get all option value and option
 const getOptionalValues = async (option: OptionType, id: Types.ObjectId) => {
@@ -28,6 +52,7 @@ const getOptionalValues = async (option: OptionType, id: Types.ObjectId) => {
   };
 };
 
+//* Variants
 //* Get All Variants
 const getOptionalValue = async (id: Types.ObjectId) => {
   const value = await OptionalValue.findById(id).select('-_id value label');
@@ -180,4 +205,7 @@ export {
   getOptionalValue,
   getProductColor,
   getVariants,
+  countTotal,
+  removeFromCart,
+  findFromCart,
 };

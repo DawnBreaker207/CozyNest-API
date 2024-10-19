@@ -6,16 +6,34 @@ const cartSchema = new mongoose.Schema<CartType>(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
     },
+    // guestId: { type: String },
+    // isGuest: { type: Boolean, default: false },
     products: [
       {
-        productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-        quantity: { type: Number, min: 1 },
-        price: { type: Number },
+        sku_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Sku',
+          required: true,
+        },
+        quantity: { type: Number, min: 1, required: true },
+        price: { type: Number, required: true },
+        price_before_discount: {
+          type: Number,
+          default: 0,
+        },
+        price_discount_percent: {
+          type: Number,
+          default: 0,
+        },
       },
     ],
-    totalPrice: { type: Number },
+    totalPrice: { type: Number, default: 0 },
+    deleted_at: {
+      type: Date,
+      default: null,
+    },
+    delete: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false }
 );
