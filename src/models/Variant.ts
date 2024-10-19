@@ -15,12 +15,10 @@ const optionSchema = new mongoose.Schema<OptionType>(
       required: true,
     },
     label: { type: String, required: true },
-    name: { type: String, required: true },
-    position: { type: Number, required: true },
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now },
+    name: { type: String, unique: true, required: true },
+    position: { type: Number },
   },
-  { versionKey: false }
+  { timestamps: true, versionKey: false }
 );
 
 // OptionalValue Schema
@@ -38,10 +36,8 @@ const optionalValueSchema = new mongoose.Schema<OptionalValueType>(
     },
     label: { type: String, required: true },
     value: { type: String, required: true },
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now },
   },
-  { versionKey: false }
+  { timestamps: true, versionKey: false }
 );
 
 const variantSchema = new mongoose.Schema<VariantType>(
@@ -49,29 +45,21 @@ const variantSchema = new mongoose.Schema<VariantType>(
     sku_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Sku',
-      required: true,
     },
     option_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Option',
-      required: true,
     },
     option_value_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'OptionValue',
-      required: true,
+      ref: 'OptionalValue',
     },
     product_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
-      required: true,
     },
-    deleted: { type: Boolean, default: false },
-    deleted_at: { type: Date, default: null },
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now },
   },
-  { versionKey: false }
+  { timestamps: true, versionKey: false }
 );
 
 // Paginate

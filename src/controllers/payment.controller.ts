@@ -93,7 +93,7 @@ const createVnPay: RequestHandler = async (req, res, next) => {
 const vnPayCallback: RequestHandler = async (req, res, next) => {
   try {
     let vnp_Params = req.query as Record<string, string>;
-    
+
     let secureHash = vnp_Params['vnp_SecureHash'];
 
     delete vnp_Params['vnp_SecureHash'];
@@ -114,12 +114,12 @@ const vnPayCallback: RequestHandler = async (req, res, next) => {
     if (secureHash === signed) {
       //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
 
-      res.status(200).json({
+      res.status(StatusCodes.OK).json({
         mesage: 'success',
         code: vnp_Params['vnp_ResponseCode'],
       });
     } else {
-      return res.status(400).json({
+      return res.status(StatusCodes.NOT_FOUND).json({
         code: '97',
         message: 'Checksum failed',
       });
@@ -167,27 +167,37 @@ const vnPayStatus: RequestHandler = async (req, res, next) => {
               //thanh cong
               //paymentStatus = '1'
               // Ở đây cập nhật trạng thái giao dịch thanh toán thành công vào CSDL của bạn
-              res.status(200).json({ RspCode: '00', Message: 'Success' });
+              res
+                .status(StatusCodes.OK)
+                .json({ RspCode: '00', Message: 'Success' });
             } else {
               //that bai
               //paymentStatus = '2'
               // Ở đây cập nhật trạng thái giao dịch thanh toán thất bại vào CSDL của bạn
-              res.status(200).json({ RspCode: '00', Message: 'Success' });
+              res
+                .status(StatusCodes.OK)
+                .json({ RspCode: '00', Message: 'Success' });
             }
           } else {
-            res.status(200).json({
+            res.status(StatusCodes.OK).json({
               RspCode: '02',
               Message: 'This order has been updated to the payment status',
             });
           }
         } else {
-          res.status(200).json({ RspCode: '04', Message: 'Amount invalid' });
+          res
+            .status(StatusCodes.OK)
+            .json({ RspCode: '04', Message: 'Amount invalid' });
         }
       } else {
-        res.status(200).json({ RspCode: '01', Message: 'Order not found' });
+        res
+          .status(StatusCodes.OK)
+          .json({ RspCode: '01', Message: 'Order not found' });
       }
     } else {
-      res.status(200).json({ RspCode: '97', Message: 'Checksum failed' });
+      res
+        .status(StatusCodes.OK)
+        .json({ RspCode: '97', Message: 'Checksum failed' });
     }
   } catch (error) {
     next(error);
@@ -200,13 +210,14 @@ const createMomo: RequestHandler = async (req, res, next) => {
   //parameters
   const accessKey: string = MOMO_ACCESS_KEY as string;
   const secretKey: string = MOMO_SECRET_KEY as string;
-  const orderInfo: string = 'pay with MoMo';
+  const orderInfo: string = req.body.info || 'pay with MoMo';
   const partnerCode: string = 'MOMO';
   const redirectUrl: string = MOMO_REDIRECT_URL as string;
   const ipnUrl: string = MOMO_IPN_URL as string;
   const requestType: string = 'payWithMethod';
-  const amount: string = '1000';
-  const orderId: string = `${partnerCode}${new Date().getTime()}`;
+  const amount: string = req.body.amount || '1000';
+  const orderId: string =
+    req.body.orderId || `${partnerCode}${new Date().getTime()}`;
   const requestId: string = orderId;
   const extraData: string = '';
   const orderGroupId: string = '';
@@ -261,9 +272,9 @@ const createMomo: RequestHandler = async (req, res, next) => {
   let result;
   try {
     result = await axios(options);
-    return res.status(200).json(result.data);
+    res.status(StatusCodes.OK).json({ res: result.data });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -271,15 +282,16 @@ const momoCallback: RequestHandler = async (req, res) => {
   console.log('callback:');
   console.log(req.body);
 
-  return res.status(200).json(req.body);
+  return res.status(StatusCodes.OK).json({ res: req.body });
 };
 
 //kiểm tra trạng thái giao dịch
 const momoStatus: RequestHandler = async (req, res, next) => {
   try {
     const { orderId } = req.body;
-    const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
-    const accessKey = 'F8BBA842ECF85';
+    const accessKey: string = MOMO_ACCESS_KEY as string;
+    const secretKey: string = MOMO_SECRET_KEY as string;
+
     const rawSignature = `accessKey=${accessKey}&orderId=${orderId}&partnerCode=MOMO&requestId=${orderId}`;
 
     const signature = crypto
@@ -306,7 +318,7 @@ const momoStatus: RequestHandler = async (req, res, next) => {
     };
 
     let result = await axios(options);
-    return res.status(200).json(result.data);
+    res.status(StatusCodes.OK).json({ res: result.data });
   } catch (error) {
     next(error);
   }
@@ -325,11 +337,11 @@ const createZaloPay: RequestHandler = async (req, res, next) => {
   const order = {
     app_id: ZALO_PAY_APP_ID,
     app_trans_id: `${moment().format('YYMMDD')}_${transID}`, // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
-    app_user: 'user123',
+    app_user: req.body.user || 'user123',
     app_time: Date.now(), // miliseconds
     item: JSON.stringify(items),
     embed_data: JSON.stringify(embed_data),
-    amount: 50000,
+    amount: req.body.amount || 50000,
     //khi thanh toán xong, zalopay server sẽ POST đến url này để thông báo cho server của mình
     //Chú ý: cần dùng ngrok để public url thì Zalopay Server mới call đến được
     callback_url:
@@ -363,7 +375,7 @@ const createZaloPay: RequestHandler = async (req, res, next) => {
       params: order,
     });
 
-    return res.status(200).json(result.data);
+    res.status(StatusCodes.OK).json({ res: result.data });
   } catch (error) {
     next(error);
   }
@@ -399,7 +411,7 @@ const zaloPayCallback: RequestHandler = async (req, res, next) => {
       result.return_message = 'success';
       // thông báo kết quả cho ZaloPay server
     }
-    res.json(result);
+    res.status(StatusCodes.OK).json({ res: result });
   } catch (error) {
     next(error);
   }
@@ -431,7 +443,7 @@ const zaloPayStatus: RequestHandler = async (req, res, next) => {
   try {
     const result = await axios(postConfig);
     console.log(result.data);
-    return res.status(200).json(result.data);
+    res.status(StatusCodes.OK).json({ res: result.data });
     /**
        * kết quả mẫu
         {
@@ -452,13 +464,13 @@ const zaloPayStatus: RequestHandler = async (req, res, next) => {
 };
 
 export {
-  createVnPay,
-  vnPayCallback,
-  vnPayStatus,
   createMomo,
+  createVnPay,
+  createZaloPay,
   momoCallback,
   momoStatus,
-  createZaloPay,
+  vnPayCallback,
+  vnPayStatus,
   zaloPayCallback,
   zaloPayStatus,
 };

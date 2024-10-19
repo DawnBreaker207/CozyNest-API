@@ -14,50 +14,33 @@ import { StatusCodes } from 'http-status-codes';
 import { AppError } from '@/utils/errorHandle';
 import { sortOptions } from '@/utils/sortOption';
 import moment from 'moment';
-// Validator schema
-import createError from 'http-errors';
+import { slugify } from '@/utils/formatters';
+import {
+  generateVariant,
+  getOptionalValue,
+  getOptionalValues,
+  getOptionalValuesExist,
+  getProductColor,
+  getVariants,
+  variantOptions,
+} from '@/utils/variants';
 
 //! Option controllers
 //Lấy tất cả các option của sản phẩm
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const getAllOption: RequestHandler = async (req, res, next) => {
+  /**
+   * @product_id : product id
+   */
+  const { product_id } = req.params;
   try {
-    const { product_id } = req.params;
-
     const options = await Option.find({ product_id });
-
-    // Function lấy optional values
-    const getOptionalValues = async (
-      option: OptionType,
-      id: Types.ObjectId
-    ) => {
-      let optionValues = await OptionalValue.find({ option_id: id }).select(
-        '_id label value'
-      );
-
-      const formattedOptionValues = optionValues.map((optionValue) => ({
-        option_value_id: optionValue._id,
-        label: optionValue.label,
-        value: optionValue.value,
-      }));
-
-      return {
-        value: option.name,
-        label: option.label,
-        position: option.position,
-        option_id: id,
-        option_values: formattedOptionValues,
-      };
-    };
+    if (!options) {
+      throw new AppError(StatusCodes.NOT_FOUND, 'Can not find options');
+    }
 
     // Sort các option trước khi xử lý
-    const optionsSort = options.sort((a, b) => a.position - b.position);
+    // const optionsSort = options.sort((a, b) => a.position - b.position);
+    const optionsSort = sortOptions(options);
 
     // Lấy thông tin đầy đủ các option và option values
     const data = await Promise.all(
@@ -65,6 +48,12 @@ const getAllOption: RequestHandler = async (req, res, next) => {
         getOptionalValues(option.toObject(), option._id)
       )
     );
+    if (!data) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'Can not find option and optional values'
+      );
+    }
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_OPTION_SUCCESS,
@@ -77,12 +66,14 @@ const getAllOption: RequestHandler = async (req, res, next) => {
 
 // Lấy thông tin một option cụ thể
 const getOneOption: RequestHandler = async (req, res, next) => {
+  /**
+   * @product_id :product_id
+   * @option_id :option_id
+   */
+  const { product_id, option_id } = req.params;
   try {
-    const { product_id, option_id } = req.params;
-
     // Tìm option theo ID
     const option = await Option.findById(option_id).select('_id name');
-
     if (!option) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -93,7 +84,12 @@ const getOneOption: RequestHandler = async (req, res, next) => {
     const optionValues = await OptionalValue.find({ option_id }).select(
       '_id label value'
     );
-
+    if (!optionValues) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There is some problem when find optional values'
+      );
+    }
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_OPTION_SUCCESS,
       res: {
@@ -108,31 +104,39 @@ const getOneOption: RequestHandler = async (req, res, next) => {
 
 // Tạo một option mới
 const createOption: RequestHandler = async (req, res, next) => {
-  try {
-    const { product_id } = req.params;
+  /**
+   * @product_id :product_id
+   * @name :name
+   */
 
+  const { product_id } = req.params;
+  const { name } = req.body;
+  try {
     // Chuẩn bị payload cho option
     const payload = {
       ...req.body,
       product_id: product_id,
     };
 
-    // // Xác thực payload
-    // const result = optionSchema.safeParse(payload);
-    // if (!result.success) {
-    //   const errors: Record<string, string> = {};
-    //   result.error.errors.forEach((e) => {
-    //     errors[e.path.join('.')] = e.message;
-    //   });
-    //   //TODO: Update sau
-    //   return res.status(StatusCodes.BAD_REQUEST).json({
-    //     message: 'Validation errors',
-    //     errors,
-    //   });
-    // }
+    const checkOption = await Option.findOne({
+      product_id: product_id,
+      name: name,
+    });
 
+    // Check if option exist, if checkOption = true, option exist
+    if (checkOption) {
+      return res.status(StatusCodes.CONFLICT).json({
+        message: messagesError.BAD_REQUEST,
+      });
+    }
     // Tạo option mới
     const doc = await Option.create(payload);
+    if (!doc) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There is some problems when create option'
+      );
+    }
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATE_OPTION_SUCCESS,
@@ -145,25 +149,13 @@ const createOption: RequestHandler = async (req, res, next) => {
 
 //Cập nhật thông tin một option
 const updateOption: RequestHandler = async (req, res, next) => {
+  /**
+   * @option_id :option_id
+   * @payload :req.body
+   */
+  const { option_id } = req.params;
+  const payload = req.body;
   try {
-    const { option_id } = req.params;
-    const payload = req.body;
-
-    // Xác thực dữ liệu gửi lên bằng Zod
-    // //TODO Update lại
-    // const result = optionSchema.safeParse(payload);
-    // if (!result.success) {
-    //   const errors: Record<string, string> = {};
-    //   result.error.errors.forEach((e) => {
-    //     errors[e.path.join('.')] = e.message;
-    //   });
-    //   return res.status(StatusCodes.BAD_REQUEST).json({
-    //     status: StatusCodes.BAD_REQUEST,
-    //     message: 'Validation errors',
-    //     errors,
-    //   });
-    // }
-
     // Tìm và cập nhật option
     const doc = await Option.findByIdAndUpdate(option_id, payload, {
       new: true,
@@ -187,12 +179,13 @@ const updateOption: RequestHandler = async (req, res, next) => {
 
 //Xóa một option
 const deleteOption: RequestHandler = async (req, res, next) => {
+  /**
+   * @option_id :option_id
+   */
+  const { option_id } = req.params;
   try {
-    const { option_id } = req.params;
-
     // Tìm option theo ID
     const option = await Option.findById(option_id);
-
     if (!option) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -216,20 +209,30 @@ const deleteOption: RequestHandler = async (req, res, next) => {
 
 //! Optional Value Controller
 const getAllOptionalValue: RequestHandler = async (req, res, next) => {
+  /**
+   * @product_id :product_id
+   * @option_id :option_id
+   */
+  const { product_id, option_id } = req.params;
   try {
-    const { product_id, option_id } = req.params;
-
-    const product = await Product.findById(product_id);
+    // Check product exist
+    const product = await Product.findById({ _id: product_id });
     if (!product) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: messagesError.NOT_FOUND,
       });
     }
 
+    // Find optional value by option id and product di
     const optionalValues = await OptionalValue.find({
       product_id,
       option_id,
     }).select('_id label value created_at updated_at');
+    if (!optionalValues) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: messagesError.NOT_FOUND,
+      });
+    }
 
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_OPTION_VALUE_SUCCESS,
@@ -241,9 +244,12 @@ const getAllOptionalValue: RequestHandler = async (req, res, next) => {
 };
 
 const getOneOptionalValue: RequestHandler = async (req, res, next) => {
+  /**
+   * @value_id :value_id
+   */
+  const { value_id } = req.params;
   try {
-    const { value_id } = req.params;
-
+    // Find one optional value
     const optionValue = await OptionalValue.findById(value_id).select(
       '_id label value created_at updated_at'
     );
@@ -263,30 +269,54 @@ const getOneOptionalValue: RequestHandler = async (req, res, next) => {
 };
 
 const createOptionalValue: RequestHandler = async (req, res, next) => {
+  /**
+   * @value_id : Optional value id
+   */
+  const { product_id, option_id } = req.params;
+  const { label, value } = req.body;
   try {
-    const { product_id, option_id } = req.params;
+    // Find option exist in product ID
+    const options = await Option.findById(option_id);
+
+    // Check option exist
+    if (!options) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: messagesError.NOT_FOUND,
+      });
+    }
+    const optionalValue = await OptionalValue.findOne({
+      product_id,
+      option_id,
+      label,
+    });
+
+    // Check label exist in optional value
+    if (optionalValue) {
+      throw new AppError(StatusCodes.CONFLICT, messagesError.NOT_FOUND);
+    }
+
+    // Check label in optional value and name in option was equally
+    if (label !== options.name) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'The label of OptionalValue must match the label of the corresponding Option',
+      });
+    }
+
+    // Check if label and value was string type
+    if (typeof label !== 'string' || typeof value !== 'string') {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'Label and value must be strings',
+      });
+    }
+
     const payload = {
       ...req.body,
       option_id,
       product_id,
     };
 
-    // Xác thực payload với schema Zod
-    // // TODO: Update code sau
-    // const result = optionalValuesSchema.safeParse(payload);
-
-    // if (!result.success) {
-    //   const errors: Record<string, string> = {};
-    //   result.error.errors.forEach((e: any) => {
-    //     errors[e.path.join('.')] = e.message;
-    //   });
-    //   // TODO: Update
-    //   return res.status(StatusCodes.BAD_REQUEST).json({
-    //     message: messagesError.BAD_REQUEST,
-    //     errors,
-    //   });
-    // }
-
+    // Create new optional value
     const doc = await OptionalValue.create(payload);
 
     return res.status(StatusCodes.CREATED).json({
@@ -299,27 +329,13 @@ const createOptionalValue: RequestHandler = async (req, res, next) => {
 };
 
 const updateOptionalValue: RequestHandler = async (req, res, next) => {
+  /**
+   * @value_id : Optional value id
+   */
+  const { value_id } = req.params;
   try {
-    const { value_id } = req.params;
     const payload = req.body;
-
-    // Xác thực payload với schema Zod
-    // // TODO: update
-    // const result = optionalValuesSchema.safeParse(payload);
-
-    // if (!result.success) {
-    //   const errors: Record<string, string> = {};
-    //   result.error.errors.forEach((e: any) => {
-    //     errors[e.path.join('.')] = e.message;
-    //   });
-
-    //   // TODO: Update
-    //   return res.status(StatusCodes.BAD_REQUEST).json({
-    //     message: messagesError.BAD_REQUEST,
-    //     errors,
-    //   });
-    // }
-
+    // Find optional value and update
     const doc = await OptionalValue.findOneAndUpdate(
       { _id: value_id },
       { ...payload, updated_at: moment().toISOString() },
@@ -342,16 +358,19 @@ const updateOptionalValue: RequestHandler = async (req, res, next) => {
 };
 
 const deleteOptionalValue: RequestHandler = async (req, res, next) => {
+  /**
+   * @value_id : Optional value id
+   */
+  const { value_id } = req.params;
   try {
-    const { value_id } = req.params;
-
+    // Find optional value
     const doc = await OptionalValue.findById(value_id);
     if (!doc) {
       return res.status(StatusCodes.NOT_FOUND).json({
         message: messagesError.NOT_FOUND,
       });
     }
-
+    // After find , delete optional value with id
     await OptionalValue.deleteOne({ _id: value_id });
 
     return res.status(StatusCodes.OK).json({
@@ -364,85 +383,35 @@ const deleteOptionalValue: RequestHandler = async (req, res, next) => {
 };
 
 //! Variant Controllers
-// Hàm để lấy tất cả biến thể cho một sản phẩm
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
+// Get all variant exist in product
 const getAllVariant: RequestHandler = async (req, res, next) => {
+  /**
+   * @product_id : Product id
+   */
+  const { product_id } = req.params;
   try {
-    const { product_id } = req.params;
-
     // Lấy tất cả SKUs cho sản phẩm
     const SKUs = await Sku.find({ product_id });
-
+    if (!SKUs) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There is some problems when find SKU'
+      );
+    }
     // Lấy các option cho sản phẩm
     const options = await Option.find({ product_id });
-
-    const getOptionalValue = async (id: Types.ObjectId) => {
-      const value = await OptionalValue.findById(id).select('-_id value label');
-      return value;
-    };
-
-    const getProductColor = async (array: any[]) => {
-      const option = options.find(
-        (opt) => opt.name === 'color' || opt.name === 'mau'
+    if (!options) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There is some problems when find options'
       );
-      if (!option) {
-        throw new AppError(StatusCodes.BAD_REQUEST, messagesError.BAD_GATEWAY);
-      }
-      const variant = array.find(
-        (variant) => variant.option_id.toString() === option?._id.toString()
-      );
-      if (!variant) {
-        throw new AppError(StatusCodes.BAD_REQUEST, messagesError.BAD_GATEWAY);
-      }
-      return await OptionalValue.findById(variant?.option_value_id).select(
-        '-_id value label'
-      );
-    };
-
-    const getVariants = async (sku: SkuType, id: Types.ObjectId) => {
-      const variants = await Variant.find({ sku_id: id });
-      const color = await getProductColor(variants);
-
-      const optionFilter = await Promise.all(
-        variants.map(async (item) => {
-          const optionFind = await Option.findById(item.option_id);
-          if (!optionFind) {
-            throw new AppError(
-              StatusCodes.BAD_REQUEST,
-              messagesError.BAD_REQUEST
-            );
-          }
-          return {
-            ...item.toObject(),
-            name: optionFind?.name,
-            position: optionFind?.position ?? 0,
-            option_value_id: item.option_value_id,
-          };
-        })
-      );
-
-      const optionsFilter = sortOptions(optionFilter);
-      const optionValues = await Promise.all(
-        optionsFilter.map((doc) => getOptionalValue(doc?.option_value_id))
-      );
-
-      return {
-        ...sku,
-        color,
-        option_value: optionValues,
-      };
-    };
-
+    }
     const data = await Promise.all(
-      SKUs.map((sku) => getVariants(sku.toObject(), sku._id))
+      SKUs.map((sku) => getVariants(sku.toObject(), sku._id, options))
     );
-
+    if (!data) {
+      throw new AppError(StatusCodes.BAD_REQUEST, messagesError.BAD_REQUEST);
+    }
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.OK,
       res: data,
@@ -452,113 +421,116 @@ const getAllVariant: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Hàm để lưu các biến thể
+// Create variant and save multiple variants
 const saveVariant: RequestHandler = async (req, res, next) => {
+  /**
+   * @product_id : Product id
+   */
+  const { product_id } = req.params;
   try {
-    const { product_id } = req.params;
-
+    // Check product exist
     const product = await Product.findById(product_id).select(
-      '-_id name SKU slug shared_url price price_before_discount price_discount_percent'
+      '-_id name SKU slug price price_before_discount price_discount_percent'
     );
-
-    // Xóa tất cả SKUs và biến thể hiện có
-    await Variant.deleteMany({ product_id });
-    await Sku.deleteMany({ product_id });
-
-    // Lấy các option
-    const options = await Option.find({ product_id }).select('_id name');
-
-    const getOptionValues = async (option: OptionType, id: Types.ObjectId) => {
-      const optionValues = await OptionalValue.find({ option_id: id }).select(
-        '_id label value'
-      );
-      return { ...option, option_values: optionValues };
-    };
-
-    const docs = await Promise.all(
-      options.map((option) => getOptionValues(option.toObject(), option._id))
-    );
-
-    const generateVariant = (input: any[]) => {
-      if (input.length === 0) return [];
-
-      let result: any[][] = [[]];
-
-      for (const option of input) {
-        const { name, _id: optionId, option_values } = option;
-
-        if (option_values.length === 0) continue;
-
-        const append: any[][] = [];
-
-        for (const valueObj of option_values) {
-          const { _id: optionValueId, label, value } = valueObj;
-          for (const data of result) {
-            const newVariant = [
-              ...data,
-              {
-                name,
-                label,
-                value,
-                option_id: optionId,
-                option_value_id: optionValueId,
-              },
-            ];
-            append.push(newVariant);
-          }
-        }
-
-        result = append;
-      }
-
-      return result;
-    };
-
     if (!product) {
       return res.status(StatusCodes.NOT_FOUND).json({
         status: StatusCodes.NOT_FOUND,
         message: 'Product not found',
       });
     }
-    const variants = generateVariant(docs);
-    const arraySKUs = Array(variants.length).fill({
-      ...product.toObject(),
-      product_id,
-      stock: 0,
-      assets: [],
-    });
 
-    const SKUs = await Promise.all(
-      arraySKUs.map((item, index) =>
-        Sku.create({
-          ...item,
-          image: {},
-          SKU: `${item.SKU}-${index + 1}`,
-        })
+    // Delete all variant and SKU exist in product
+    await Variant.deleteMany({ product_id });
+    await Sku.deleteMany({ product_id });
+
+    // Check options exist
+    const options = await Option.find({ product_id }).select('_id name');
+    if (options.length === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: 'Optional value not exist ',
+      });
+    }
+
+    // Create option values base on options
+    const docs = await Promise.all(
+      options.map((option) =>
+        getOptionalValuesExist(option.toObject(), option._id)
       )
     );
+    if (!docs) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There are some problems when create optional values '
+      );
+    }
 
-    const variantOptions = (variants: any[], SKUs: any[]) => {
-      let result: any[] = [];
-      for (let index in SKUs) {
-        for (let optionValue of variants[index]) {
-          result.push({
-            product_id,
-            name: optionValue.name,
-            label: optionValue.label,
-            sku_id: SKUs[index]._id,
-            option_id: optionValue.option_id,
-            option_value_id: optionValue.option_value_id,
-          });
-        }
-      }
-      return result;
-    };
+    // Generate variants
+    const variants = generateVariant(docs);
 
-    const data = variantOptions(variants, SKUs);
+    if (!variants) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There are some problems when create variants'
+      );
+    }
+
+    // Create array of SKUs from variants
+    const arraySKUs = variants.flat().map((variant, index) => {
+      const variantValues = variant.label;
+      // Nếu variantValues là chuỗi trống hoặc không hợp lệ, slug sẽ được đặt thành 'default-slug'
+      const slug =
+        slugify(`${product.name}-${variantValues}`) || 'default-slug';
+      return {
+        ...product.toObject(),
+        product_id,
+        stock: 0,
+        assets: [],
+        SKU: `${product.SKU}-${index + 1}`,
+        slug,
+      };
+    });
+    if (!arraySKUs) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There are some problem when creating array SKUs'
+      );
+    }
+
+    // Create SKU base on variants
+    const SKUs = await Promise.all(
+      arraySKUs.map(async (item) => {
+        return Sku.create({
+          ...item,
+          image: {},
+        });
+      })
+    );
+    if (!SKUs) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There are some problem when creating SKU '
+      );
+    }
+
+    // Combining variant option with variant and SKUs
+    const data = variantOptions(product_id, variants, SKUs);
+    if (!data) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There are some problem when creating option value in variants'
+      );
+    }
+
+    // Create variant data with SKU
     const createVariantData = await Promise.all(
       data.map((item) => Variant.create(item))
     );
+    if (!createVariantData) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There are some problems when creating variant data'
+      );
+    }
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATED,
@@ -569,19 +541,28 @@ const saveVariant: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Hàm để xóa một biến thể
+// Delete onr variant
 const deleteVariant: RequestHandler = async (req, res, next) => {
+  /**
+   * @product_id : Product id
+   * @ski_id : SKU id
+   */
+  const { product_id, sku_id } = req.params;
   try {
-    const { product_id, sku_id } = req.params;
+    // Check if SKU exist
     const sku = await Sku.findById(sku_id);
-
     if (!sku) {
-      throw new AppError(StatusCodes.NOT_ACCEPTABLE, messagesError.NOT_FOUND);
-      throw createError.NotFound('Biến thể sản phẩm không tồn tại');
+      throw new AppError(StatusCodes.NOT_ACCEPTABLE, 'Can not find SKU');
     }
 
+    // Find variant
     const variants = await Variant.find({ sku_id });
-
+    if (!variants) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There is some problem when find variants'
+      );
+    }
     // Đánh dấu SKU là đã xóa
     sku.deleted_at = new Date();
     await sku.save();
@@ -603,25 +584,51 @@ const deleteVariant: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Hàm để lấy một biến thể
+// Get one variant
 const getOneVariant: RequestHandler = async (req, res, next) => {
+  /**
+   * @product_id : Product id
+   * @ski_id : SKU id
+   */
+  const { product_id, sku_id } = req.params;
   try {
-    const { product_id, sku_id } = req.params;
-
+    // Find SKU
     const sku = await Sku.findOne({ _id: sku_id }).select(
       '-deleted -deleted_at -created_at -updated_at'
     );
+    if (!sku) {
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        'There is some problems when find SKU'
+      );
+    }
+
+    // Find Variants
     const variants = await Variant.find({ sku_id }).select(
       '-deleted -deleted_at -created_at -updated_at'
     );
+    if (!variants) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There is some problems when find variants'
+      );
+    }
 
     const options = await Promise.all(
       variants.map(async (variant) => {
         const option = await Option.findById(variant.option_id);
+        if (!option) {
+          throw new AppError(StatusCodes.NOT_FOUND, 'Can not find options');
+        }
         const optionValue = await OptionalValue.findById(
           variant.option_value_id
         );
-
+        if (!optionValue) {
+          throw new AppError(
+            StatusCodes.NOT_FOUND,
+            'Can not find option values'
+          );
+        }
         return {
           _id: option?._id,
           label: option?.label,
@@ -635,14 +642,12 @@ const getOneVariant: RequestHandler = async (req, res, next) => {
         };
       })
     );
+    if (!options) {
+      throw new AppError(StatusCodes.BAD_REQUEST, messagesError.BAD_REQUEST);
+    }
 
     const optionSort = sortOptions(options);
 
-    if (!sku) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: 'Biến thể sản phẩm không tồn tại',
-      });
-    }
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_VARIANT_SUCCESS,
       res: {
@@ -655,25 +660,14 @@ const getOneVariant: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Hàm để cập nhật một biến thể
+// Update one variant
 const updateVariant: RequestHandler = async (req, res, next) => {
+  /**
+   * @ski_id : SKU id
+   */
+  const { sku_id } = req.params;
   try {
-    const { sku_id } = req.params;
     const body = req.body;
-
-    // Xác thực dữ liệu đầu vào
-    // //TODO: Update
-    // const result = variantSchema.safeParse(body);
-    // if (!result.success) {
-    //   const errors: Record<string, string> = {};
-    //   result.error.errors.forEach((e) => {
-    //     errors[e.path.join('.')] = e.message;
-    //   });
-    //   return res.status(StatusCodes.BAD_REQUEST).json({
-    //     message: 'Validation errors',
-    //     errors,
-    //   });
-    // }
 
     const { options, ...payload } = body;
 
@@ -682,7 +676,12 @@ const updateVariant: RequestHandler = async (req, res, next) => {
       { ...payload, updated_at: moment().toISOString() },
       { new: true }
     );
-
+    if (!doc) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There some problem when find SKU'
+      );
+    }
     await Promise.all(
       options.map(async (option: OptionType) => {
         const optionID = option._id;
@@ -726,22 +725,19 @@ const updateVariant: RequestHandler = async (req, res, next) => {
   }
 };
 export {
+  getAllOption,
   createOption,
-  createOptionalValue,
   deleteOption,
   deleteOptionalValue,
-  deleteVariant,
-  // Option Properties
-  getAllOption,
-  // Optional Value
   getAllOptionalValue,
-  // Variant
+  getOneOptionalValue,
+  updateOptionalValue,
+  createOptionalValue,
   getAllVariant,
   getOneOption,
-  getOneOptionalValue,
   getOneVariant,
+  deleteVariant,
   saveVariant,
   updateOption,
-  updateOptionalValue,
   updateVariant,
 };

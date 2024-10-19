@@ -10,23 +10,48 @@ import routeShipment from './shipment.route';
 import routeUpload from './upload.route';
 import routeUser from './user.route';
 import routeVariant from './variant.router';
-
-// import routeColor from './color.route';
-// import routeSize from './size.route';
+import routeOption from './option.router';
+import routeOptionalValue from './optionalValue.route';
 
 const router = Router();
+
+//* Products
 router.use('/products', routeProduct);
+
+//* Categories
 router.use('/categories', routeCategory);
+
+//* AuthenticationO
 router.use('/auth', routeAuthentication);
+
+//* Upload images
 router.use('/upload', routeUpload);
+
+//* Send mail
 router.use('/mail', routeMail);
+
+//* Users
 router.use('/users', routeUser);
+
+//* Orders
 router.use('/orders', routeOrder);
+
+//* Cart
 router.use('/cart', routeCart);
+
+//* Shipment
 router.use('/shipment', routeShipment);
+
+//* Payments
 router.use('/payment', routePayment);
+
+//* Option depend on products
+router.use('/options', routeOption);
+
+//* Optional value depend on products and options
+router.use('/optionalValue', routeOptionalValue);
+
+//* Variants depend on product,options and optional values
 router.use('/variants', routeVariant);
 
-// router.use('/size', routeSize);
-// router.use('/color', routeColor);
 export default router;

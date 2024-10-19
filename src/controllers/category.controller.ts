@@ -4,13 +4,6 @@ import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Product } from '../models/Product';
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Get_All_Category: RequestHandler = async (req, res, next) => {
   try {
     const category = await Category.find({
@@ -33,13 +26,6 @@ const Get_All_Category: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Get_One_Category: RequestHandler = async (req, res, next) => {
   try {
     /**
@@ -62,13 +48,6 @@ const Get_One_Category: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Create_Category: RequestHandler = async (req, res, next) => {
   try {
     /**
@@ -97,13 +76,6 @@ const Create_Category: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Update_Category: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id Id of the category
@@ -131,13 +103,6 @@ const Update_Category: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Hide_Category: RequestHandler = async (req, res, next) => {
   try {
     /**
@@ -163,13 +128,6 @@ const Hide_Category: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const Delete_Category: RequestHandler = async (req, res, next) => {
   try {
     /**

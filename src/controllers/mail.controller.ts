@@ -4,13 +4,6 @@ import { sendExportMail } from '@/utils/texts';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const sendMailRequest: RequestHandler = async (req, res, next) => {
   try {
     const emailOption = {

@@ -3,6 +3,7 @@ import pug from 'pug';
 import { formatDateTime } from './order';
 /**
  *
+ * @param subject
  * @param content
  * @returns
  */
@@ -16,6 +17,7 @@ const sendExportMail = (subject: string, content: string): string => {
 
 /**
  *
+ * @param subject
  * @param content
  * @returns
  */
@@ -29,6 +31,7 @@ const sendVerifyMail = (subject: string, content: string): string => {
 
 /**
  *
+ * @param subject
  * @param content
  * @returns
  */
@@ -42,6 +45,7 @@ const sendResetMail = (subject: string, content: string): string => {
 
 /**
  *
+ * @param subject
  * @param data
  * @param message
  * @param amountReduced

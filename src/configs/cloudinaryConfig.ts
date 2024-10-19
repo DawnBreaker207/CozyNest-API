@@ -1,5 +1,5 @@
-import { v2 as cloudinary } from 'cloudinary';
 import { API_KEY, API_SECRET, CLOUD_NAME, FOLDER_NAME } from '@/utils/env';
+import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
   cloud_name: CLOUD_NAME,

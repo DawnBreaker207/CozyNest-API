@@ -3,13 +3,6 @@ import { messagesError, messagesSuccess } from '@/constants/messages';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const uploadImages: RequestHandler = async (req, res, next) => {
   try {
     /**
@@ -39,13 +32,6 @@ const uploadImages: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const uploadMultiple: RequestHandler = async (req, res, next) => {
   try {
     /**
@@ -84,13 +70,6 @@ const uploadMultiple: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const deleteImage: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.publicId publicId of a image

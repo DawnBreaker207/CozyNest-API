@@ -1,12 +1,20 @@
 import { SHIPMENT_SHOP, TOKEN_SHIPMENT } from '@/utils/env';
+import { AppError } from '@/utils/errorHandle';
 import axios from 'axios';
-import { Request, Response, NextFunction, RequestHandler } from 'express';
+import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 const GHN_API_BASE_URL =
   'https://dev-online-gateway.ghn.vn/shiip/public-api/v2';
 // Gọi API tạo đơn hàng và xử lý request/response từ client
 const createOrder: RequestHandler = async (req, res, next) => {
+  /**
+   * @product_name : Optional value id
+   * @to_name : Optional value id
+   * @to_phone : Optional value id
+   * @weight : Optional value id
+   * @required_note : Optional value id
+   */
   const orderData = req.body;
   // Kiểm tra các trường bắt buộc
   if (
@@ -33,7 +41,7 @@ const createOrder: RequestHandler = async (req, res, next) => {
         'Content-Type': 'application/json',
       },
     });
-    res.status(200).json(response.data);
+    res.status(StatusCodes.OK).json({ res: response.data });
   } catch (error) {
     next(error);
   }
@@ -52,10 +60,11 @@ const calShippingFee: RequestHandler = async (req, res, next) => {
         'Content-Type': 'application/json',
       },
     });
-    res.status(StatusCodes.OK).json(response.data);
+    res.status(StatusCodes.OK).json({ res: response.data });
   } catch (error: any) {
     next(
-      new Error(
+      new AppError(
+        StatusCodes.BAD_REQUEST,
         error.response?.data?.message || 'Error calculating shipping fee'
       )
     );
@@ -78,10 +87,15 @@ const trackOrder: RequestHandler = async (req, res, next) => {
         },
       }
     );
-    res.status(200).json(response.data);
+    res.status(StatusCodes.OK).json({ res: response.data });
   } catch (error: any) {
-    next(new Error(error.response?.data?.message || 'Error tracking order'));
+    next(
+      new AppError(
+        StatusCodes.BAD_REQUEST,
+        error.response?.data?.message || 'Error tracking order'
+      )
+    );
   }
 };
 
-export { createOrder, calShippingFee, trackOrder };
+export { calShippingFee, createOrder, trackOrder };

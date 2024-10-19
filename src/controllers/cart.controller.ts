@@ -1,19 +1,12 @@
 import Cart from '@/models/Cart';
+import Order from '@/models/Order';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 import { messagesError, messagesSuccess } from '../constants/messages';
 import { ProductCart } from '../interfaces/Cart';
 import { Product } from '../models/Product';
-import Order from '@/models/Order';
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const GetById: RequestHandler = async (req, res, next) => {
   const { userId } = req.params;
   try {
@@ -36,13 +29,6 @@ const GetById: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const AddToCart: RequestHandler = async (req, res, next) => {
   const { userId, productId, quantity } = req.body;
   try {
@@ -92,13 +78,6 @@ const AddToCart: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const RemoveFromCart: RequestHandler = async (req, res, next) => {
   const { userId, productId } = req.body;
   try {
@@ -125,13 +104,6 @@ const RemoveFromCart: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const RemoveCart: RequestHandler = async (req, res, next) => {
   try {
     const data = await Cart.findByIdAndDelete(req.params.id);
@@ -149,13 +121,6 @@ const RemoveCart: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const UpdateCart: RequestHandler = async (req, res, next) => {
   const { userId, productId, quantity } = req.body;
   console.log(req.body);
@@ -163,7 +128,7 @@ const UpdateCart: RequestHandler = async (req, res, next) => {
   try {
     // Find cart user
     const cart = await Cart.findOne({ userId });
-    
+
     // if not found
     if (!cart) {
       return res
@@ -193,13 +158,6 @@ const UpdateCart: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const increaseQuantity: RequestHandler = async (req, res, next) => {
   const { userId, productId } = req.body;
   try {
@@ -232,13 +190,6 @@ const increaseQuantity: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const decreaseQuantity: RequestHandler = async (req, res, next) => {
   const { userId, productId } = req.body;
   try {
@@ -273,13 +224,6 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
   }
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
 const checkoutOrder: RequestHandler = async (req, res, next) => {
   const { userId } = req.body;
   try {
@@ -318,11 +262,11 @@ const checkoutOrder: RequestHandler = async (req, res, next) => {
 
 export {
   AddToCart,
+  checkoutOrder,
   decreaseQuantity,
   GetById,
   increaseQuantity,
   RemoveCart,
   RemoveFromCart,
   UpdateCart,
-  checkoutOrder,
 };

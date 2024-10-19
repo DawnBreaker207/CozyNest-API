@@ -1,32 +1,7 @@
-import mongoosePaginate from 'mongoose-paginate-v2';
+import { ProductType } from '@/interfaces/Product';
 import mongoose, { PaginateModel } from 'mongoose';
-import {
-  // ColorType,
-  ProductType,
-  // SizeType,
-  // VariantType,
-} from '@/interfaces/Product';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
-// const sizeSchema = new mongoose.Schema<SizeType>(
-//   {
-//     name: { type: String, required: true, unique: true },
-//   },
-//   { _id: false, versionKey: false }
-// );
-// const colorSchema = new mongoose.Schema<ColorType>(
-//   {
-//     name: { type: String, required: true, unique: true },
-//   },
-//   { _id: false, versionKey: false }
-// );
-// const variantProductSchema = new mongoose.Schema<VariantType>({
-//   name: { type: String },
-//   extra_price: { type: Number },
-//   size: { type: sizeSchema, required: true },
-//   color: { type: colorSchema, required: true },
-//   thumbnail: { type: String },
-//   stock: { type: Number },
-// });
 const productSchema = new mongoose.Schema<ProductType>(
   {
     // Original id for original products
@@ -53,18 +28,13 @@ const productSchema = new mongoose.Schema<ProductType>(
     discount: { type: Number, default: 0 },
     sold: { type: Number, default: 0 },
     isSale: { type: Boolean, default: false },
-    isHidden: { type: Boolean, default: false },
-
     // Thêm liên kết đến SKU và biến thể
-    skus: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sku' }],
+    SKU: { type: String, unique: true },
     variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }],
+    isHidden: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false }
 );
-;
-
-// export const Size = mongoose.model<SizeType>('Size', sizeSchema);
-// export const Color = mongoose.model<ColorType>('Color', colorSchema);
 productSchema.plugin(mongoosePaginate);
 
 export const Product = mongoose.model<ProductType, PaginateModel<ProductType>>(

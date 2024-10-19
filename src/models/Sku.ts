@@ -9,30 +9,29 @@ const skuSchema = new mongoose.Schema<SkuType>(
       ref: 'Product',
       required: true,
     },
-    sku: { type: String, required: true },
-    name: { type: String, required: true },
-    slug: { type: String, required: true, unique: true },
-    shared_url: { type: String, required: true },
-    price: { type: Number, required: true, default: 0 },
+    SKU: { type: String },
+    name: { type: String },
+    slug: {
+      type: String,
+      unique: true,
+      slug: 'name',
+    },
+    price: { type: Number, default: 0 },
     price_before_discount: { type: Number, default: 0 },
     price_discount_percent: { type: Number, default: 0 },
-    stock: { type: Number, required: true, default: 0 },
+    stock: { type: Number, default: 0 },
     image: {
-      id: { type: String, required: false },
-      url: { type: String, required: false },
+      id: { type: String },
+      url: { type: String },
     },
     assets: [
       {
-        id: { type: String, required: false },
-        url: { type: String, required: false },
+        id: { type: String },
+        url: { type: String },
       },
     ],
-    deleted: { type: Boolean, default: false },
-    deleted_at: { type: Date, default: null },
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now },
   },
-  { versionKey: false }
+  { timestamps: true, versionKey: false }
 );
 
 skuSchema.plugin(mongoosePaginate);
