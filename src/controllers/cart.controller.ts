@@ -1,16 +1,15 @@
+import { OptionalValueType } from '@/interfaces/Variant';
 import Cart from '@/models/Cart';
 import Order from '@/models/Order';
-import { RequestHandler } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import { Types } from 'mongoose';
-import { messagesError, messagesSuccess } from '../constants/messages';
-import { ProductCart } from '../interfaces/Cart';
-import { Product } from '../models/Product';
-import { AppError } from '@/utils/errorHandle';
 import { Sku } from '@/models/Sku';
 import { Variant } from '@/models/Variant';
-import { OptionalValueType } from '@/interfaces/Variant';
+import { AppError } from '@/utils/errorHandle';
 import { countTotal, findFromCart, removeFromCart } from '@/utils/variants';
+import { RequestHandler } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import { messagesError, messagesSuccess } from '../constants/messages';
+import { Product } from '../models/Product';
+import { createDeliveryOrder } from './shipment.controller';
 
 // Create cart
 const createCart: RequestHandler = async (req, res, next) => {
@@ -300,22 +299,29 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
 
 // Check out cart to orders
 const checkoutOrder: RequestHandler = async (req, res, next) => {
-  const { userId } = req.body;
+  const { userId, cartId, shippingAddress, shippingMethod } = req.body;
   try {
-    const cart = await Cart.findOne({ userId }).populate('products.productId');
-    if (!cart) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: messagesError.NOT_FOUND });
+    // 1. Find cart from user
+    const cart = await Cart.findOne({ userId }).populate('products.sku_id');
+    if (!cart || cart.products.length === 0) {
+      throw new AppError(StatusCodes.NOT_FOUND, 'Cart not exist');
     }
 
-    const subtotal = cart.products.reduce((total, item) => {
-      return total + item.price * item.quantity;
-    }, 0);
+    // 2. Check inventory and counting total
+    const subtotal = countTotal(cart.products);
+
+    // 3. Counting shipping fee
+    let shippingInfo = null;
     const shippingFee = 50;
-
     const total = subtotal + shippingFee;
+    if (shippingMethod === 'shipped') {
+      shippingInfo = await createDeliveryOrder(req, res, next);
+    }
 
+    // 4. Payment
+
+    
+    // 5. Create order
     const order = await Order.create({});
 
     if (!order) {
@@ -323,9 +329,10 @@ const checkoutOrder: RequestHandler = async (req, res, next) => {
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.BAD_REQUEST });
     }
-
+    // 6. Delete cart when create order
     await Cart.findByIdAndDelete(userId);
 
+    // 7. Send verify email order
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATE_ORDER_SUCCESS,
       res: order,
@@ -338,11 +345,11 @@ const checkoutOrder: RequestHandler = async (req, res, next) => {
 export {
   AddToCart,
   checkoutOrder,
+  createCart,
   decreaseQuantity,
+  GetById,
   GetCart,
   increaseQuantity,
   RemoveCart,
   RemoveFromCart,
-  createCart,
-  GetById,
 };

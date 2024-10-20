@@ -179,7 +179,7 @@ const Update_Product: RequestHandler = async (req, res, next) => {
     // Check product id exist
     const currentData = await Product.findById(req.params.id);
     if (!currentData) {
-      throw new AppError(StatusCodes.NOT_FOUND, messagesError.NOT_FOUND);
+      throw new AppError(StatusCodes.NOT_FOUND, 'Product not exist or not found');
     }
     // Find product id and update new data
     const data = await Product.findByIdAndUpdate(`${req.params.id}`, req.body, {
