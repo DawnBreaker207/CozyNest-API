@@ -5,7 +5,6 @@ import {
   increaseQuantity,
   RemoveCart,
   RemoveFromCart,
-  UpdateCart,
 } from '@/controllers/cart.controller';
 import { Router } from 'express';
 
@@ -16,9 +15,6 @@ routeCart.get('/:userId', GetById);
 
 //* Add product item to cart
 routeCart.post('/add-to-cart', AddToCart);
-
-//* Update product quantity in cart
-routeCart.put('/update-product-quantity', UpdateCart);
 
 //* Increase product quantity in cart
 routeCart.post('/increase', increaseQuantity);
