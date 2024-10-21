@@ -45,18 +45,22 @@ const variantSchema = new mongoose.Schema<VariantType>(
     sku_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Sku',
+      required: true,
     },
     option_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Option',
+      required: true,
     },
     option_value_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'OptionalValue',
+      required: true,
     },
     product_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
+      required: true,
     },
   },
   { timestamps: true, versionKey: false }

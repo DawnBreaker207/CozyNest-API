@@ -1,15 +1,16 @@
-import { OptionalValueType } from '@/interfaces/Variant';
+import { OptionalValueType, VariantType } from '@/interfaces/Variant';
 import Cart from '@/models/Cart';
 import Order from '@/models/Order';
 import { Sku } from '@/models/Sku';
 import { Variant } from '@/models/Variant';
 import { AppError } from '@/utils/errorHandle';
-import { countTotal, findFromCart, removeFromCart } from '@/utils/variants';
+import { countTotal, findProduct, removeFromCart } from '@/utils/variants';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { messagesError, messagesSuccess } from '../constants/messages';
 import { Product } from '../models/Product';
 import { createDeliveryOrder } from './shipment.controller';
+import { CartType, ProductCart } from '@/interfaces/Cart';
 
 // Create cart
 const createCart: RequestHandler = async (req, res, next) => {
@@ -123,15 +124,23 @@ const AddToCart: RequestHandler = async (req, res, next) => {
       cart = new Cart({ userId, guestId, products: [] });
     }
 
+    // TODO: find how to connect to variants in schemas
     // Check product exist in database
-    const product = await Product.findById(sku_id);
-    // If not found return error
-    if (!product) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: messagesError.NOT_FOUND,
-      });
-    }
+    const products = await Product.findOne({
+      'variants.sku_id': sku_id,
+    }).select('variants price');
+    console.log(products);
 
+    // If not found return error
+    if (!products) {
+      throw new AppError(StatusCodes.NOT_FOUND, 'Product not exist');
+    }
+    // Find variant match with sku_id
+    const variant = findProduct(products.variants as VariantType[], sku_id);
+
+    if (!variant) {
+      throw new AppError(StatusCodes.NOT_FOUND, 'Variant not found');
+    }
     // Find product exist in cart
     const existProductIndex = cart.products.findIndex(
       (item) => item.sku_id.toString() === sku_id
@@ -143,9 +152,9 @@ const AddToCart: RequestHandler = async (req, res, next) => {
     } else {
       // If not create new
       cart.products.push({
-        sku_id,
+        sku_id: variant.sku_id,
         quantity: quantity,
-        price: product.price,
+        price: products.price,
       });
     }
 
@@ -227,7 +236,10 @@ const increaseQuantity: RequestHandler = async (req, res, next) => {
     }
 
     // Find product exist in cart
-    const product = findFromCart(cart, sku_id);
+    const product = findProduct<ProductCart>(
+      cart.products as ProductCart[],
+      sku_id
+    );
     // const product = cart?.products.find(
     //   (item) => item.sku_id.toString() === sku_id
     // ) as ProductCart;
@@ -238,9 +250,9 @@ const increaseQuantity: RequestHandler = async (req, res, next) => {
         .json({ message: StatusCodes.NOT_FOUND });
     }
     // If exist update quantity
-    product.quantity++;
+    product!.quantity++;
     // Update total price
-    cart.totalPrice += product.price;
+    cart.totalPrice += product!.price;
 
     await cart?.save();
 
@@ -263,7 +275,7 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
       throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
     }
     // Find product exist in cart
-    const product = findFromCart(cart, sku_id);
+    const product = findProduct(cart.products as ProductCart[], sku_id);
     // const product = cart?.products.find(
     //   (item) => item.sku_id.toString() === sku_id
     // ) as ProductCart;
@@ -276,10 +288,10 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
         .json({ message: StatusCodes.NOT_FOUND });
     }
     // If exist update quantity
-    if (product.quantity > 1) {
-      product.quantity--;
+    if (product!.quantity > 1) {
+      product!.quantity--;
       // Update total price
-      cart.totalPrice -= product.price;
+      cart.totalPrice -= product!.price;
     } else {
       // Remove product if quantity is 1
       cart.products = removeFromCart(cart, sku_id);
@@ -320,7 +332,6 @@ const checkoutOrder: RequestHandler = async (req, res, next) => {
 
     // 4. Payment
 
-    
     // 5. Create order
     const order = await Order.create({});
 

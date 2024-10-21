@@ -16,11 +16,14 @@ const countTotal = (arr: { price: number; quantity: number }[]) => {
   }, 0);
 };
 
-// Find product in cart
-const findFromCart = (cart: { products: ProductCart[] }, sku_id: string) => {
-  return cart.products.find(
-    (product) => product.sku_id.toString() === sku_id
-  ) as ProductCart;
+// Find product
+const findProduct = <T extends { sku_id: Types.ObjectId | string }>(
+  products: T[],
+  sku_id: Types.ObjectId | string
+): T | undefined => {
+  return products.find(
+    (product) => product.sku_id.toString() === sku_id.toString()
+  );
 };
 // Remove product in cart
 const removeFromCart = (cart: { products: ProductCart[] }, sku_id: string) => {
@@ -207,5 +210,5 @@ export {
   getVariants,
   countTotal,
   removeFromCart,
-  findFromCart,
+  findProduct,
 };
