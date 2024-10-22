@@ -532,6 +532,15 @@ const saveVariant: RequestHandler = async (req, res, next) => {
       );
     }
 
+    // Update product with new variants
+    await Product.findByIdAndUpdate(
+      product_id,
+      {
+        $set: { variants: createVariantData.map((variant) => variant.sku_id) },
+      },
+      { new: true }
+    );
+
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATED,
       res: createVariantData,

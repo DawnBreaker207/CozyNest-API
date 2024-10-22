@@ -1,7 +1,6 @@
-import { Types } from 'mongoose';
-import { Category_Id } from './Category';
-import { Sku_Id } from './Sku';
 import { Variant_Id } from '@/models/Variant';
+import { Document, Types } from 'mongoose';
+import { Category_Id } from './Category';
 
 // export interface SizeType {
 //   name: string;
@@ -22,13 +21,14 @@ import { Variant_Id } from '@/models/Variant';
 export interface Image {
   url: string;
   public_id: string;
+  id?: false;
 }
-export interface ProductType {
+export interface ProductType extends Document {
   _id: Types.ObjectId;
   originId: Types.ObjectId | null;
   name: string;
   thumbnail: string;
-  images: Image[];
+  images?: Image[];
   categoryId: Category_Id;
   brand: string;
   description: string;
@@ -36,9 +36,9 @@ export interface ProductType {
   discount: number;
   sold: number;
   isSale: boolean;
-  isHidden: boolean;
-  SKU: string;           
-  variants: Variant_Id[];  
+  isHidden?: boolean;
+  SKU: string;
+  variants: Types.ObjectId[];
 }
 
 export type Product_Id = Pick<ProductType, '_id'>;

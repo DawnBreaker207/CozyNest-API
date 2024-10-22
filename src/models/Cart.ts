@@ -6,11 +6,13 @@ const cartSchema = new mongoose.Schema<CartType>(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      required: true,
     },
-    // guestId: { type: String },
-    // isGuest: { type: Boolean, default: false },
+    guestId: { type: String },
+    isGuest: { type: Boolean, default: false },
     products: [
       {
+        // TODO: Kiểm tra ref đến products
         sku_id: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Sku',
