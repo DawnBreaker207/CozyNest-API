@@ -39,7 +39,17 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
     sort: {
       [sortField]: _order === 'desc' ? -1 : 1,
     },
-    populate: ['categoryId', 'variants'],
+    populate: [
+      { path: 'categoryId', select: 'name' },
+      {
+        path: 'variants',
+        populate: [
+          { path: 'sku_id', select: 'SKU name price stock' },
+          { path: 'option_id', select: 'name' },
+          { path: 'option_value_id', select: 'value' },
+        ],
+      },
+    ],
   };
 
   const query: any = {};
@@ -71,25 +81,17 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.BAD_REQUEST });
     }
-    // Find data with the config
-    const data = await Product.find();
 
     let maxPrice = 0;
     let minPrice = Number.MAX_SAFE_INTEGER;
 
     // Check data with the min and max price with the discount
-    for (const item of data) {
+    for (const item of products.docs) {
       const price = item.price - (item.price * item.discount) / 100;
       maxPrice = Math.max(maxPrice, price);
       minPrice = Math.min(minPrice, price);
     }
 
-    // If not found of error return error
-    if (!data) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messagesError.BAD_REQUEST });
-    }
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.GET_PRODUCT_SUCCESS,
       res: products.docs,
