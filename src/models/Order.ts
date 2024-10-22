@@ -1,78 +1,168 @@
-import { paymentMethod, statusOrder } from '@/constants/initialValue';
-import { OrderType } from '@/interfaces/Order';
-import mongoose, { PaginateModel } from 'mongoose';
+import { OrderItemType, OrderType, ShippingInfoType } from '@/interfaces/Order';
+import mongoose from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
-import { nanoid } from 'nanoid';
 
-// const orderItem = new mongoose.Schema(
-//   {
-//     products: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-//     totalQuantity: { type: Number },
-//     totalPrice: { type: Number },
-//   },
-//   { _id: false }
-// );
-
-const orderSchema = new mongoose.Schema<OrderType>(
+const orderItemSchema = new mongoose.Schema<OrderItemType>(
   {
-    invoiceId: {
-      type: String,
-      default: function () {
-        return nanoid(10);
-      },
+    order_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+    },
+    sku_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Sku",
       required: true,
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null,
+    quantity: {
+      type: Number,
+      required: true,
     },
-    products: [
-      {
-        productId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
-          required: true,
-        },
-        originName: { type: String, required: true },
-        productName: { type: String, required: true },
-        thumbnail: { type: String, required: true },
-        price: { type: Number, required: true },
-      },
-    ],
-    billTotals: { type: Number, required: true },
+    price: {
+      type: Number,
+      required: true,
+    },
+    price_before_discount: {
+      type: Number,
+      default: 0,
+    },
+    price_discount_percent: {
+      type: Number,
+      default: 0,
+    },
+    total_money: {
+      type: Number,
+      default: 0,
+    },
+  },
+  {
+    collection: "order_details",
+    timestamps: true,
+    versionKey: false,
+  }
+);
 
-    paymentMethod: {
+const shippingInfoSchema = new mongoose.Schema<ShippingInfoType>(
+  {
+    shipping_address: {
       type: String,
-      enum: paymentMethod,
-      default: 'COD',
+      required: true,
     },
+    estimated_delivery_date: Date,
+    shipping_company: {
+      type: String,
+      default: "Giao hàng nhanh",
+    },
+    transportation_fee: {
+      type: Number,
+      default: 0,
+    },
+    order_code: {
+      type: String,
+    },
+  },
+  {
+    collection: "shippings",
+    timestamps: true,
+    versionKey: false,
+  }
+);
 
-    customerName: { type: String, required: true },
-    phoneNumber: { type: String, required: true },
-    email: { type: String, required: true },
-    note: { type: String, default: null },
-    addressShipping: { type: String, required: true },
-    orderTime: { type: Date, default: Date.now },
-    receivedDate: {
-      type: Date,
-      default: null,
+// Định nghĩa schema cho Order
+const orderSchema = new mongoose.Schema<OrderType>(
+  {
+    customer_name: {
+      type: String,
+      required: true,
     },
-    paid: {
-      type: Boolean,
-      default: false,
+    total_amount: {
+      type: Number,
+      required: true,
+    },
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    coupon_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Coupon",
+    },
+    shop_address: {
+      type: String,
+    },
+    phone_number: {
+      type: Number,
+      required: true,
+    },
+    payment_status: {
+      type: String,
+      enum: ["paid", "unpaid"],
+      default: "unpaid",
+    },
+    payment_method: {
+      type: Object,
     },
     status: {
       type: String,
-      enum: statusOrder,
-      default: 'Pending',
+      default: "processing",
+      enum: [
+        "processing",
+        "confirmed",
+        "delivering",
+        "cancelled",
+        "pendingComplete",
+        "delivered",
+        "returned",
+      ],
+    },
+    status_detail: [
+      {
+        status: {
+          type: String,
+          default: "processing",
+          enum: [
+            "processing",
+            "confirmed",
+            "delivering",
+            "cancelled",
+            "delivered",
+            "returned",
+          ],
+        },
+        created_at: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    date_issued: {
+      type: Date,
+      default: Date.now,
+    },
+    content: {
+      type: String,
+    },
+    shipping_method: {
+      type: String,
+      enum: ["shipped", "at_store"],
+      default: "at_store",
+    },
+    shipping_info: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Shipping",
     },
   },
-  { timestamps: true, versionKey: false }
+  {
+    collection: "orders",
+    timestamps: true,
+    versionKey: false,
+  }
 );
 
+
 orderSchema.plugin(mongoosePaginate);
-export default mongoose.model<OrderType, PaginateModel<OrderType>>(
-  'Order',
-  orderSchema
-);
+
+const OrderItem = mongoose.model<OrderItemType>('OrderDetail', orderItemSchema);
+const ShippingInfo = mongoose.model<ShippingInfoType>('Shipping', shippingInfoSchema);
+const Order = mongoose.model<OrderType>('Order', orderSchema);
+
+export { Order, ShippingInfo, OrderItem };
