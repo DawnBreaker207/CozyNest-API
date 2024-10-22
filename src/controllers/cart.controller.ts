@@ -124,37 +124,32 @@ const AddToCart: RequestHandler = async (req, res, next) => {
       cart = new Cart({ userId, guestId, products: [] });
     }
 
-    // TODO: find how to connect to variants in schemas
-    // Check product exist in database
-    const products = await Product.findOne({
-      'variants.sku_id': sku_id,
-    }).select('variants price');
-    console.log(products);
-
-    // If not found return error
-    if (!products) {
-      throw new AppError(StatusCodes.NOT_FOUND, 'Product not exist');
-    }
-    // Find variant match with sku_id
-    const variant = findProduct(products.variants as VariantType[], sku_id);
-
+    // Check variant exist in database
+    const variant = await Variant.findOne({ sku_id });
     if (!variant) {
-      throw new AppError(StatusCodes.NOT_FOUND, 'Variant not found');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Variant not exist');
     }
+
+    // Find product match with product id in variant
+    const product = await Product.findById(variant.product_id);
+    if (!product) {
+      throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
+    }
+
     // Find product exist in cart
     const existProductIndex = cart.products.findIndex(
       (item) => item.sku_id.toString() === sku_id
     );
-    // Check product exist in cart
+
+    // Check product exist in cart, if exist update quantity
     if (existProductIndex !== -1) {
-      // If exist update quantity
       cart.products[existProductIndex].quantity += quantity;
     } else {
       // If not create new
       cart.products.push({
         sku_id: variant.sku_id,
         quantity: quantity,
-        price: products.price,
+        price: product.price,
       });
     }
 
@@ -209,7 +204,7 @@ const RemoveFromCart: RequestHandler = async (req, res, next) => {
 const RemoveCart: RequestHandler = async (req, res, next) => {
   try {
     const data = await Cart.findByIdAndDelete({
-      cart_id: req.params.id,
+      _id: req.params.id,
     }).select('-deleted_at -deleted -__v');
     // If not find id product in cart
     if (!data) {
