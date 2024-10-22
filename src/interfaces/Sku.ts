@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 
-export interface SkuType {
+export interface SkuType extends Document {
   _id: Types.ObjectId;
   product_id: Types.ObjectId;
   SKU: string;

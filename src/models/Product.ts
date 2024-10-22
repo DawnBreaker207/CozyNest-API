@@ -30,6 +30,7 @@ const productSchema = new mongoose.Schema<ProductType>(
     isSale: { type: Boolean, default: false },
     // Thêm liên kết đến SKU và biến thể
     SKU: { type: String, unique: true },
+    // TODO: Kiểm tra ref đến variants
     variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }],
     isHidden: { type: Boolean, default: false },
   },

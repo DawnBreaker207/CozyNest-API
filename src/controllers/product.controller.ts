@@ -39,7 +39,7 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
     sort: {
       [sortField]: _order === 'desc' ? -1 : 1,
     },
-    populate: ['categoryId'],
+    populate: ['categoryId', 'variants'],
   };
 
   const query: any = {};
@@ -111,7 +111,7 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
    * @param {string} req.params.id
    */
   try {
-    const data = await Product.findById(req.params.id).populate('categoryId');
+    const data = await Product.findById(req.params.id).populate('variants');
 
     // If data not exist
     if (!data) {
@@ -179,7 +179,10 @@ const Update_Product: RequestHandler = async (req, res, next) => {
     // Check product id exist
     const currentData = await Product.findById(req.params.id);
     if (!currentData) {
-      throw new AppError(StatusCodes.NOT_FOUND, 'Product not exist or not found');
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        'Product not exist or not found'
+      );
     }
     // Find product id and update new data
     const data = await Product.findByIdAndUpdate(`${req.params.id}`, req.body, {
