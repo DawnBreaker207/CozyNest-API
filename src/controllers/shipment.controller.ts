@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 const GHN_API_BASE_URL =
   'https://dev-online-gateway.ghn.vn/shiip/public-api/v2';
 // Gọi API tạo đơn hàng và xử lý request/response từ client
-const createOrder: RequestHandler = async (req, res, next) => {
+const createDeliveryOrder: RequestHandler = async (req, res, next) => {
   /**
    * @product_name : Optional value id
    * @to_name : Optional value id
@@ -98,4 +98,4 @@ const trackOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
-export { calShippingFee, createOrder, trackOrder };
+export { calShippingFee, createDeliveryOrder, trackOrder };

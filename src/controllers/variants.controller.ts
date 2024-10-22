@@ -117,7 +117,7 @@ const createOption: RequestHandler = async (req, res, next) => {
       ...req.body,
       product_id: product_id,
     };
-
+    // TODO: Create utils remove white space
     const checkOption = await Option.findOne({
       product_id: product_id,
       name: name,
@@ -295,18 +295,18 @@ const createOptionalValue: RequestHandler = async (req, res, next) => {
       throw new AppError(StatusCodes.CONFLICT, messagesError.NOT_FOUND);
     }
 
+    // Check if label and value was string type
+    if (typeof label !== 'string' || typeof value !== 'string') {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'Label and value must be strings',
+      });
+    }
+
     // Check label in optional value and name in option was equally
     if (label !== options.name) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message:
           'The label of OptionalValue must match the label of the corresponding Option',
-      });
-    }
-
-    // Check if label and value was string type
-    if (typeof label !== 'string' || typeof value !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: 'Label and value must be strings',
       });
     }
 
