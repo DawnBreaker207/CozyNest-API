@@ -152,9 +152,7 @@ const Create_Product: RequestHandler = async (req, res, next) => {
     // Check if SKU exist
     const checkSKU = await Product.findOne({ SKU: req.body.SKU });
     if (checkSKU) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
+      throw new AppError(StatusCodes.BAD_REQUEST, 'SKU exist');
     }
 
     const product = await Product.create(req.body);
