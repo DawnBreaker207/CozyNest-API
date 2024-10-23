@@ -1,3 +1,4 @@
+
 import { OrderItemType, OrderType, ShippingInfoType } from '@/interfaces/Order';
 import mongoose from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
@@ -54,7 +55,7 @@ const shippingInfoSchema = new mongoose.Schema<ShippingInfoType>(
     },
     transportation_fee: {
       type: Number,
-      default: 0,
+      default: 30000,
     },
     order_code: {
       type: String,
@@ -98,9 +99,15 @@ const orderSchema = new mongoose.Schema<OrderType>(
       enum: ["paid", "unpaid"],
       default: "unpaid",
     },
-    payment_method: {
-      type: Object,
-    },
+    payment_method:[
+      {
+        method: { type: String },
+        status: { type: String },
+        orderInfo: { type: String },
+        orderType: { type: String },
+        partnerCode: { type: String }
+      }
+    ],
     status: {
       type: String,
       default: "processing",
@@ -144,12 +151,27 @@ const orderSchema = new mongoose.Schema<OrderType>(
     shipping_method: {
       type: String,
       enum: ["shipped", "at_store"],
-      default: "at_store",
+      default: "shipped",
     },
     shipping_info: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Shipping",
     },
+    products: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true,
+        },
+        originName: { type: String, required: true },
+        productName: { type: String, required: true },
+        thumbnail: { type: String, required: true },
+        price: { type: Number, required: true },
+      },
+      
+    ],
+    billTotals: { type: Number, required: true },
   },
   {
     collection: "orders",
@@ -165,4 +187,5 @@ const OrderItem = mongoose.model<OrderItemType>('OrderDetail', orderItemSchema);
 const ShippingInfo = mongoose.model<ShippingInfoType>('Shipping', shippingInfoSchema);
 const Order = mongoose.model<OrderType>('Order', orderSchema);
 
-export { Order, ShippingInfo, OrderItem };
+export { ShippingInfo, OrderItem };
+export default Order;

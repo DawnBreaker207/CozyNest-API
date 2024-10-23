@@ -18,6 +18,14 @@ export interface OrderType extends Document {
   content?: string;
   shipping_method?: "shipped" | "at_store";
   shipping_info?: Types.ObjectId;
+    products?: {
+      productId: Types.ObjectId;
+      originName: string;
+      productName: string;
+      thumbnail: string;
+      price: number;
+    }[]
+    billTotals?: number;
 }
 
 export interface OrderItemType extends Document {
