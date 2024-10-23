@@ -115,7 +115,8 @@ const createOption: RequestHandler = async (req, res, next) => {
     // Chuẩn bị payload cho option
     const payload = {
       ...req.body,
-      product_id: product_id,
+      product_id: product_id.trim(),
+      name: name.trim(),
     };
     // TODO: Create utils remove white space
     const checkOption = await Option.findOne({
@@ -440,8 +441,10 @@ const saveVariant: RequestHandler = async (req, res, next) => {
     }
 
     // Delete all variant and SKU exist in product
-    await Variant.deleteMany({ product_id });
-    await Sku.deleteMany({ product_id });
+    await Promise.all([
+      await Variant.deleteMany({ product_id }),
+      await Sku.deleteMany({ product_id }),
+    ]);
 
     // Check options exist
     const options = await Option.find({ product_id }).select('_id name');
@@ -514,7 +517,7 @@ const saveVariant: RequestHandler = async (req, res, next) => {
 
     // Combining variant option with variant and SKUs
     const data = variantOptions(product_id, variants, SKUs);
-    if (!data) {
+    if (!data || data.length === 0) {
       throw new AppError(
         StatusCodes.BAD_REQUEST,
         'There are some problem when creating option value in variants'
@@ -522,9 +525,10 @@ const saveVariant: RequestHandler = async (req, res, next) => {
     }
 
     // Create variant data with SKU
-    const createVariantData = await Promise.all(
-      data.map((item) => Variant.create(item))
-    );
+    const createVariantData = await Variant.insertMany(data);
+    // const createVariantData = await Promise.all(
+    //   data.map((item) => Variant.create(item))
+    // );
     if (!createVariantData) {
       throw new AppError(
         StatusCodes.BAD_REQUEST,
@@ -536,7 +540,7 @@ const saveVariant: RequestHandler = async (req, res, next) => {
     await Product.findByIdAndUpdate(
       product_id,
       {
-        $set: { variants: createVariantData.map((variant) => variant.sku_id) },
+        $set: { variants: createVariantData.map((variant) => variant._id) },
       },
       { new: true }
     );

@@ -44,6 +44,7 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
       { path: 'categoryId', select: 'name' },
       {
         path: 'variants',
+        select: 'sku_id option_id option_value_id',
         populate: [
           { path: 'sku_id', select: 'SKU name price stock' },
           { path: 'option_id', select: 'name' },
@@ -114,7 +115,18 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
    * @param {string} req.params.id
    */
   try {
-    const data = await Product.findById(req.params.id).populate('variants');
+    const data = await Product.findById(req.params.id).populate([
+      { path: 'categoryId', select: 'name' },
+      {
+        path: 'variants',
+        select: 'sku_id option_id option_value_id',
+        populate: [
+          { path: 'sku_id', select: 'SKU name price stock' },
+          { path: 'option_id', select: 'name' },
+          { path: 'option_value_id', select: 'value' },
+        ],
+      },
+    ]);
 
     // If data not exist
     if (!data) {
@@ -122,9 +134,6 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.BAD_REQUEST });
     }
-
-    // Populate to category
-    await data.populate('categoryId.productId');
 
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.GET_PRODUCT_SUCCESS,
