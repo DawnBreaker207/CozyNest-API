@@ -118,7 +118,6 @@ const createOption: RequestHandler = async (req, res, next) => {
       product_id: product_id.trim(),
       name: name.trim(),
     };
-    // TODO: Create utils remove white space
     const checkOption = await Option.findOne({
       product_id: product_id,
       name: name,

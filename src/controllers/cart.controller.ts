@@ -135,10 +135,8 @@ const AddToCart: RequestHandler = async (req, res, next) => {
 
     // Check variant exist in database
     const variant = await Variant.findOne({ sku_id });
-    console.log(variant);
 
     if (!variant) {
-      ``;
       throw new AppError(StatusCodes.NOT_FOUND, 'Variant not exist');
     }
 

@@ -8,7 +8,6 @@ import crypto from 'crypto';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-// TODO CRUD user, forget password ,verify token , change password
 const getAllUser: RequestHandler = async (req, res, next) => {
   try {
     const {
@@ -72,13 +71,14 @@ const getOneUser: RequestHandler = async (req, res, next) => {
 const updateUser: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
+    // Check user exist
     const user = await User.findById(id);
-
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
+    // Check email exist
     const emailExist = await User.findOne({ email: req.body.email });
     if (emailExist && !emailExist._id.equals(user.id)) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -141,23 +141,24 @@ const generateVerifyToken: RequestHandler = async (req, res, next) => {
       });
     }
 
-    const verificationExpire = timeCounts.mins_5 || 5 * 60 * 1000; //Expire in 5 min
-    const mailOptions = {
+    await configSendMail({
       email: req.body.email,
       subject: 'CozyNest - Forget password',
       text: sendVerifyMail('CozyNest - Forget password', verification),
-    };
-
-    await configSendMail(mailOptions);
+    });
 
     res.cookie('verify', verification, {
       maxAge: 60 * 60 * 1000,
       httpOnly: true,
     });
-    res.cookie('verificationExpire', Date.now() + verificationExpire, {
-      maxAge: 60 * 60 * 1000,
-      httpOnly: true,
-    });
+    res.cookie(
+      'verificationExpire',
+      Date.now() + (timeCounts.mins_5 || 5 * 60 * 1000),
+      {
+        maxAge: 60 * 60 * 1000,
+        httpOnly: true,
+      }
+    );
     res.cookie('email', req.body.email);
     res.status(StatusCodes.OK).json({
       message: 'Send verify token success',
@@ -198,12 +199,11 @@ const forgotPass: RequestHandler = async (req, res, next) => {
       });
     }
 
-    const emailOptions = {
+    await configSendMail({
       email: email,
       subject: 'Password reset from CozyNest',
       text: sendResetMail('Password reset from CozyNest', newPassword),
-    };
-    await configSendMail(emailOptions);
+    });
 
     res.clearCookie('email');
     res.clearCookie('verify');

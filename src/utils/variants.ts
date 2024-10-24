@@ -69,7 +69,6 @@ const getOptionalValue = async (id: Types.ObjectId) => {
 };
 // Get all color exist in product
 const getProductColor = async (array?: any[], options?: OptionType[]) => {
-  //TODO: update this later
   const option = options?.find(
     (opt) => opt.name === 'color' || opt.name === 'mau'
   );

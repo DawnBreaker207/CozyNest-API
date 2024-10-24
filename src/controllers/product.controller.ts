@@ -39,7 +39,7 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
     sort: {
       [sortField]: _order === 'desc' ? -1 : 1,
     },
-    // TODO: Check update populate to variant when get products
+
     populate: [
       { path: 'categoryId', select: 'name' },
       {
