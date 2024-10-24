@@ -36,6 +36,3 @@ app.use(errorHandleNotFound, errorHandle);
 app.listen(PORT, () => {
   console.log(`Listen on port ${PORT}`);
 });
-
-
-// TODO: Update feature coupon/vouchers

@@ -16,7 +16,7 @@ const checkPermission: RequestHandler = async (req, res, next) => {
     }
     // Check token valid
     const decode = verifyToken(token, SECRET_REFRESH_TOKEN) as { _id?: string };
-    if (!decode) {
+    if (!decode || decode._id) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.TOKEN_INVALID,
       });
@@ -32,9 +32,8 @@ const checkPermission: RequestHandler = async (req, res, next) => {
       }
     }
 
-    // TODO: Update check for super admin
     // Check user was admin
-    if (user.role !== 'admin') {
+    if (user.role !== 'admin' && user.role !== 'manager') {
       return res.status(StatusCodes.FORBIDDEN).json({
         message: messagesError.FORBIDDEN,
       });
