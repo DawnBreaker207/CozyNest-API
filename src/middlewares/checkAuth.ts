@@ -1,6 +1,7 @@
 import { messagesError } from '@/constants/messages';
 import { UserType } from '@/interfaces/User';
 import User from '@/models/User';
+import { SECRET_ACCESS_TOKEN } from '@/utils/env';
 import { AppError } from '@/utils/errorHandle';
 import { verifyToken } from '@/utils/jwt';
 import { RequestHandler } from 'express';
@@ -18,6 +19,7 @@ export const checkAuth: RequestHandler = async (req, res, next) => {
 
     // Check token valid
     const decode = verifyToken(token) as { _id?: string };
+
     if (!decode) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.TOKEN_INVALID,

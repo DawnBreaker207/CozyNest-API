@@ -64,8 +64,6 @@ const uploadMultiple: RequestHandler = async (req, res, next) => {
       res: uploadFiles,
     });
   } catch (error) {
-    console.log(error);
-
     next(error);
   }
 };
