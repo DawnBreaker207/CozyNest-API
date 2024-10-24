@@ -33,4 +33,5 @@ const verifyToken = (
 ) => {
   return jwt.verify(token, SECRET_CODE, options);
 };
+
 export { createToken, verifyToken };
