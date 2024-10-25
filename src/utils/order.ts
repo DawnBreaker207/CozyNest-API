@@ -100,7 +100,7 @@ const sendOrderMail = async (
     message = messagesSuccess.ORDER_UPDATE_MESSAGE;
   }
 
-  let code = null;
+  const code = null;
 
   const totalPayment = data.totalPayment != null ? data.totalPayment : 0;
   const formattedTotalPayment =

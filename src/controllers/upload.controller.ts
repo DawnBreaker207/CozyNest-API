@@ -16,7 +16,7 @@ const uploadImages: RequestHandler = async (req, res, next) => {
       });
     }
     const b64 = Buffer.from(file.buffer).toString('base64');
-    let dataURI = 'data:' + req.file?.mimetype + ';base64,' + b64;
+    const dataURI = 'data:' + req.file?.mimetype + ';base64,' + b64;
     const data = await handleUpload(dataURI);
     if (!data) {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -48,7 +48,7 @@ const uploadMultiple: RequestHandler = async (req, res, next) => {
 
     const uploadMultiple = files.map((file) => {
       const b64 = Buffer.from(file.buffer).toString('base64');
-      let dataURI = 'data:' + file?.mimetype + ';base64,' + b64;
+      const dataURI = 'data:' + file?.mimetype + ';base64,' + b64;
       return handleUpload(dataURI);
     });
 

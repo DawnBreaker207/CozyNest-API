@@ -36,7 +36,7 @@ const removeFromCart = (cart: { products: ProductCart[] }, sku_id: string) => {
 //* Get All Option
 // Get all option value and option
 const getOptionalValues = async (option: OptionType, id: Types.ObjectId) => {
-  let optionValues = await OptionalValue.find({ option_id: id }).select(
+  const optionValues = await OptionalValue.find({ option_id: id }).select(
     '_id label value'
   );
 
@@ -171,7 +171,7 @@ const generateVariant = (input: any[]) => {
 
 // Create variant options if there was have options and optional value
 const variantOptions = (product_id: string, variants: any[], SKUs: any[]) => {
-  let result: any[] = [];
+  const result: any[] = [];
   // Loop through a SKU length
   for (let index = 0; index < SKUs.length; index++) {
     console.log('variants SKU', SKUs[index]?._id);
