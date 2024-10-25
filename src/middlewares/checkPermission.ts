@@ -16,7 +16,8 @@ const checkPermission: RequestHandler = async (req, res, next) => {
     }
     // Check token valid
     const decode = verifyToken(token, SECRET_REFRESH_TOKEN) as { _id?: string };
-    if (!decode || decode._id) {
+
+    if (!decode || !decode._id) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.TOKEN_INVALID,
       });
@@ -40,6 +41,7 @@ const checkPermission: RequestHandler = async (req, res, next) => {
     }
 
     req.user = user;
+    next();
   } catch (error) {
     next(error);
   }
