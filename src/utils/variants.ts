@@ -73,15 +73,10 @@ const getProductColor = async (array?: any[], options?: OptionType[]) => {
     (opt) => opt.name === 'color' || opt.name === 'mau'
   );
 
-  // if (!option) {
-  //   throw new AppError(StatusCodes.BAD_REQUEST, 'Can not find options');
-  // }
   const variant = array?.find(
     (variant) => variant.option_id.toString() === option?._id.toString()
   );
-  // if (!variant) {
-  //   throw new AppError(StatusCodes.BAD_REQUEST, 'Can not find variants');
-  // }
+
   return await OptionalValue.findById(variant?.option_value_id).select(
     '-_id value label'
   );

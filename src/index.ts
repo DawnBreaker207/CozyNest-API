@@ -36,3 +36,6 @@ app.use(errorHandleNotFound, errorHandle);
 app.listen(PORT, () => {
   console.log(`Listen on port ${PORT}`);
 });
+
+// TODO: Refactor code, split controller to service and controller
+// TODO: Add check style to code base, ESlint and Prettier
