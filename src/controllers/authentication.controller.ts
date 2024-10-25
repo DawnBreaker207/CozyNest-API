@@ -38,31 +38,29 @@ const Register: RequestHandler = async (req, res, next) => {
       });
     }
 
-    // Create access token
     const accessToken = createToken(
       { _id: newUser.id },
       SECRET_ACCESS_TOKEN as string,
       '5m'
     );
 
-    // Create refresh token
-    const refreshToken = createToken(
-      { _id: newUser.id },
-      SECRET_REFRESH_TOKEN as string,
-      '1d'
-    );
-
+    // save access token in cookie
     res.cookie('accessToken', accessToken, {
       expires: new Date(Date.now() + (timeCounts.mins_5 || 5 * 60 * 1000)),
       httpOnly: true,
     });
 
-    res.cookie('refreshToken', refreshToken, {
-      expires: new Date(
-        Date.now() + (timeCounts.hours_24 || 24 * 60 * 60 * 1000)
-      ),
-      httpOnly: true,
-    });
+    // Create refresh token and save in cookie
+    res.cookie(
+      'refreshToken',
+      createToken({ _id: newUser.id }, SECRET_REFRESH_TOKEN as string, '1d'),
+      {
+        expires: new Date(
+          Date.now() + (timeCounts.hours_24 || 24 * 60 * 60 * 1000)
+        ),
+        httpOnly: true,
+      }
+    );
 
     newUser.password = undefined;
 
@@ -86,8 +84,7 @@ const Login: RequestHandler = async (req, res, next) => {
     const { email, password } = req.body;
 
     const userExist = await User.findOne({ email });
-
-    //Check user exist in database
+    //Check user exist
     if (!userExist) {
       return res
         .status(StatusCodes.BAD_REQUEST)
@@ -115,24 +112,23 @@ const Login: RequestHandler = async (req, res, next) => {
       '5m'
     );
 
-    // Create refresh token
-    const refreshToken = createToken(
-      { _id: userExist.id },
-      SECRET_REFRESH_TOKEN as string,
-      '1d'
-    );
-
+    // Save access token in cookie
     res.cookie('accessToken', accessToken, {
       expires: new Date(Date.now() + (timeCounts.mins_5 || 5 * 60 * 1000)),
       httpOnly: true,
     });
 
-    res.cookie('refreshToken', refreshToken, {
-      expires: new Date(
-        Date.now() + (timeCounts.hours_24 || 24 * 60 * 60 * 1000)
-      ),
-      httpOnly: true,
-    });
+    // Create refresh token and save to cookie
+    res.cookie(
+      'refreshToken',
+      createToken({ _id: userExist.id }, SECRET_REFRESH_TOKEN as string, '1d'),
+      {
+        expires: new Date(
+          Date.now() + (timeCounts.hours_24 || 24 * 60 * 60 * 1000)
+        ),
+        httpOnly: true,
+      }
+    );
 
     userExist.password = undefined;
 

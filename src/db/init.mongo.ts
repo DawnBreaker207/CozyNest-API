@@ -29,7 +29,6 @@ class Database {
       .connect(URI || '')
       .then(() => {
         console.log(`Connect mongoDB success`);
-        // return seedData();
       })
       .catch((err) => console.log(`Error connecting to MongoDB: ${err}`));
   }

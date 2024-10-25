@@ -12,7 +12,6 @@ const cartSchema = new mongoose.Schema<CartType>(
     isGuest: { type: Boolean, default: false },
     products: [
       {
-        // TODO: Kiểm tra ref đến products
         sku_id: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Sku',
