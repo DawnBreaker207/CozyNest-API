@@ -31,8 +31,9 @@ const createDeliveryOrder: RequestHandler = async (req, res, next) => {
     });
   }
 
-  const URL = `${GHN_API_BASE_URL}/shipping-order/create`;
-  // 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create';
+  // const URL = `${GHN_API_BASE_URL}/shipping-order/create`;
+  const URL =
+    'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create';
   try {
     const response = await axios.post(URL, orderData, {
       headers: {

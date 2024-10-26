@@ -11,7 +11,6 @@ import { StatusCodes } from 'http-status-codes';
 import { messagesError, messagesSuccess } from '../constants/messages';
 import { Product } from '../models/Product';
 import { createDeliveryOrder } from './shipment.controller';
-import { SkuType } from '@/interfaces/Sku';
 
 // Create cart
 const createCart: RequestHandler = async (req, res, next) => {
@@ -48,7 +47,7 @@ const GetCart: RequestHandler = async (req, res, next) => {
       cart.products.map(async (item) => {
         // Find SKU exist
         const SKUData = await Sku.findById(String(item.sku_id)).select(
-          'name shared_url product_id slug image -_id'
+          'name shared_url product_id slug image -_id',
         );
         // Take variant of sku
         const variants = await Variant.find({
@@ -62,7 +61,7 @@ const GetCart: RequestHandler = async (req, res, next) => {
         });
 
         return { ...item, SKUData, optionValue };
-      })
+      }),
     );
 
     // const cartData = {
@@ -125,7 +124,7 @@ const AddToCart: RequestHandler = async (req, res, next) => {
   try {
     // Check if cart exist by userId
     let cart = await Cart.findOne({ $or: [{ userId }, { guestId }] }).select(
-      '-deleted_at -deleted -created_at -updated_at -createdAt -__v'
+      '-deleted_at -deleted -created_at -updated_at -createdAt -__v',
     );
 
     // If cart not exist create new one
@@ -148,7 +147,7 @@ const AddToCart: RequestHandler = async (req, res, next) => {
 
     // Find product exist in cart
     const existProductIndex = cart.products.findIndex(
-      (item) => item.sku_id.toString() === sku_id
+      (item) => item.sku_id.toString() === sku_id,
     );
 
     // Check product exist in cart, if exist update quantity
@@ -244,7 +243,7 @@ const increaseQuantity: RequestHandler = async (req, res, next) => {
     // Find product exist in cart
     const product = findProduct<ProductCart>(
       cart.products as ProductCart[],
-      sku_id
+      sku_id,
     );
     // const product = cart?.products.find(
     //   (item) => item.sku_id.toString() === sku_id
