@@ -3,7 +3,7 @@ import {
   clearToken,
   Login,
   Register,
-} from '@/controllers/authentication.controller';
+} from '@/controllers/auth.controller';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { loginSchema, registerSchema } from '@/validations/auth.validation';
 import { Router } from 'express';

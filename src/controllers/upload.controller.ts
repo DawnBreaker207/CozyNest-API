@@ -1,5 +1,6 @@
-import { handleDelete, handleUpload } from '@/configs/cloudinaryConfig';
-import { messagesError, messagesSuccess } from '@/constants/messages';
+import { handleDelete } from '@/configs/cloudinaryConfig';
+import { messagesSuccess } from '@/constants/messages';
+import { uploadMulti, uploadSingle } from '@/services/upload.service';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -10,22 +11,11 @@ const uploadImages: RequestHandler = async (req, res, next) => {
      */
 
     const file = req.file;
-    if (!file) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
-    const b64 = Buffer.from(file.buffer).toString('base64');
-    const dataURI = 'data:' + req.file?.mimetype + ';base64,' + b64;
-    const data = await handleUpload(dataURI);
-    if (!data) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: messagesError.UPLOAD_IMAGES_FAIL,
-      });
-    }
+    const upload = await uploadSingle(file);
+
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_IMAGES_SUCCESS,
-      res: data,
+      res: upload,
     });
   } catch (error) {
     next(error);
@@ -38,26 +28,9 @@ const uploadMultiple: RequestHandler = async (req, res, next) => {
      * @param {string[]} req.files array of files
      */
 
-    const files = req.files;
+    const files = req.files as Express.Multer.File[] | undefined;
 
-    if (!files || !Array.isArray(files) || files.length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
-
-    const uploadMultiple = files.map((file) => {
-      const b64 = Buffer.from(file.buffer).toString('base64');
-      const dataURI = 'data:' + file?.mimetype + ';base64,' + b64;
-      return handleUpload(dataURI);
-    });
-
-    const results = await Promise.all(uploadMultiple);
-
-    const uploadFiles = results.map((result) => ({
-      url: result?.url,
-      public_id: result?.public_id,
-    }));
+    const uploadFiles = await uploadMulti(files);
 
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_IMAGES_SUCCESS,

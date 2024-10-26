@@ -1,7 +1,13 @@
-import { messagesError, messagesSuccess } from '@/constants/messages';
-import Category from '@/models/Category';
-import { Product } from '@/models/Product';
-import { AppError } from '@/utils/errorHandle';
+import { messagesSuccess } from '@/constants/messages';
+import {
+  createProduct,
+  findRelatedProduct,
+  getAllService,
+  getOneProduct,
+  hardDelete,
+  softDelete,
+  updateProduct,
+} from '@/services/product.service';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -75,24 +81,7 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
   }
 
   try {
-    const products = await Product.paginate(query, options);
-
-    // Check if any product exist
-    if (!products || products.docs.length === 0) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messagesError.BAD_REQUEST });
-    }
-
-    let maxPrice = 0;
-    let minPrice = Number.MAX_SAFE_INTEGER;
-
-    // Check data with the min and max price with the discount
-    for (const item of products.docs) {
-      const price = item.price - (item.price * item.discount) / 100;
-      maxPrice = Math.max(maxPrice, price);
-      minPrice = Math.min(minPrice, price);
-    }
+    const products = await getAllService(query, options);
 
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.GET_PRODUCT_SUCCESS,
@@ -101,8 +90,8 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
         currentPage: products.page,
         totalPages: products.totalPages,
         totalItems: products.totalDocs,
-        maxPrice,
-        minPrice,
+        maxPrice: products.maxPrice,
+        minPrice: products.minPrice,
       },
     });
   } catch (error) {
@@ -115,25 +104,7 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
    * @param {string} req.params.id
    */
   try {
-    const data = await Product.findById(req.params.id).populate([
-      { path: 'categoryId', select: 'name' },
-      {
-        path: 'variants',
-        select: 'sku_id option_id option_value_id',
-        populate: [
-          { path: 'sku_id', select: 'SKU name price stock' },
-          { path: 'option_id', select: 'name' },
-          { path: 'option_value_id', select: 'value' },
-        ],
-      },
-    ]);
-
-    // If data not exist
-    if (!data) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messagesError.BAD_REQUEST });
-    }
+    const data = await getOneProduct(req.params.id);
 
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.GET_PRODUCT_SUCCESS,
@@ -149,29 +120,7 @@ const Create_Product: RequestHandler = async (req, res, next) => {
    * @param {ProductType} req.body
    */
   try {
-    // Check if SKU exist
-    const checkSKU = await Product.findOne({ SKU: req.body.SKU });
-    if (checkSKU) {
-      throw new AppError(StatusCodes.BAD_REQUEST, 'SKU exist');
-    }
-
-    const product = await Product.create(req.body);
-
-    // Update product list in category
-    const updateCategory = await Category.findByIdAndUpdate(
-      product.categoryId,
-      {
-        $push: { products: product._id },
-      },
-      { new: true }
-    );
-
-    // If not exist return error
-    if (!product || !updateCategory) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
+    const product = await createProduct(req.body);
     res.status(200).json({
       message: messagesSuccess.CREATE_PRODUCT_SUCCESS,
       res: product,
@@ -186,37 +135,7 @@ const Update_Product: RequestHandler = async (req, res, next) => {
     /**
      * @param {string} req.params.id
      */
-    // Check product id exist
-    const currentData = await Product.findById(req.params.id);
-    if (!currentData) {
-      throw new AppError(
-        StatusCodes.NOT_FOUND,
-        'Product not exist or not found'
-      );
-    }
-    // Find product id and update new data
-    const data = await Product.findByIdAndUpdate(`${req.params.id}`, req.body, {
-      new: true,
-    });
-
-    // Return error if not find
-    if (!data) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messagesError.BAD_REQUEST });
-    }
-
-    // Get current product data in category
-    await Category.findByIdAndUpdate(currentData?.categoryId, {
-      $pull: {
-        products: req.params.id,
-      },
-    });
-
-    // Update new product data in category
-    await Category.findByIdAndUpdate(data.categoryId, {
-      $push: { products: req.params.id },
-    });
+    const data = await updateProduct(req.params.id, req.body);
 
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.UPDATE_PRODUCT_SUCCESS,
@@ -233,19 +152,7 @@ const Hide_Product: RequestHandler = async (req, res, next) => {
      * @param {string} req.params.id
      */
     // Find product exist and hidden
-    const data = await Product.findByIdAndUpdate(
-      `${req.params.id}`,
-      {
-        isHidden: true,
-      },
-      { new: true }
-    );
-
-    if (!data) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
+    const data = await softDelete(req.params.id);
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
       res: data,
@@ -261,16 +168,8 @@ const Delete_Product: RequestHandler = async (req, res, next) => {
      * @param {string} req.params.id
      */
 
-    const data = await Product.findByIdAndDelete(req.params.id);
-    if (!data) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
-
-    res.status(StatusCodes.OK).json({
-      message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
-    });
+    await hardDelete(req.params.id);
+    res.status(StatusCodes.NO_CONTENT);
   } catch (error) {
     next(error);
   }
@@ -284,44 +183,7 @@ const getRelatedProducts: RequestHandler = async (req, res, next) => {
      */
     const { cate_id, product_id } = req.params;
 
-    // Check category id and product id exist
-    if (!cate_id || !product_id) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
-
-    // Get related product by category id
-    const relatedProducts = await Product.find({
-      categoryId: cate_id,
-      _id: { $ne: product_id }, //Not include product is watching
-    })
-      .limit(10)
-      .lean();
-
-    // If related product length = 0 return error
-    if (relatedProducts.length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
-    // Sort product to random
-    const shuffledProducts = relatedProducts.sort(() => 0.5 - Math.random());
-
-    // Choose first 10 products
-    const selectedProducts = shuffledProducts.slice(0, 10);
-
-    // Populate product id to origin id
-    const populatedProducts = await Product.populate(selectedProducts, [
-      { path: 'originId' },
-    ]);
-
-    // If populate not exist return error
-    if (!populatedProducts) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
+    const populatedProducts = await findRelatedProduct(cate_id, product_id);
     res.status(StatusCodes.OK).json({
       res: populatedProducts,
     });
@@ -337,5 +199,6 @@ export {
   Get_One_Product,
   getRelatedProducts,
   Hide_Product,
-  Update_Product,
+  Update_Product
 };
+
