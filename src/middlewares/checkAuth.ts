@@ -1,7 +1,6 @@
 import { messagesError } from '@/constants/messages';
 import { UserType } from '@/interfaces/User';
 import User from '@/models/User';
-import { SECRET_ACCESS_TOKEN } from '@/utils/env';
 import { AppError } from '@/utils/errorHandle';
 import { verifyToken } from '@/utils/jwt';
 import { RequestHandler } from 'express';

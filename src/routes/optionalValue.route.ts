@@ -2,7 +2,7 @@ import {
   createOptionalValue,
   deleteOptionalValue,
   getAllOptionalValue,
-  getOneOptionalValue,
+  getSingleOptionalValue,
   updateOptionalValue,
 } from '@/controllers/variants.controller';
 import { checkAuth } from '@/middlewares/checkAuth';
@@ -20,7 +20,7 @@ routeOptionalValue.get('/:product_id/:option_id', getAllOptionalValue);
 //* Get one optional value in product
 routeOptionalValue.get(
   '/:product_id/:option_id/:value_id',
-  getOneOptionalValue
+  getSingleOptionalValue,
 );
 
 //* Create optional value depend option model
@@ -29,7 +29,7 @@ routeOptionalValue.post(
   checkAuth,
   checkPermission,
   validBodyRequest(optionalValuesSchema),
-  createOptionalValue
+  createOptionalValue,
 );
 
 //* Update option value depend option model
@@ -38,7 +38,7 @@ routeOptionalValue.put(
   checkAuth,
   checkPermission,
   validBodyRequest(optionalValuesSchema),
-  updateOptionalValue
+  updateOptionalValue,
 );
 
 //* Delete option value depend option model
@@ -46,7 +46,7 @@ routeOptionalValue.delete(
   '/:product_id/:option_id/:value_id',
   checkAuth,
   checkPermission,
-  deleteOptionalValue
+  deleteOptionalValue,
 );
 
 export default routeOptionalValue;

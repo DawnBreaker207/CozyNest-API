@@ -1,11 +1,16 @@
 import { StatusCodes } from '@/http-status-codes';
 import { CouponType } from '@/interfaces/Coupon';
 import Coupon from '@/models/Coupon';
-import moment from '@/moment/ts3.1-typings/moment';
 import { AppError } from '@/utils/errorHandle';
 import { Types } from 'mongoose';
+import moment from 'moment';
+const getDate = (input?: Date): string => {
+  return input
+    ? moment(input).format('YYYY-MM-DD')
+    : moment().format('YYYY-MM-DD');
+};
 
-const couponCreate = async (input: CouponType): Promise<CouponType> => {
+const createCouponService = async (input: CouponType): Promise<CouponType> => {
   const coupon = await Coupon.create(input);
   if (!coupon) {
     throw new AppError(StatusCodes.BAD_REQUEST, 'Error when created coupon');
@@ -13,7 +18,7 @@ const couponCreate = async (input: CouponType): Promise<CouponType> => {
   return coupon;
 };
 
-const couponGetAll = async (paginate: object, options: object) => {
+const getAllCouponService = async (paginate: object, options: object) => {
   const coupon = await Coupon.paginate(paginate, options);
   if (coupon.docs.length === 0) {
     throw new AppError(StatusCodes.BAD_REQUEST, 'Can not find coupon');
@@ -21,39 +26,33 @@ const couponGetAll = async (paginate: object, options: object) => {
   return coupon;
 };
 
-const couponGetOne = async (id: string): Promise<CouponType> => {
+const getOneCouponService = async (id: string): Promise<CouponType> => {
   const vouchers = await Coupon.findById(id);
   if (!vouchers) {
     throw new AppError(StatusCodes.NOT_FOUND, 'Coupon not found');
   }
   return vouchers;
 };
-const couponUpdate = async (
-  id: string,
-  input: Partial<CouponType>,
-  userId: Types.ObjectId,
-): Promise<CouponType> => {
-  const coupon = await Coupon.findByIdAndUpdate(id, {
-    ...input,
-    updatedBy: userId,
-  });
 
+const updateCouponService = async (
+  id: string,
+  userId: Types.ObjectId,
+  input: Partial<CouponType>,
+): Promise<CouponType> => {
+  const coupon = await Coupon.findById(id);
   if (!coupon) {
     throw new AppError(StatusCodes.NOT_FOUND, 'Coupon not found');
   }
+  coupon.set({ ...input, updateBy: userId });
+  await coupon.save();
   return coupon;
 };
 
-const getDate = (input?: Date): string => {
-  return input
-    ? moment(input).format('YYYY-MM-DD')
-    : moment().format('YYYY-MM-DD');
-};
-const getOneVoucher = async (
-  input: Partial<CouponType>,
-): Promise<CouponType> => {
+const getValueCouponService = async (coupon_code: string) => {
+  const currentDate = getDate();
+
   const voucher = await Coupon.findOne({
-    $and: [{ couponCode: input, status: true }],
+    $and: [{ couponCode: coupon_code, status: true }],
   });
 
   if (!voucher) {
@@ -62,10 +61,18 @@ const getOneVoucher = async (
   if (voucher.couponQuantity === 0) {
     throw new AppError(StatusCodes.BAD_GATEWAY, 'This coupon was empty');
   }
-  return voucher;
+  const endDate = getDate(voucher.couponEndDate);
+  const startDate = getDate(voucher.couponStartDate);
+  if (currentDate > endDate) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'This voucher was ended');
+  }
+  if (currentDate < startDate) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'This voucher is not started');
+  }
+  return;
 };
 
-const softDeleteCoupon = async (id: string): Promise<CouponType> => {
+const deleteCouponService = async (id: string): Promise<CouponType> => {
   const coupon = await Coupon.findById(id);
 
   if (!coupon) {
@@ -75,12 +82,12 @@ const softDeleteCoupon = async (id: string): Promise<CouponType> => {
   coupon.deletedAt = moment(new Date()).toDate();
   return await coupon.save();
 };
+
 export {
-  couponCreate,
-  couponGetAll,
-  couponGetOne,
-  couponUpdate,
-  getDate,
-  getOneVoucher,
-  softDeleteCoupon
+  createCouponService,
+  getAllCouponService,
+  getOneCouponService,
+  updateCouponService,
+  getValueCouponService,
+  deleteCouponService,
 };

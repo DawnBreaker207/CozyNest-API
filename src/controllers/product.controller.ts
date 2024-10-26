@@ -15,14 +15,14 @@ import { StatusCodes } from 'http-status-codes';
 
 const Get_All_Product: RequestHandler = async (req, res, next) => {
   /**
-   * @param {number} req.query._page
-   * @param {string} req.query._order
-   * @param {number} req.query._limit
-   * @param {string} req.query._sort
-   * @param {string} req.query.categoryId
-   * @param {string} req.query.originId
-   * @param {string} req.query.minPrice
-   * @param {string} req.query.maxPrice
+   * @param {number} req.query._page Param _page input
+   * @param {string} req.query._order Param _order input
+   * @param {number} req.query._limit Param _limit input
+   * @param {string} req.query._sort Param _sort input
+   * @param {string} req.query.categoryId Param categoryId input
+   * @param {string} req.query.originId Param originId input
+   * @param {string} req.query.minPrice Param minPrice input
+   * @param {string} req.query.maxPrice Param maxPrice input
    */
   const {
     _page = 1,
@@ -35,52 +35,52 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
     _minPrice = '',
     _maxPrice = '',
   } = req.query;
-  const page = typeof _page === 'string' ? parseInt(_page, 10) : 1;
-  const limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 9999;
-  const sortField = typeof _sort === 'string' ? _sort : 'createAt';
-
-  const options = {
-    page: page,
-    limit: limit,
-    sort: {
-      [sortField]: _order === 'desc' ? -1 : 1,
-    },
-
-    populate: [
-      { path: 'categoryId', select: 'name' },
-      {
-        path: 'variants',
-        select: 'sku_id option_id option_value_id',
-        populate: [
-          { path: 'sku_id', select: 'SKU name price stock' },
-          { path: 'option_id', select: 'name' },
-          { path: 'option_value_id', select: 'value' },
-        ],
-      },
-    ],
-  };
-
-  const query: any = {};
-
-  if (_q) {
-    query.name = { $regex: _q, $options: 'i' };
-  }
-
-  if (_categoryId && typeof _categoryId === 'string') {
-    query.categoryId = _categoryId;
-  }
-  if (_originId && typeof _originId === 'string') {
-    const originIds = _originId.split(',').map((id: string) => id.trim());
-    query.originId = { $in: originIds };
-  }
-  if (_minPrice && typeof _minPrice === 'string') {
-    query.price = { ...query.price, $gte: parseFloat(_minPrice) };
-  }
-  if (_maxPrice && typeof _maxPrice === 'string') {
-    query.price = { ...query.price, $lte: parseFloat(_maxPrice) };
-  }
 
   try {
+    const page = typeof _page === 'string' ? parseInt(_page, 10) : 1;
+    const limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 9999;
+    const sortField = typeof _sort === 'string' ? _sort : 'createAt';
+
+    const options = {
+      page: page,
+      limit: limit,
+      sort: {
+        [sortField]: _order === 'desc' ? -1 : 1,
+      },
+
+      populate: [
+        { path: 'categoryId', select: 'name' },
+        {
+          path: 'variants',
+          select: 'sku_id option_id option_value_id',
+          populate: [
+            { path: 'sku_id', select: 'SKU name price stock' },
+            { path: 'option_id', select: 'name' },
+            { path: 'option_value_id', select: 'value' },
+          ],
+        },
+      ],
+    };
+
+    const query: any = {};
+
+    if (_q) {
+      query.name = { $regex: _q, $options: 'i' };
+    }
+
+    if (_categoryId && typeof _categoryId === 'string') {
+      query.categoryId = _categoryId;
+    }
+    if (_originId && typeof _originId === 'string') {
+      const originIds = _originId.split(',').map((id: string) => id.trim());
+      query.originId = { $in: originIds };
+    }
+    if (_minPrice && typeof _minPrice === 'string') {
+      query.price = { ...query.price, $gte: parseFloat(_minPrice) };
+    }
+    if (_maxPrice && typeof _maxPrice === 'string') {
+      query.price = { ...query.price, $lte: parseFloat(_maxPrice) };
+    }
     const products = await getAllService(query, options);
 
     res.status(StatusCodes.CREATED).json({
@@ -103,8 +103,9 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id
    */
+  const { id } = req.params;
   try {
-    const data = await getOneProduct(req.params.id);
+    const data = await getOneProduct(id);
 
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.GET_PRODUCT_SUCCESS,
@@ -117,7 +118,7 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
 
 const Create_Product: RequestHandler = async (req, res, next) => {
   /**
-   * @param {ProductType} req.body
+   * @param {ProductType} req.body Param body input
    */
   try {
     const product = await createProduct(req.body);
@@ -131,11 +132,13 @@ const Create_Product: RequestHandler = async (req, res, next) => {
 };
 
 const Update_Product: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.params.id Param id input
+   * @param {ProductType} req.body Param body input
+   */
+  const { id } = req.params;
   try {
-    /**
-     * @param {string} req.params.id
-     */
-    const data = await updateProduct(req.params.id, req.body);
+    const data = await updateProduct(id, req.body);
 
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.UPDATE_PRODUCT_SUCCESS,
@@ -147,12 +150,13 @@ const Update_Product: RequestHandler = async (req, res, next) => {
 };
 
 const Hide_Product: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.params.id Param id input
+   */
+  const { id } = req.params;
   try {
-    /**
-     * @param {string} req.params.id
-     */
     // Find product exist and hidden
-    const data = await softDelete(req.params.id);
+    const data = await softDelete(id);
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
       res: data,
@@ -163,12 +167,12 @@ const Hide_Product: RequestHandler = async (req, res, next) => {
 };
 
 const Delete_Product: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.params.id Param id input
+   */
+  const { id } = req.params;
   try {
-    /**
-     * @param {string} req.params.id
-     */
-
-    await hardDelete(req.params.id);
+    await hardDelete(id);
     res.status(StatusCodes.NO_CONTENT);
   } catch (error) {
     next(error);
@@ -176,13 +180,12 @@ const Delete_Product: RequestHandler = async (req, res, next) => {
 };
 
 const getRelatedProducts: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} cate_id Param cate_id input
+   * @param {string} product_id Param product_id input
+   */
+  const { cate_id, product_id } = req.params;
   try {
-    /**
-     * @param {string} cate_id
-     * @param {string} product_id
-     */
-    const { cate_id, product_id } = req.params;
-
     const populatedProducts = await findRelatedProduct(cate_id, product_id);
     res.status(StatusCodes.OK).json({
       res: populatedProducts,
@@ -199,6 +202,5 @@ export {
   Get_One_Product,
   getRelatedProducts,
   Hide_Product,
-  Update_Product
+  Update_Product,
 };
-

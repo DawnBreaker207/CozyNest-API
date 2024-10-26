@@ -3,7 +3,7 @@ import { messagesError } from '@/constants/messages';
 import { StatusCodes } from '@/http-status-codes/build/cjs';
 import { AppError } from '@/utils/errorHandle';
 
-const uploadSingle = async (file: Express.Multer.File | undefined) => {
+const uploadImagesService = async (file: Express.Multer.File | undefined) => {
   if (!file || !file.buffer || !file.mimetype) {
     throw new AppError(
       StatusCodes.BAD_REQUEST,
@@ -21,7 +21,10 @@ const uploadSingle = async (file: Express.Multer.File | undefined) => {
   }
   return data;
 };
-const uploadMulti = async (files: Express.Multer.File[] | undefined) => {
+
+const uploadMultipleService = async (
+  files: Express.Multer.File[] | undefined,
+) => {
   if (!files || !Array.isArray(files) || files.length === 0) {
     throw new AppError(
       StatusCodes.BAD_REQUEST,
@@ -44,4 +47,5 @@ const uploadMulti = async (files: Express.Multer.File[] | undefined) => {
 
   return uploadFiles;
 };
-export { uploadSingle, uploadMulti };
+
+export { uploadImagesService, uploadMultipleService };

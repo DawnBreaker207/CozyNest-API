@@ -23,6 +23,12 @@ import qs from 'qs';
 //* VNPay
 // Hàm tạo yêu cầu thanh toán VNPay
 const createVnPay: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {number} req.body.amount Param amount input
+   * @param {string} req.body.backCode Param backCode input
+   * @param {string} req.body.socket Param socket input
+   * @param {string} req.body.ip Param ip input
+   */
   try {
     process.env.TZ = 'Asia/Ho_Chi_Minh';
 
@@ -101,7 +107,7 @@ const vnPayCallback: RequestHandler = async (req, res, next) => {
 
     vnp_Params = sortObject(vnp_Params);
 
-    const tmnCode: string = VN_PAY_TMN_CODE as string;
+    // const tmnCode: string = VN_PAY_TMN_CODE as string;
     const secretKey: string = VN_PAY_HASH_SECRET as string;
 
     const signData: string = qs.stringify(vnp_Params, { encode: false });
@@ -134,7 +140,7 @@ const vnPayStatus: RequestHandler = async (req, res, next) => {
     let vnp_Params = req.query as { [key: string]: string };
     const secureHash = vnp_Params['vnp_SecureHash'];
 
-    const orderId = vnp_Params['vnp_TxnRef'];
+    // const orderId = vnp_Params['vnp_TxnRef'];
     const rspCode = vnp_Params['vnp_ResponseCode'];
 
     delete vnp_Params['vnp_SecureHash'];
@@ -404,7 +410,7 @@ const zaloPayCallback: RequestHandler = async (req, res, next) => {
       const dataJson = JSON.parse(dataStr);
       console.log(
         "update order's status = success where app_trans_id =",
-        dataJson['app_trans_id']
+        dataJson['app_trans_id'],
       );
 
       result.return_code = 1;

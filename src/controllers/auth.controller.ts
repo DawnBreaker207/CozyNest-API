@@ -16,8 +16,9 @@ const Register: RequestHandler = async (req, res, next) => {
    * @param {string} req.body.email Email user input
    * @param {string} req.body.password Password user input
    */
+  const { email, password } = req.body;
   try {
-    const newUser = await registerService(req.body);
+    const newUser = await registerService(email, password, req.body);
 
     const accessToken = createToken(
       { _id: newUser._id },
@@ -55,13 +56,13 @@ const Register: RequestHandler = async (req, res, next) => {
 };
 
 const Login: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.body.email Email user input
+   * @param {string} req.body.password Password user input
+   */
+  const { email, password } = req.body;
   try {
-    /**
-     * @param {string} req.body.email Email user input
-     * @param {string} req.body.password Password user input
-     */
-
-    const userExist = await loginService(req.body);
+    const userExist = await loginService(email, password);
 
     // Create access token
     const accessToken = createToken(
@@ -100,10 +101,10 @@ const Login: RequestHandler = async (req, res, next) => {
 };
 
 const checkRefreshToken: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.cookies.refreshToken Refresh token take from cookies
+   */
   try {
-    /**
-     * @param {string} req.cookies.refreshToken Refresh token take from cookies
-     */
     const refreshToken = req.cookies?.refreshToken;
     // If refresh token ot exist, return empty access token
     if (!refreshToken) {

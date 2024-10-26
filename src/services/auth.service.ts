@@ -7,8 +7,11 @@ import { AppError } from '@/utils/errorHandle';
 import { comparePassword, hashPassword } from '@/utils/hashPassword';
 import { verifyToken } from '@/utils/jwt';
 
-const registerService = async (input: UserType): Promise<UserType> => {
-  const { email, password } = input;
+const registerService = async (
+  email: string,
+  password: string,
+  input: UserType,
+): Promise<UserType> => {
   const checkEmail = await User.findOne({ email });
 
   // Check if email exist in database
@@ -31,9 +34,11 @@ const registerService = async (input: UserType): Promise<UserType> => {
   return newUser;
 };
 
-const loginService = async (input: UserType): Promise<UserType> => {
-  const { email, password } = input;
-
+const loginService = async (
+  email: string,
+  password: string,
+  
+): Promise<UserType> => {
   const userExist = await User.findOne({ email });
   //Check user exist
   if (!userExist) {

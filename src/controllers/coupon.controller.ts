@@ -1,20 +1,21 @@
 import { messagesSuccess } from '@/constants/messages';
 import {
-  couponCreate,
-  couponGetAll,
-  couponGetOne,
-  couponUpdate,
-  getDate,
-  getOneVoucher,
-  softDeleteCoupon,
+  createCouponService,
+  deleteCouponService,
+  getAllCouponService,
+  getOneCouponService,
+  getValueCouponService,
+  updateCouponService,
 } from '@/services/coupon.service';
-import { AppError } from '@/utils/errorHandle';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 const createCoupon: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {object} req.body Param body input
+   */
   try {
-    const coupon = couponCreate(req.body);
+    const coupon = createCouponService(req.body);
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATED,
       res: coupon,
@@ -25,6 +26,14 @@ const createCoupon: RequestHandler = async (req, res, next) => {
 };
 
 const getAllCoupon: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.query._page Param _page input
+   * @param {string} req.query._order Param _order input
+   * @param {number} req.query._limit Param _limit input
+   * @param {string} req.query._sort Param _sort input
+   * @param {string} req.query._status Param _status input
+   * @param {string} req.query._name Param _name input
+   */
   const {
     _page = 1,
     _order = 'asc',
@@ -33,21 +42,21 @@ const getAllCoupon: RequestHandler = async (req, res, next) => {
     _status = '',
     _name = '',
   } = req.query;
-  const page = typeof _page === 'string' ? parseInt(_page, 10) : 1;
-  const limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 9999;
-
-  const sortField = typeof _sort === 'string' ? _sort : 'createAt';
-
-  const options = {
-    page: page,
-    limit: limit,
-    sort: {
-      [sortField]: _order === 'desc' ? -1 : 1,
-    },
-    selected: ['-deleted', '-deletedAt'],
-  };
   try {
-    const docs = await couponGetAll(
+    const page = typeof _page === 'string' ? parseInt(_page, 10) : 1;
+    const limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 9999;
+
+    const sortField = typeof _sort === 'string' ? _sort : 'createAt';
+
+    const options = {
+      page: page,
+      limit: limit,
+      sort: {
+        [sortField]: _order === 'desc' ? -1 : 1,
+      },
+      selected: ['-deleted', '-deletedAt'],
+    };
+    const docs = await getAllCouponService(
       {
         $and: [
           _name ? { name: new RegExp(_name as string, 'i') } : {},
@@ -66,9 +75,12 @@ const getAllCoupon: RequestHandler = async (req, res, next) => {
 };
 
 const getOneCoupon: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.params.id Param id input
+   */
+  const { id } = req.params;
   try {
-    const { id } = req.params;
-    const vouchers = await couponGetOne(id);
+    const vouchers = await getOneCouponService(id);
     res.status(StatusCodes.OK).json({
       message: 'Get voucher success',
       res: vouchers,
@@ -79,13 +91,14 @@ const getOneCoupon: RequestHandler = async (req, res, next) => {
 };
 
 const updateCoupon: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.params.id Param id input
+   * @param {string} req.user._id Param _id input
+   */
+  const { id } = req.params;
+  const { _id } = req.user;
   try {
-    const { id } = req.params;
-    const userId = req.user._id;
-
-    await couponGetOne(id);
-
-    const updateCoupon = await couponUpdate(id, req.body, userId);
+    const updateCoupon = await updateCouponService(id, _id, req.body);
     res.status(StatusCodes.OK).json({
       message: 'Update coupon success',
       res: updateCoupon,
@@ -96,22 +109,12 @@ const updateCoupon: RequestHandler = async (req, res, next) => {
 };
 
 const getValueCoupon: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.body.coupon_code Param coupon_code input
+   */
+  const { coupon_code } = req.body;
   try {
-    const { coupon_code } = req.body;
-    const currentDate = getDate();
-
-    const voucher = await getOneVoucher(coupon_code);
-    const endDate = getDate(voucher.couponEndDate);
-    const startDate = getDate(voucher.couponStartDate);
-    if (currentDate > endDate) {
-      throw new AppError(StatusCodes.BAD_REQUEST, 'This voucher was ended');
-    }
-    if (currentDate < startDate) {
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        'This voucher is not started',
-      );
-    }
+    await getValueCouponService(coupon_code);
 
     res.status(StatusCodes.OK).json({
       message: 'Get value coupon success',
@@ -122,9 +125,12 @@ const getValueCoupon: RequestHandler = async (req, res, next) => {
 };
 
 const deleteCoupon: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.params.id Param id input
+   */
+  const { id } = req.params;
   try {
-    const { id } = req.params;
-    const coupon = softDeleteCoupon(id);
+    const coupon = deleteCouponService(id);
     res
       .status(StatusCodes.OK)
       .json({ message: 'Soft deleted success', res: coupon });

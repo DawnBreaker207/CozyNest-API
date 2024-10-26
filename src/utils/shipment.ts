@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { DISTRICT_ID, SHIPMENT_SHOP, TOKEN_SHIPMENT, WARD_CODE } from './env';
+import { AppError } from './errorHandle';
+import { StatusCodes } from '@/http-status-codes/build/cjs';
 
 // Khai báo kiểu cho phản hồi từ API của GHN
 interface Province {
@@ -29,7 +31,7 @@ interface AddressLocation {
  * @returns
  */
 const getAddressLocation = async (
-  location: string
+  location: string,
 ): Promise<AddressLocation | undefined> => {
   try {
     let ward_code: string = WARD_CODE as string;
@@ -42,7 +44,7 @@ const getAddressLocation = async (
           Token: TOKEN_SHIPMENT,
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
 
     const provinces_id = provinces.data.find((item) => {
@@ -59,11 +61,11 @@ const getAddressLocation = async (
           Token: TOKEN_SHIPMENT,
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
 
     const district = districts.data.data.find(
-      (item) => item.DistrictName == location.split(',')[1].trim()
+      (item) => item.DistrictName == location.split(',')[1].trim(),
     );
     if (!district) {
       throw new Error('District not found');
@@ -80,11 +82,11 @@ const getAddressLocation = async (
           Token: TOKEN_SHIPMENT,
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
 
     const ward = wards.data.data.find(
-      (item) => item.WardName == location.split(',')[0].trim()
+      (item) => item.WardName == location.split(',')[0].trim(),
     );
     if (!ward) {
       throw new Error('Ward not found');
@@ -96,7 +98,10 @@ const getAddressLocation = async (
       district,
     };
   } catch (error) {
-    console.log(error);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Problems when get address location' + error,
+    );
   }
 };
 
@@ -112,10 +117,15 @@ const getOrderInfo = async (order_code: string) => {
       { order_code },
       {
         headers: { Token: TOKEN_SHIPMENT },
-      }
+      },
     );
     return order_info.data;
-  } catch (error) {}
+  } catch (error) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Can not get order info' + error,
+    );
+  }
 };
 
 /**
@@ -133,11 +143,14 @@ const cancelledOrder = async (order_code: string) => {
           Token: TOKEN_SHIPMENT,
           ShopId: SHIPMENT_SHOP,
         },
-      }
+      },
     );
     return order_info;
   } catch (error) {
-    console.log(error);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Problems when cancel order ' + error,
+    );
   }
 };
 
@@ -156,11 +169,14 @@ const updateInfo = async (info: string[]) => {
           Token: TOKEN_SHIPMENT,
           ShopId: SHIPMENT_SHOP,
         },
-      }
+      },
     );
     return order_info.data;
   } catch (error) {
-    console.log(error);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Problems when update info' + error,
+    );
   }
 };
 
@@ -179,12 +195,15 @@ const calculateTime = async (info: string[]) => {
           Token: TOKEN_SHIPMENT,
           ShopId: SHIPMENT_SHOP,
         },
-      }
+      },
     );
 
     return expected_time.data;
   } catch (error) {
-    console.log(error);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Problems when calculate time' + error,
+    );
   }
 };
 
@@ -203,11 +222,14 @@ const calculateFee = async (location: string[]) => {
           Token: TOKEN_SHIPMENT,
           ShopId: SHIPMENT_SHOP,
         },
-      }
+      },
     );
     return calculate.data;
   } catch (error) {
-    console.log(error);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Problems when calculate fee' + error,
+    );
   }
 };
 
@@ -225,11 +247,14 @@ const getTokenPrintBill = async (order_code: string) => {
         headers: {
           Token: TOKEN_SHIPMENT,
         },
-      }
+      },
     );
     return print_bill.data;
   } catch (error) {
-    console.log(error);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Problems when get token print bill' + error,
+    );
   }
 };
 

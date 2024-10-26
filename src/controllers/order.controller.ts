@@ -250,7 +250,7 @@ const UpdateOrder: RequestHandler = async (req, res, next) => {
         email: email || currentOrder.email,
         addressShipping: addressShipping || currentOrder.addressShipping,
       },
-      { new: true }
+      { new: true },
     );
 
     if (status === messagesError.ORDER_CANCELED) {
@@ -305,7 +305,7 @@ const CancelOrder: RequestHandler = async (req, res, next) => {
           status: 'cancelled',
         },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!order) {
@@ -332,4 +332,5 @@ export {
   GetOrderByUserId,
   RemoveOrder,
   UpdateOrder,
+  CancelOrder,
 };

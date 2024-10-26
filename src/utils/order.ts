@@ -29,7 +29,7 @@ const filterOrderDay = async (
   day: number,
   res: Response,
   from?: string,
-  to?: string
+  to?: string,
 ) => {
   const today = new Date();
   const filterData: OrderType[] = [];
@@ -85,7 +85,7 @@ const filterOrderDay = async (
 const sendOrderMail = async (
   email?: string,
   data?: any,
-  amountReduced?: number
+  amountReduced?: number,
 ) => {
   let subject: string | null = null;
   let message: string | null = null;
@@ -100,7 +100,7 @@ const sendOrderMail = async (
     message = messagesSuccess.ORDER_UPDATE_MESSAGE;
   }
 
-  const code = null;
+  // const code = null;
 
   const totalPayment = data.totalPayment != null ? data.totalPayment : 0;
   const formattedTotalPayment =
@@ -116,7 +116,7 @@ const sendOrderMail = async (
       data,
       message,
       amountReduced,
-      formattedTotalPayment
+      formattedTotalPayment,
     ),
   });
 };
