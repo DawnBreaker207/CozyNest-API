@@ -1,82 +1,184 @@
-import { paymentMethod, statusOrder } from '@/constants/initialValue';
-import { messagesError, messagesSuccess } from '@/constants/messages';
-import Order, { ShippingInfo } from '@/models/Order';
-import { filterOrderDay, sendOrderMail } from '@/utils/order';
-import { RequestHandler } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import mongoose from 'mongoose';
+import { paymentMethod, statusOrder } from "@/constants/initialValue";
+import { messagesError, messagesSuccess } from "@/constants/messages";
+import { OrderType } from "@/interfaces/Order";
+import Cart from "@/models/Cart";
+import Order, { OrderItem, ShippingInfo } from "@/models/Order";
+import { Sku } from "@/models/Sku";
+import { filterOrderDay, sendOrderMail } from "@/utils/order";
+import { RequestHandler } from "express";
+import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
+import { createMomo, createVnPay, createZaloPay } from "./payment.controller";
 
 //! Client
 
+const buildPaymentMethod = (method: string) => {
+  switch (method) {
+    case "cash":
+      return {
+        method: "Thanh toán khi nhận hàng",
+        status: "unpaid",
+        orderInfo: "Thanh toán trực tiếp",
+        orderType: "cash",
+        partnerCode: "TIENMAT",
+      };
+    case "momo":
+      return {
+        method: "Thanh toán qua ví MOMO",
+        status: "unpaid",
+        orderInfo: "Thanh toán qua MOMO",
+        orderType: "bank_transfer",
+        partnerCode: "BANKTRANSFER",
+      };
+    case "vnpay":
+      return {
+        method: "Thanh toán qua VNPAY",
+        status: "unpaid",
+        orderInfo: "Thanh toán qua VNPAY",
+        orderType: "vnpay",
+        partnerCode: "VNPAY",
+      };
+    case "zalopay":
+      return {
+        method: "Thanh toán qua ZALOPAY",
+        status: "unpaid",
+        orderInfo: "Thanh toán qua ZALOPAY",
+        orderType: "zalopay",
+        partnerCode: "ZALOPAY",
+      };
+    default:
+      throw new Error("Phương thức thanh toán không hợp lệ");
+  }
+};
+
+const createShippingInfo = async (
+  order: any,
+  address: string,
+  shipping_address: string,
+  transportation_fee: number
+) => {
+  const detail_address = `${address},${shipping_address}`;
+  const shippingInfo = await ShippingInfo.create({
+    shipping_address: detail_address,
+    transportation_fee,
+  });
+  order.shipping_info = shippingInfo._id;
+  await order.save();
+};
+
 const CreateOrder: RequestHandler = async (req, res, next) => {
-  const { address, shipping_address, payment_method, ...body } = req.body;
-
-  const total_amount = Number(req.body.total_amount);
-  const transportation_fee = Number(req.body.transportation_fee) || 3000;
-  const billTotals = total_amount + transportation_fee;
-
-  if (isNaN(billTotals)) {
-    throw new Error("Bill totals is not a valid number");
-  }
-
-  let paymentMethod;
-  if (payment_method === "cash") {
-    paymentMethod = {
-      method: "Thanh toán khi nhận hàng",
-      status: "unpaid",
-      orderInfo: "Thanh toán trực tiếp",
-      orderType: "cash",
-      partnerCode: "TIENMAT",
-    };
-  } else if (payment_method === "bank_transfer") {
-    paymentMethod = {
-      method: "Chuyển khoản",
-      status: "unpaid",
-      orderInfo: "Thanh toán qua ngân hàng",
-      orderType: "bank_transfer",
-      partnerCode: "BANKTRANSFER",
-    };
-  } else {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid payment method" });
-  }
-
   try {
-    const order = await Order.create({
-      ...body,
+    const {
+      address,
+      shipping_address,
+      payment_method,
       total_amount,
-      billTotals,
-      payment_method: paymentMethod  // Sửa thành payment_method
-    });
+      transportation_fee = 3000,
+      guestId,
+      cart_id,
+      ...body
+    } = req.body;
 
-    if (order.shipping_method === "shipped") {
-      try {
-        const detail_address = `${address},${shipping_address}`;
-        const shipping_infor = await ShippingInfo.create({
-          shipping_address: detail_address,
-          transportation_fee: transportation_fee,
-        });
-        order.shipping_info = shipping_infor._id;
-        await order.save();
-      } catch (error) {
-        console.error("Error creating shipping info or saving order:", error);
-        throw new Error("Unable to process shipping information.");
-      }
+    let paymentMethod;
+    try {
+      paymentMethod = buildPaymentMethod(payment_method);
+    } catch (error: any) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: error.message });
     }
 
+    // Kiểm tra phương thức thanh toán và gọi API tương ứng
+    let payUrl: string | undefined;
+    try {
+      switch (payment_method) {
+        case "momo":
+          const momoResponse: any = await createMomo(req, res, next);
+          payUrl = momoResponse?.payUrl ?? "";
+          break;
+
+        case "zalopay":
+          const zalopayResponse: any = await createZaloPay(req, res, next);
+          payUrl = zalopayResponse?.payUrl ?? "";
+          break;
+
+        case "vnpay":
+          const vnpayResponse: any = await createVnPay(req, res, next);
+          payUrl = vnpayResponse?.payUrl ?? "";
+          break;
+        default:
+          throw new Error("Phương thức thanh toán không hợp lệ");
+      }
+
+      // Kiểm tra xem payUrl có hợp lệ không
+      if (!payUrl) {
+        throw new Error("Không thể lấy liên kết thanh toán từ phản hồi.");
+      }
+    } catch (error: any) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: error.message });
+    }
+
+    // Tạo đơn hàng với thông tin thanh toán
+    const order = await Order.create({
+      ...body,
+      total_amount: Number(total_amount) + transportation_fee,
+      payment_method: paymentMethod,
+      payment_url: payUrl, // Đính kèm liên kết thanh toán
+    });
+
+    // Tạo thông tin giao hàng nếu phương thức giao hàng là "shipped"
+    if (order.shipping_method === "shipped") {
+      await createShippingInfo(
+        order,
+        address,
+        shipping_address,
+        transportation_fee
+      );
+    }
+
+    // Cập nhật giỏ hàng
+    await Cart.findOneAndUpdate(
+      { cart_id },
+      { $set: { products: [], total_money: 0 } }
+    );
+
+    // Trả về phản hồi đơn hàng cùng với liên kết thanh toán
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.CREATE_ORDER_SUCCESS,
       res: {
         ...order.toObject(),
-        payment_method: order.payment_method  // Bao gồm payment_method trong phản hồi
+        payment_method: order.payment_method,
+        payment_url: order.payment_url, // Đính kèm liên kết thanh toán
       },
+    });
+  } catch (error) {
+    console.error("Lỗi khi tạo đơn hàng:", error);
+    next(error);
+  }
+};
+
+const updatePaymentStatus: RequestHandler  = async (req, res, next) => {
+  try {
+    const { _id, orderInfo } = req.body;
+    const order = await Order.findByIdAndUpdate(_id, {
+      $set: {
+        payment_status: "paid",
+        payment_method: req.body,
+      },
+    });
+    if (!order) {
+      throw new Error("Không tim thấy đơn hàng");
+    }
+    return res.json({
+      status: 200,
+      message: "Thành công",
     });
   } catch (error) {
     next(error);
   }
 };
-
-
-
 const RemoveOrder: RequestHandler = async (req, res, next) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
@@ -471,6 +573,6 @@ export {
   // GetOneOrder,
   // GetOrderByUserId,
   RemoveOrder,
-  // UpdateOrder,
   updateStatus,
+  updatePaymentStatus
 };

@@ -3,7 +3,7 @@ import {
   // GetAllOrders,
   // GetOneOrder,
   // GetOrderByUserId,
-  // UpdateOrder,
+
 } from '@/controllers/order.controller';
 import { Router } from 'express';
 

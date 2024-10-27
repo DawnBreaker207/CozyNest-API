@@ -5,6 +5,7 @@ export interface OrderType extends Document {
   total_amount: number;
   user_id?: Types.ObjectId;
   coupon_id?: Types.ObjectId;
+  email?: string;
   shop_address?: string;
   phone_number: number;
   payment_status?: "paid" | "unpaid";
@@ -15,6 +16,7 @@ export interface OrderType extends Document {
     created_at: Date;
   }[];
   date_issued?: Date;
+  payment_url?: string;
   content?: string;
   shipping_method?: "shipped" | "at_store";
   shipping_info?: Types.ObjectId;

@@ -15,7 +15,7 @@ import {
 import { sortObject } from '@/utils/payments';
 import axios from 'axios';
 import * as crypto from 'crypto';
-import { RequestHandler } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import moment from 'moment';
 import qs from 'qs';
@@ -85,6 +85,7 @@ const createVnPay: RequestHandler = async (req, res, next) => {
     vnpUrl += '?' + qs.stringify(vnp_Params, { encode: false });
 
     res.status(StatusCodes.OK).json({ res: vnpUrl });
+    return { payUrl: vnpUrl };
   } catch (error) {
     next(error);
   }
@@ -205,43 +206,28 @@ const vnPayStatus: RequestHandler = async (req, res, next) => {
 };
 
 //* MoMo
-const createMomo: RequestHandler = async (req, res, next) => {
-  //https://developers.momo.vn/#/docs/en/aiov2/?id=payment-method
-  //parameters
-  const accessKey: string = MOMO_ACCESS_KEY as string;
-  const secretKey: string = MOMO_SECRET_KEY as string;
-  const orderInfo: string = req.body.info || 'pay with MoMo';
+
+
+const createMomo = async (req: Request, res: Response, next: NextFunction) => {
+  const accessKey: string = process.env.MOMO_ACCESS_KEY || '';
+  const secretKey: string = process.env.MOMO_SECRET_KEY || '';
   const partnerCode: string = 'MOMO';
-  const redirectUrl: string = MOMO_REDIRECT_URL as string;
-  const ipnUrl: string = MOMO_IPN_URL as string;
+  const redirectUrl: string = process.env.MOMO_REDIRECT_URL || '';
+  const ipnUrl: string = process.env.MOMO_IPN_URL || '';
   const requestType: string = 'payWithMethod';
   const amount: string = req.body.amount || '1000';
-  const orderId: string =
-    req.body.orderId || `${partnerCode}${new Date().getTime()}`;
+  const orderInfo: string = req.body.info || 'pay with MoMo';
+  const orderId: string = req.body.orderId || `${partnerCode}${new Date().getTime()}`;
   const requestId: string = orderId;
   const extraData: string = '';
   const orderGroupId: string = '';
   const autoCapture: boolean = true;
   const lang: string = 'vi';
 
-  //before sign HMAC SHA256 with format
-  //accessKey=$accessKey&amount=$amount&extraData=$extraData&ipnUrl=$ipnUrl&orderId=$orderId&orderInfo=$orderInfo&partnerCode=$partnerCode&redirectUrl=$redirectUrl&requestId=$requestId&requestType=$requestType
   const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
+  const signature = crypto.createHmac('sha256', secretKey).update(rawSignature).digest('hex');
 
-  //puts raw signature
-  console.log('--------------------RAW SIGNATURE----------------');
-  console.log(rawSignature);
-  //signature
-
-  const signature = crypto
-    .createHmac('sha256', secretKey)
-    .update(rawSignature)
-    .digest('hex');
-  console.log('--------------------SIGNATURE----------------');
-  console.log(signature);
-
-  //json object send to MoMo endpoint
-  const requestBody = JSON.stringify({
+  const requestBody = {
     partnerCode,
     partnerName: 'Test',
     storeId: 'MomoTestStore',
@@ -257,26 +243,32 @@ const createMomo: RequestHandler = async (req, res, next) => {
     extraData,
     orderGroupId,
     signature,
-  });
-
-  const options = {
-    method: 'POST',
-    url: 'https://test-payment.momo.vn/v2/gateway/api/create',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(requestBody),
-    },
-    data: requestBody,
   };
 
-  let result;
   try {
-    result = await axios(options);
-    res.status(StatusCodes.OK).json({ res: result.data });
-  } catch (error) {
+    const result = await axios.post('https://test-payment.momo.vn/v2/gateway/api/create', requestBody, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // In phản hồi để kiểm tra cấu trúc dữ liệu
+    console.log('MoMo API Response:', result.data);
+
+    if (result && result.data && result.data.resultCode === 0) {
+      // Trả về `payUrl` nếu phản hồi thành công
+      return { payUrl: result.data.payUrl };
+    } else {
+      throw new Error(`Invalid response from MoMo API: ${result.data.message || 'Unknown error'}`);
+    }
+  } catch (error:any) {
+    console.error('Error while calling MoMo API:', error.response ? error.response.data : error.message);
     next(error);
   }
 };
+
+
+
 
 const momoCallback: RequestHandler = async (req, res) => {
   console.log('callback:');
@@ -374,8 +366,11 @@ const createZaloPay: RequestHandler = async (req, res, next) => {
     const result = await axios.post(ZALO_PAY_ENDPOINT as string, null, {
       params: order,
     });
-
-    res.status(StatusCodes.OK).json({ res: result.data });
+    if (result && result.data && result.data.order_url) {
+      return { payUrl: result.data.order_url }; // Trả về `order_url` nếu thành công
+    } else {
+      throw new Error("Invalid response from ZaloPay API");
+    }
   } catch (error) {
     next(error);
   }

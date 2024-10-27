@@ -3,6 +3,7 @@ import { OrderItemType, OrderType, ShippingInfoType } from '@/interfaces/Order';
 import mongoose from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
+
 const orderItemSchema = new mongoose.Schema<OrderItemType>(
   {
     order_id: {
@@ -69,7 +70,7 @@ const shippingInfoSchema = new mongoose.Schema<ShippingInfoType>(
 );
 
 // Định nghĩa schema cho Order
-const orderSchema = new mongoose.Schema<OrderType>(
+const orderSchema = new mongoose.Schema<OrderType >(
   {
     customer_name: {
       type: String,
@@ -79,9 +80,15 @@ const orderSchema = new mongoose.Schema<OrderType>(
       type: Number,
       required: true,
     },
+    
+    email: { type: String, required: true },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+    payment_url: {
+      type:String,
+      required: true,
     },
     coupon_id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -171,7 +178,6 @@ const orderSchema = new mongoose.Schema<OrderType>(
       },
       
     ],
-    billTotals: { type: Number, required: true },
   },
   {
     collection: "orders",
@@ -187,5 +193,5 @@ const OrderItem = mongoose.model<OrderItemType>('OrderDetail', orderItemSchema);
 const ShippingInfo = mongoose.model<ShippingInfoType>('Shipping', shippingInfoSchema);
 const Order = mongoose.model<OrderType>('Order', orderSchema);
 
-export { ShippingInfo, OrderItem };
+export { ShippingInfo, OrderItem,Order };
 export default Order;
