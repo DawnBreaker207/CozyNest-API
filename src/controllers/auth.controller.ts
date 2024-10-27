@@ -7,7 +7,6 @@ import {
 } from '@/services/auth.service';
 import { SECRET_ACCESS_TOKEN, SECRET_REFRESH_TOKEN } from '@/utils/env';
 import { createToken } from '@/utils/jwt';
-import 'dotenv/config';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
