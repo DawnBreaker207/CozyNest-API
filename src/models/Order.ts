@@ -1,8 +1,6 @@
-
-import { OrderItemType, OrderType, ShippingInfoType } from '@/interfaces/Order';
-import mongoose from 'mongoose';
-import mongoosePaginate from 'mongoose-paginate-v2';
-
+import { OrderItemType, OrderType, ShippingInfoType } from "@/interfaces/Order";
+import mongoose, { PaginateModel } from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 const orderItemSchema = new mongoose.Schema<OrderItemType>(
   {
@@ -70,7 +68,7 @@ const shippingInfoSchema = new mongoose.Schema<ShippingInfoType>(
 );
 
 // Định nghĩa schema cho Order
-const orderSchema = new mongoose.Schema<OrderType >(
+const orderSchema = new mongoose.Schema<OrderType>(
   {
     customer_name: {
       type: String,
@@ -80,14 +78,14 @@ const orderSchema = new mongoose.Schema<OrderType >(
       type: Number,
       required: true,
     },
-    
+
     email: { type: String, required: true },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
     payment_url: {
-      type:String,
+      type: String,
       required: true,
     },
     coupon_id: {
@@ -106,14 +104,14 @@ const orderSchema = new mongoose.Schema<OrderType >(
       enum: ["paid", "unpaid"],
       default: "unpaid",
     },
-    payment_method:[
+    payment_method: [
       {
         method: { type: String },
         status: { type: String },
         orderInfo: { type: String },
         orderType: { type: String },
-        partnerCode: { type: String }
-      }
+        partnerCode: { type: String },
+      },
     ],
     status: {
       type: String,
@@ -168,7 +166,7 @@ const orderSchema = new mongoose.Schema<OrderType >(
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
+          ref: "Product",
           required: true,
         },
         originName: { type: String, required: true },
@@ -176,7 +174,6 @@ const orderSchema = new mongoose.Schema<OrderType >(
         thumbnail: { type: String, required: true },
         price: { type: Number, required: true },
       },
-      
     ],
   },
   {
@@ -186,12 +183,19 @@ const orderSchema = new mongoose.Schema<OrderType >(
   }
 );
 
-
 orderSchema.plugin(mongoosePaginate);
 
-const OrderItem = mongoose.model<OrderItemType>('OrderDetail', orderItemSchema);
-const ShippingInfo = mongoose.model<ShippingInfoType>('Shipping', shippingInfoSchema);
-const Order = mongoose.model<OrderType>('Order', orderSchema);
+const Order = mongoose.model<OrderType, PaginateModel<OrderType>>(
+  "Order",
+  orderSchema
+);
+const Order_Detail = mongoose.model<OrderItemType>(
+  "OrderDetail",
+  orderItemSchema
+);
+const Shipping = mongoose.model<ShippingInfoType>(
+  "Shipping",
+  shippingInfoSchema
+);
 
-export { ShippingInfo, OrderItem,Order };
-export default Order;
+export { Order, Order_Detail, Shipping };

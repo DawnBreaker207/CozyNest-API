@@ -1,7 +1,7 @@
 import { ProductCart } from '@/interfaces/Cart';
 import { OptionalValueType } from '@/interfaces/Variant';
 import Cart from '@/models/Cart';
-import Order from '@/models/Order';
+import { Order } from '@/models/Order';
 import { Sku } from '@/models/Sku';
 import { Variant } from '@/models/Variant';
 import { AppError } from '@/utils/errorHandle';

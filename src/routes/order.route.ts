@@ -1,26 +1,45 @@
 import {
+  addOneProduct_order,
   CreateOrder,
-  // GetAllOrders,
-  // GetOneOrder,
-  // GetOrderByUserId,
-
-} from '@/controllers/order.controller';
-import { Router } from 'express';
+  deleteOneProduct_order,
+  deleteProduct_order,
+  getAll,
+  getAllOrder,
+  getReturnedOrder,
+  returnedOrder,
+  serviceFree,
+  updatePaymentStatus,
+  updateStatus,
+} from "@/controllers/order.controller";
+import { Router } from "express";
 
 const routeOrder = Router();
-// //* Get all orders exist
-// routeOrder.get('/', GetAllOrders);
+routeOrder.put("/decrement", deleteOneProduct_order);
+routeOrder.put("/increment", addOneProduct_order);
+routeOrder.put("/decrement-product-order", deleteProduct_order);
 
-// //* Get order by order id
-// routeOrder.get('/orderByOrderId/:id', GetOneOrder);
+// routeOrder.post("/send-otp", sendOtpCode);
+routeOrder.post("/payment-status", updatePaymentStatus);
+// routeOrder.post("/verify-otp", verifyOtpCode);
+routeOrder.post("/calculateFee", serviceFree);
+// routeOrder.put("/orderByPhoneNumber", getOrderByPhoneNumber);
+// routeOrder.get("/orderByUserId", getOrderByUserId);
+// routeOrder.post("/getTokenPrintBill", getTokenPrintBills);
+routeOrder.post("/return", returnedOrder);
+routeOrder.get("/return", getReturnedOrder);
+// routeOrder.put("/return/:id", confirm_returnedOrder);
+// routeOrder.put("/confirm-completed/:id", updateStatusDelivered);
 
-// //* Get order by user id
-// routeOrder.get('/orderByUserId', GetOrderByUserId);
-
-//* Create new order
-routeOrder.post('/', CreateOrder);
-
-// //* Update order status
-// routeOrder.patch('/updateOrder/:id', UpdateOrder);
+routeOrder.post("/", CreateOrder);
+routeOrder.get("/", getAll);
+routeOrder.get("/statistical", getAllOrder);
+// routeOrder.get("/shipping", getAllShipping);
+// routeOrder.get("/:id", getOne);
+// routeOrder.delete("/cancel/:id", cancelOrder);
+// routeOrder.delete("/", delete_all_order);
+routeOrder.put("/updateStatus/:id", updateStatus);
+// routeOrder.put("/updateInfoCustomer/:id", update_info_customer);
+// routeOrder.post("/pay-momo", payMomo);
+// routeOrder.post("/pay-vnpay", payVnPay);
 
 export default routeOrder;
