@@ -37,7 +37,6 @@ const registerService = async (
 const loginService = async (
   email: string,
   password: string,
-  
 ): Promise<UserType> => {
   const userExist = await User.findOne({ email });
   //Check user exist
@@ -63,10 +62,12 @@ const loginService = async (
 const checkTokenService = async (refreshToken: string): Promise<UserType> => {
   // If refresh token exist, verify it
   const decoded = verifyToken(refreshToken, SECRET_REFRESH_TOKEN as string);
-  if (decoded) {
+  console.log(decoded);
+
+  if (!decoded) {
     throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid token');
   }
-  const { _id } = decoded as { _id: string };
+  const { _id } = decoded as unknown as { _id: string };
   const user = await User.findById(_id);
 
   // If user not exist, return error

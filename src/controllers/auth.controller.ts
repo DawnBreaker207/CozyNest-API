@@ -23,12 +23,12 @@ const Register: RequestHandler = async (req, res, next) => {
     const accessToken = createToken(
       { _id: newUser._id },
       SECRET_ACCESS_TOKEN as string,
-      '5m',
+      '1h',
     );
 
     // save access token in cookie
     res.cookie('accessToken', accessToken, {
-      expires: new Date(Date.now() + (timeCounts.mins_5 || 5 * 60 * 1000)),
+      expires: new Date(Date.now() + (timeCounts.hours_1 || 60 * 60 * 1000)),
       httpOnly: true,
     });
 
@@ -47,7 +47,7 @@ const Register: RequestHandler = async (req, res, next) => {
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.REGISTER_SUCCESS,
       accessToken,
-      expires: timeCounts.mins_10 || 10 * 60 * 1000,
+      expires: timeCounts.hours_1 || 60 * 60 * 1000,
       res: newUser,
     });
   } catch (error) {
@@ -68,12 +68,12 @@ const Login: RequestHandler = async (req, res, next) => {
     const accessToken = createToken(
       { _id: userExist._id },
       SECRET_ACCESS_TOKEN as string,
-      '5m',
+      '1h',
     );
 
     // Save access token in cookie
     res.cookie('accessToken', accessToken, {
-      expires: new Date(Date.now() + (timeCounts.mins_5 || 5 * 60 * 1000)),
+      expires: new Date(Date.now() + (timeCounts.hours_1 || 60 * 60 * 1000)),
       httpOnly: true,
     });
 
@@ -92,7 +92,7 @@ const Login: RequestHandler = async (req, res, next) => {
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.LOGIN_SUCCESS,
       accessToken: accessToken,
-      expires: timeCounts.mins_10 || 10 * 60 * 1000,
+      expires: timeCounts.hours_1 || 60 * 60 * 1000,
       res: userExist,
     });
   } catch (error) {
@@ -119,18 +119,18 @@ const checkRefreshToken: RequestHandler = async (req, res, next) => {
     const accessToken = createToken(
       { _id: checkToken._id },
       SECRET_ACCESS_TOKEN as string,
-      '1m',
+      '1h',
     );
     res.cookie('accessToken', accessToken),
       {
-        expires: new Date(Date.now() + (timeCounts.mins_5 || 5 * 60 * 1000)),
+        expires: new Date(Date.now() + (timeCounts.hours_1 || 60 * 60 * 1000)),
         httpOnly: true,
       };
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.CHECK_TOKEN_SUCCESS,
       accessToken,
-      expires: timeCounts.mins_10 || 10 * 60 * 1000,
+      expires: timeCounts.hours_1 || 60 * 60 * 1000,
       res: checkToken,
     });
   } catch (error) {

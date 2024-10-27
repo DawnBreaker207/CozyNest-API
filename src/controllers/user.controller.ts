@@ -129,14 +129,14 @@ const generateVerifyToken: RequestHandler = async (req, res, next) => {
     const { verification } = await generateVerifyTokenService(email);
 
     res.cookie('verify', verification, {
-      maxAge: 60 * 60 * 1000,
+      maxAge: timeCounts.hours_1 || 60 * 60 * 1000,
       httpOnly: true,
     });
     res.cookie(
       'verificationExpire',
-      Date.now() + (timeCounts.mins_5 || 5 * 60 * 1000),
+      Date.now() + (timeCounts.hours_1 || 60 * 60 * 1000),
       {
-        maxAge: 60 * 60 * 1000,
+        maxAge: timeCounts.hours_1 || 60 * 60 * 1000,
         httpOnly: true,
       },
     );

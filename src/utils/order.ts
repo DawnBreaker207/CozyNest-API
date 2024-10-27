@@ -5,6 +5,7 @@ import { sendOrder } from '@/utils/texts';
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import moment from 'moment';
+import { timeCounts } from '../constants/initialValue';
 
 /**
  *
@@ -35,7 +36,8 @@ const filterOrderDay = async (
   const filterData: OrderType[] = [];
 
   if (day) {
-    const dayOfPast = today.getTime() - day * (24 * 60 * 60 * 1000);
+    const dayOfPast =
+      today.getTime() - day * (timeCounts.hours_24 || 24 * 60 * 60 * 1000);
     for (const item of data) {
       const itemDate = new Date(item.createdAt || Date.now());
       if (itemDate.getTime() >= dayOfPast && itemDate <= today) {
