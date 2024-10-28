@@ -26,7 +26,12 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
       cart_id,
       ...body
     } = req.body;
-
+    const cart = await Cart.findOne({ _id: cart_id });
+    if (!cart) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Giỏ hàng không tìm thấy." });
+    }
     let paymentMethod;
     try {
       paymentMethod = buildPaymentMethod(payment_method);
@@ -75,7 +80,43 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
       payment_method: paymentMethod,
       payment_url: payUrl, // Đính kèm liên kết thanh toán
     });
-
+    const add_product_item = async (product: any) => {
+      const new_item = await Order_Detail.create({
+        order_id: order._id,
+        sku_id: product.sku_id,
+        price: product.price,
+        quantity: product.quantity,
+        price_before_discount: product.price_before_discount,
+        price_discount_percent: product.price_discount_percent,
+        total_money: product.quantity * product.price,
+      });
+      return new_item;
+    };
+    const get_sku = async (sku_id: string) => {
+      const new_item = await Sku.findById(sku_id);
+      return new_item;
+    };
+    const order_details = await Promise.all(
+      cart!.products.map((item) => {
+        return add_product_item(item);
+      })
+    );
+    const new_order_details = await Promise.all(
+      order_details.map(async (item) => {
+        const data_sku = await get_sku(item.sku_id.toString());
+        return {
+          _id: item._id,
+          sku_id: data_sku?._id,
+          name: data_sku?.name,
+          price: data_sku?.price,
+          price_before_discount: data_sku?.price_before_discount,
+          price_discount_percent: data_sku?.price_discount_percent,
+          image: data_sku?.image,
+          quantity: item.quantity,
+          total_money: item.total_money,
+        };
+      })
+    );
     // Tạo thông tin giao hàng nếu phương thức giao hàng là "shipped"
     if (order.shipping_method === "shipped") {
       await createShippingInfo(
@@ -87,16 +128,20 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
     }
 
     // Cập nhật giỏ hàng
-    await Cart.findOneAndUpdate(
-      { cart_id },
-      { $set: { products: [], total_money: 0 } }
-    );
+    const order_created = order.toObject();
+    if (order) {
+      await Cart.findOneAndUpdate(
+        { cart_id },
+        { $set: { products: [], total_money: 0 } }
+      );
+    }
 
     // Trả về phản hồi đơn hàng cùng với liên kết thanh toán
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.CREATE_ORDER_SUCCESS,
       res: {
-        ...order.toObject(),
+        ...order_created,
+        products: new_order_details,
         payment_method: order.payment_method,
         payment_url: order.payment_url, // Đính kèm liên kết thanh toán
       },
@@ -328,8 +373,148 @@ export const addOneProduct_order: RequestHandler = async (req, res, next) => {
   }
 };
 
-///// Admin
+// hàm xử lý yêu cầu tìm đơn hàng theo sdt
+export const getOrderByPhoneNumber: RequestHandler = async (req, res, next) => {
+  try {
+    const _page = parseInt(req.query._page as string) || 1;
+    const _sort = (req.query._sort as string) || "created_at";
+    const _order = (req.query._order as string) || "desc";
+    const _limit = parseInt(req.query._limit as string) || 6;
+    const search = req.query.search as string;
+    const phone_number = req.body.phone_number as string;
 
+    const orderDirection = _order === "desc" ? -1 : 1;
+
+    const conditions: Record<string, any> = {};
+    if (search) {
+      conditions.customer_name = { $regex: new RegExp(search, "i") };
+    }
+    if (phone_number) {
+      conditions.phone_number = phone_number;
+    }
+
+    const options = {
+      page: _page,
+      limit: _limit,
+      sort: { [_sort]: orderDirection },
+      select: ["-deleted", "-deleted_at"],
+    };
+
+    const { docs, ...paginate } = await Order.paginate(conditions, options);
+
+    if (!docs) {
+      throw createError.NotFound("Không tìm thấy đơn hàng");
+    }
+
+    const orderDetailsPromises = docs.map(async (result) => {
+      const orderDetails = await Order_Detail.find({ order_id: result._id });
+      const newOrder = await Promise.all(
+        orderDetails.map(async (item) => {
+          const sku = await Sku.findOne({ _id: item.sku_id }).select(
+            "name shared_url image"
+          );
+          const newSku = sku?.toObject();
+          return {
+            ...item.toObject(),
+            ...newSku,
+          };
+        })
+      );
+      return {
+        ...result.toObject(),
+        orders: newOrder,
+      };
+    });
+
+    const ordersWithDetails = await Promise.all(orderDetailsPromises);
+
+    return res.json({
+      status: 200,
+      message: "Lấy toàn bộ sản phẩm thành công",
+      data: {
+        items: ordersWithDetails,
+        paginate,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+// hàm xử lý yêu cầu tìm đơn hàng theo user
+export const getOrderByUserId: RequestHandler = async (req, res, next) => {
+  try {
+    const {
+      _page = 1,
+      _sort = "created_at",
+      _order = "desc",
+      _limit = 10,
+      status,
+      id,
+    } = req.query;
+
+    // Tạo điều kiện tìm kiếm
+    const conditions: Record<string, any> = {};
+    if (status) {
+      conditions.status = status;
+    }
+    if (id) {
+      conditions.userId = id;
+    }
+
+    // Thiết lập tùy chọn cho phân trang
+    const options = {
+      page: parseInt(_page as string),
+      limit: parseInt(_limit as string),
+      sort: {
+        [String(_sort)]: _order === "desc" ? -1 : 1,
+      },
+      select: ["-deleted", "-deleted_at"],
+    };
+
+    // Tìm kiếm đơn hàng
+    const { docs, ...paginate } = await Order.paginate(conditions, options);
+
+    // Kiểm tra nếu không tìm thấy đơn hàng
+    if (docs.length <= 0) {
+      throw createError.NotFound("Không tìm thấy đơn hàng");
+    }
+
+    // Tìm kiếm chi tiết đơn hàng
+    const orderDetailsPromises = docs.map(async (item) => {
+      const orderDetails = await Order_Detail.find({ order_id: item._id });
+
+      const newOrderDetails = await Promise.all(
+        orderDetails.map(async (detail) => {
+          const sku = await Sku.findOne({ _id: detail.sku_id }).select(
+            "name shared_url image"
+          );
+          return {
+            ...detail.toObject(),
+            ...(sku ? sku.toObject() : {}),
+          };
+        })
+      );
+
+      return {
+        ...item.toObject(),
+        order_details: newOrderDetails,
+      };
+    });
+
+    const ordersWithDetails = await Promise.all(orderDetailsPromises);
+
+    return res.json({
+      status: 200,
+      message: "Tìm thấy đơn hàng thành công",
+      data: {
+        items: ordersWithDetails,
+        paginate,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 // Lấy danh sách đơn hàng với các tùy chọn tìm kiếm, sắp xếp và phân trang.
 export const getAll: RequestHandler = async (req, res, next) => {
   const {
@@ -897,8 +1082,8 @@ export const getAllOrder: RequestHandler = async (req, res, next) => {
 
     // Gửi phản hồi thành công với thông tin đơn hàng
     return res.json({
-      status: 200, 
-      message: "Lấy toàn bộ đơn hàng thành công", 
+      status: 200,
+      message: "Lấy toàn bộ đơn hàng thành công",
       data: {
         total_order, // Tổng số đơn hàng
         total_user, // Tổng số khách hàng duy nhất
