@@ -15,15 +15,17 @@ export const checkAuth: RequestHandler = async (req, res, next) => {
         message: messagesError.TOKEN_INVALID,
       });
     }
+    // Check token expired
 
     // Check token valid
-    const decode = verifyToken(token) as { _id?: string };
+    const decode = verifyToken(token);
 
     if (!decode) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.TOKEN_INVALID,
       });
     }
+
     // Check user valid
     const user: UserType | null = await User.findById(decode._id);
     if (!user) {
