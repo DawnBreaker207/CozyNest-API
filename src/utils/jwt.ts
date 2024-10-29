@@ -1,8 +1,7 @@
+import { StatusCodes } from '@/http-status-codes/build/cjs';
 import jwt from 'jsonwebtoken';
 import { JWT, SECRET_ACCESS_TOKEN, SECRET_REFRESH_TOKEN } from './env';
 import { AppError } from './errorHandle';
-import { StatusCodes } from '@/http-status-codes/build/cjs';
-import crypto from 'crypto';
 /**
  *
  * @param payload
@@ -62,4 +61,5 @@ const checkExpiredToken = async (token: string) => {
     return;
   }
 };
-export { createToken, verifyToken, decodedToken, checkExpiredToken };
+export { checkExpiredToken, createToken, decodedToken, verifyToken };
+

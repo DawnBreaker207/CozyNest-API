@@ -1,9 +1,8 @@
-import { JwtPayload } from '@/@types/jsonwebtoken';
 import { messagesError } from '@/constants/messages';
 import { UserType } from '@/interfaces/User';
 import User from '@/models/User';
 import { AppError } from '@/utils/errorHandle';
-import { checkExpiredToken, decodedToken, verifyToken } from '@/utils/jwt';
+import { verifyToken } from '@/utils/jwt';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -32,7 +31,7 @@ export const checkAuth: RequestHandler = async (req, res, next) => {
     if (!user) {
       throw new AppError(StatusCodes.NOT_FOUND, 'User not exist');
     }
-
+    req.user = user;
     next();
   } catch (error) {
     next(error);
