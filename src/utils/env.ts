@@ -38,8 +38,8 @@ const {
   // GHN configs
   TOKEN_SHIPMENT,
   SHIPMENT_SHOP,
-  DISTRICT_ID,
-  WARD_CODE,
+  DISTRICT_ID ='1915',
+  WARD_CODE = '1B2128',
 } = process.env;
 export {
   PORT,

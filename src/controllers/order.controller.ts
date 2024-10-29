@@ -11,9 +11,10 @@ import moment from "moment";
 import {
   calculateFee,
   cancelledOrder,
-  getAddressLocation,
+  getLocation,
+  getTokenPrintBill,
 } from "@/utils/shipment";
-import axios from "axios";
+import axios, { Axios } from "axios";
 import { Returned } from "@/models/Return";
 
 ///// Client
@@ -132,19 +133,18 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
     }
 
     // Cập nhật giỏ hàng
-    const order_created = order.toObject();
-    if (order) {
+  
       await Cart.findOneAndUpdate(
         { cart_id },
         { $set: { products: [], total_money: 0 } }
       );
-    }
+    
 
     // Trả về phản hồi đơn hàng cùng với liên kết thanh toán
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.CREATE_ORDER_SUCCESS,
       res: {
-        ...order_created,
+        ...order.toObject(),
         products: new_order_details,
         payment_method: order.payment_method,
         payment_url: order.payment_url, // Đính kèm liên kết thanh toán
@@ -266,7 +266,7 @@ export const returnedOrder: RequestHandler = async (req, res, next) => {
 export const serviceFree: RequestHandler = async (req, res, next) => {
   try {
     const location = req.body;
-    const code_location = await getAddressLocation(location); // Lấy thông tin địa điểm
+    const code_location = await getLocation(location); // Lấy thông tin địa điểm
     // Kiểm tra xem code_location có tồn tại không
     if (!code_location) {
       throw createError.BadRequest(
@@ -655,7 +655,7 @@ export const updateStatus: RequestHandler = async (req, res, next) => {
     const id = req.params.id;
 
     // Lấy trạng thái mới từ yêu cầu (request body)
-    const status = req.body;
+   const { status } = req.body;
 
     // Danh sách các trạng thái hợp lệ
     const array_status = [
@@ -726,9 +726,11 @@ export const updateStatus: RequestHandler = async (req, res, next) => {
       // Hàm lấy thông tin SKU dựa trên ID
       const get_sku = async (sku_id: string) => {
         const new_item = await Sku.findById(sku_id);
-        return new_item; // Trả về thông tin SKU
+        if (!new_item) {
+          throw createError.NotFound(`SKU with ID ${sku_id} not found`);
+        }
+        return new_item;
       };
-
       // Lấy thông tin chi tiết đơn hàng mới bằng cách tìm thông tin SKU cho từng mục
       const new_order_details = await Promise.all(
         order_details.map(async (item) => {
@@ -753,8 +755,11 @@ export const updateStatus: RequestHandler = async (req, res, next) => {
 
       // Tách địa chỉ giao hàng thành các phần
       const address_detail = shipping.shipping_address.split(",");
-      const address = address_detail.shift(); // Lấy phần địa chỉ chính
-      const code_ward_district = await getAddressLocation(
+      const addressString = address_detail.join(",");
+console.log("Địa chỉ:", addressString);
+      const address = address_detail.shift();
+       // Lấy phần địa chỉ chính
+      const code_ward_district = await getLocation(
         address_detail.join(",") // Gọi hàm lấy mã phường/xã và quận/huyện từ địa chỉ
       );
       // Kiểm tra xem có lấy được thông tin mã phường/xã và quận/huyện không
@@ -1445,6 +1450,107 @@ export const getAllShipping: RequestHandler = async (req, res, next)=> {
         },
       });
     }
+  } catch (error) {
+    next(error);
+  }
+};
+export const getTokenPrintBills: RequestHandler = async (req, res, next) => {
+  try {
+    const { order_id } = req.body;
+
+    // Tìm đơn hàng và kiểm tra
+    const order = await Order.findById(order_id).populate("shipping_info");
+    if (!order) {
+      throw createError.NotFound("Không tìm thấy đơn hàng");
+    }
+    if (order.shipping_method === "at_store") {
+      throw createError.BadRequest("Đơn hàng này mua tại cửa hàng");
+    }
+
+    if (order.status === "processing" && order.shipping_method === "shipped") {
+      const shipping = await Shipping.findById(order.shipping_info?._id);
+      if (!shipping) throw createError.NotFound("Không tìm thấy thông tin giao hàng");
+
+      const order_details = await Order_Detail.find({ order_id });
+      const new_order_details = await Promise.all(
+        order_details.map(async (item) => {
+          const data_sku = await Sku.findById(item.sku_id);
+          if (!data_sku) throw createError.NotFound("Không tìm thấy SKU");
+
+          return {
+            _id: item._id,
+            sku_id: data_sku._id,
+            name: data_sku.name,
+            price: data_sku.price,
+            price_before_discount: data_sku.price_before_discount,
+            price_discount_percent: data_sku.price_discount_percent,
+            image: data_sku.image,
+            quantity: item.quantity,
+            total_money: item.total_money,
+          };
+        })
+      );
+
+      const address_detail = shipping.shipping_address.split(",");
+      const address = address_detail.shift();
+      const code_ward_district = await getLocation(address_detail.join(","));
+
+      const data_shipping = {
+        to_name: order.customer_name,
+        to_phone: order.phone_number.toString(),
+        to_address: shipping.shipping_address,
+        to_ward_code: code_ward_district?.ward_code,
+        to_district_id: code_ward_district?.district,
+        content: order.content,
+        weight: 1000,
+        length: 15,
+        width: 15,
+        height: 15,
+        service_type_id: 2,
+        service_id: 53319,
+        payment_type_id: 1,
+        required_note: "CHOXEMHANGKHONGTHU",
+        Items: new_order_details,
+        name: "Đồ điện tử",
+        quantity: new_order_details.length,
+      };
+
+      const orderCode = await axios.post(
+        "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",
+        data_shipping,
+        {
+          headers: {
+            Token: process.env.GHN_SHOP_TOKEN as string,
+            ShopId: process.env.GHN_SHOP_ID as string,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (orderCode.data.code === 200) {
+        await Shipping.findByIdAndUpdate(order.shipping_info?._id, {
+          $set: {
+            order_code: orderCode.data.data.order_code,
+            estimated_delivery_date: orderCode.data.data.expected_delivery_time,
+          },
+        });
+      } else {
+        throw createError.BadRequest("Không thể tạo mã vận đơn");
+      }
+    }
+
+    const shipping = await Shipping.findById(order.shipping_info?._id);
+    const token_bill = await getTokenPrintBill(shipping?.order_code ?? "");
+
+    if (token_bill.code !== 200) {
+      throw createError.BadRequest("Không tìm thấy token hoá đơn");
+    }
+
+    return res.json({
+      status: token_bill.code,
+      message: token_bill.message,
+      data: token_bill.data?.token,
+    });
   } catch (error) {
     next(error);
   }

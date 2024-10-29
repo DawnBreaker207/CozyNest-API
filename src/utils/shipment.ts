@@ -28,7 +28,7 @@ interface AddressLocation {
  * @param location
  * @returns
  */
-const getAddressLocation = async (
+const getLocation = async (
   location: string
 ): Promise<AddressLocation | undefined> => {
   try {
@@ -234,7 +234,7 @@ const getTokenPrintBill = async (order_code: string) => {
 };
 
 export {
-  getAddressLocation,
+  getLocation,
   getOrderInfo,
   cancelledOrder,
   updateInfo,

@@ -4,11 +4,16 @@ import { SkuType } from '@/interfaces/Sku';
 
 const skuSchema = new mongoose.Schema<SkuType>(
   {
+    sku_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
     product_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
       required: true,
     },
+  
     SKU: { type: String },
     name: { type: String },
     slug: {
