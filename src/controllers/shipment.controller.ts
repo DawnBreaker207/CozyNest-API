@@ -1,6 +1,6 @@
 import { SHIPMENT_SHOP, TOKEN_SHIPMENT } from '@/utils/env';
 import { AppError } from '@/utils/errorHandle';
-import axios from 'axios';
+import axios, { Axios } from 'axios';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 

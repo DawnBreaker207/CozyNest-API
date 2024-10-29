@@ -58,6 +58,7 @@ const shippingInfoSchema = new mongoose.Schema<ShippingInfoType>(
     },
     order_code: {
       type: String,
+      required: true,
     },
   },
   {

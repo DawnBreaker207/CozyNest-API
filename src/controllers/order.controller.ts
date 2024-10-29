@@ -8,7 +8,11 @@ import { Sku } from "@/models/Sku";
 import { Order, Order_Detail, Shipping } from "@/models/Order";
 import mongoose from "mongoose";
 import moment from "moment";
-import { calculateFee, getAddressLocation } from "@/utils/shipment";
+import {
+  calculateFee,
+  cancelledOrder,
+  getAddressLocation,
+} from "@/utils/shipment";
 import axios from "axios";
 import { Returned } from "@/models/Return";
 
@@ -622,7 +626,28 @@ export const getAll: RequestHandler = async (req, res, next) => {
     next(error); // Chuyển lỗi cho middleware xử lý lỗi
   }
 };
+export const getOne: RequestHandler = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    if (!id) {
+      return res.status(StatusCodes.NOT_FOUND).json;
+    }
+    const order = await Order.findById(id).exec();
 
+    if (!order) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: messagesError.BAD_REQUEST });
+    }
+
+    res.status(StatusCodes.OK).json({
+      message: messagesSuccess.GET_ORDER_SUCCESS,
+      res: order,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 // cập nhật trạng thái của một đơn hàng
 export const updateStatus: RequestHandler = async (req, res, next) => {
   try {
@@ -1092,6 +1117,334 @@ export const getAllOrder: RequestHandler = async (req, res, next) => {
         new_docs, // Danh sách đơn hàng đã lấy
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateStatusDelivered: RequestHandler = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const ordered = await Order.findById(id);
+
+    // Kiểm tra nếu đơn hàng không tồn tại
+    if (!ordered) {
+      throw createError.NotFound("Không tìm thấy đơn hàng");
+    }
+
+    // Kiểm tra trạng thái đơn hàng
+    if (ordered.status !== "pendingComplete") {
+      throw createError.NotFound("Trạng thái đơn hàng không hợp lệ");
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      id,
+      {
+        $set: { status: "delivered", payment_status: "paid" },
+        $push: {
+          status_detail: {
+            status: "delivered",
+          },
+        },
+      },
+      { new: true }
+    );
+
+    return res.json({
+      status: 200,
+      message: "Cập nhật trạng thái thành công",
+      data: order,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelOrder: RequestHandler = async (req, res, next) => {
+  try {
+  const id = req.params.id;
+  const ordered = await Order.findById(id);
+  if (!ordered) {
+    throw createError.NotFound("Không tìm thấy đơn hàng");
+  }
+
+  if (ordered.status === "cancelled") {
+    throw createError.BadRequest("Đơn hàng đã được huỷ rồi");
+  }
+  if (ordered.status === "delivering") {
+    throw createError.BadRequest("Không thể huỷ đơn hàng đang giao");
+  }
+  if (ordered.status === "returned") {
+    throw createError.BadRequest("Không thể huỷ đơn hàng đang hoàn");
+  }
+
+  const order = await Order.findByIdAndUpdate(
+    id,
+    {
+      $set: { status: "cancelled" },
+      $push: {
+        status_detail: {
+          status: "cancelled",
+        },
+      },
+    },
+    { new: true }
+  ).populate([
+    {
+      path: "shipping_info",
+      
+    },
+  ]);
+  if (!order) {
+    throw createError.NotFound("Không tìm thấy đơn hàng");
+  }
+  // if (order?.shipping_method === "shipped") {
+  //   await cancelledOrder(order?.shipping_info?.order_code);
+  // }
+  const checkSkuStock = async (product: {
+    sku_id: string;
+    quantity: number;
+  }) => {
+    try {
+      const sku = await Sku.findById(product.sku_id);
+      if (!sku) throw createError.NotFound("Không tìm thấy SKU");
+
+      const newStock = sku.stock + product.quantity;
+      return await Sku.findByIdAndUpdate(
+        product.sku_id,
+        {
+          $set: { stock: newStock },
+        },
+        { new: true }
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const orderDetails = await Order_Detail.find({ order_id: id });
+  await Promise.all(orderDetails.map((item) => checkSkuStock({ sku_id: item.sku_id.toString(), quantity: item.quantity })));
+  return res.json({ status: 200, message: "Huỷ thành công", data: order });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const confirm_returnedOrder: RequestHandler = async (req, res, next)=> {
+  try {
+    const { id } = req.params;
+    // update return
+    const returned = await Returned.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          is_confirm: true,
+        },
+      },
+      { new: true }
+    );
+
+    if (!returned) throw createError.BadRequest("Không tìm thấy đơn hàng");
+
+    // update order
+    const order = await Order.findByIdAndUpdate(
+      returned.order_id,
+      {
+        $set: { status: "returned" },
+        $push: {
+          status_detail: {
+            status: "returned",
+          },
+        },
+      },
+      { new: true }
+    );
+
+    // Hàm kiểm tra và cập nhật kho cho SKU
+    const check_sku_stock = async (product: { sku_id: string; quantity: number }) => {
+      try {
+        const sku = await Sku.findById(product.sku_id);
+        if (!sku) throw createError.NotFound("Không tìm thấy SKU");
+
+        const new_stock = sku.stock + product.quantity;
+        await Sku.findByIdAndUpdate(product.sku_id, {
+          $set: {
+            stock: new_stock,
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    // Lấy thông tin sản phẩm trong đơn hàng và cập nhật kho
+    const order_items = await Order_Detail.find({
+      order_id: returned.order_id,
+    }).select("sku_id quantity");
+
+    await Promise.all(
+      order_items.map((item) => check_sku_stock({ sku_id: item.sku_id.toString(), quantity: item.quantity }))
+    );
+
+    // Phản hồi thành công
+    return res.json({
+      status: 200,
+      message: "Hoàn hàng thành công",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const update_info_customer: RequestHandler = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const {
+      customer_name,
+      phone_number,
+      content,
+      shippingAddress,
+      transportation_fee,
+    }: {
+      customer_name: string;
+      phone_number: string;
+      content: string;
+      shippingAddress: string;
+      transportation_fee: number;
+    } = req.body;
+
+    // Tìm kiếm đơn hàng và kiểm tra tình trạng
+    const order = await Order.findById(id).populate({
+      path: "shipping_info",
+    });
+    if (!order) {
+      throw createError.NotFound("Không tìm thấy đơn hàng");
+    }
+
+    if (
+      order.status === "cancelled" ||
+      order.status === "delivering" ||
+      order.status === "delivered"
+    ) {
+      throw createError.BadRequest("Không thể sửa đơn hàng");
+    }
+
+    // Cập nhật thông tin vận chuyển nếu đơn hàng đã được "shipped"
+    if (order.shipping_method === "shipped" && order.shipping_info?._id) {
+      await Shipping.findByIdAndUpdate(
+        order.shipping_info._id,
+        {
+          $set: {
+            shipping_address: shippingAddress,
+            transportation_fee,
+          },
+        },
+        { new: true }
+      );
+    }
+
+    // Cập nhật thông tin khách hàng
+    const updated_order = await Order.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          customer_name,
+          phone_number,
+          content,
+        },
+      },
+      { new: true }
+    );
+
+    return res.json({
+      status: 200,
+      message: "Đơn hàng đã được cập nhật",
+      data: updated_order,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const getAllShipping: RequestHandler = async (req, res, next)=> {
+  try {
+    const {
+      _page = 1,
+      _sort = "createdAt",
+      _order = "asc",
+      _limit = 10,
+    }: {
+      _page?: number;
+      _sort?: string;
+      _order?: string;
+      _limit?: number;
+    } = req.query;
+
+    const customer_name = req.query.q as string | undefined;
+
+    const options = {
+      page: _page,
+      limit: _limit,
+      sort: {
+        [_sort]: _order === "desc" ? -1 : 1,
+      },
+    };
+
+    // Nếu có tên khách hàng
+    if (customer_name) {
+      const { docs, ...paginate } = await Order.paginate(
+        {
+          shipping_method: "shipped",
+          customer_name: { $regex: customer_name, $options: "i" },
+        },
+        options
+      );
+
+      const new_docs = await Promise.all(
+        docs.map(async (item) => {
+          const order_details = await Order_Detail.find({ order_id: item._id });
+          const orders = item.toObject();
+          return {
+            ...orders,
+            products: order_details,
+          };
+        })
+      );
+
+      return res.json({
+        status: 200,
+        message: "Lấy toàn bộ đơn hàng thành công",
+        data: {
+          items: new_docs,
+          paginate,
+        },
+      });
+    } else {
+      // Nếu không có tên khách hàng
+      const { docs, ...paginate } = await Order.paginate(
+        {
+          shipping_method: "shipped",
+        },
+        options
+      );
+
+      const new_docs = await Promise.all(
+        docs.map(async (item) => {
+          const order_details = await Order_Detail.find({ order_id: item._id });
+          const orders = item.toObject();
+          return {
+            ...orders,
+            products: order_details,
+          };
+        })
+      );
+
+      return res.json({
+        status: 200,
+        message: "Lấy toàn bộ đơn hàng thành công",
+        data: {
+          items: new_docs,
+          paginate,
+        },
+      });
+    }
   } catch (error) {
     next(error);
   }
