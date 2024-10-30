@@ -62,13 +62,14 @@ const calShippingFee: RequestHandler = async (req, res, next) => {
       },
     });
     res.status(StatusCodes.OK).json({ res: response.data });
-  } catch (error: any) {
-    next(
-      new AppError(
-        StatusCodes.BAD_REQUEST,
-        error.response?.data?.message || 'Error calculating shipping fee'
-      )
-    );
+  } catch (error: unknown) {
+    if (error instanceof Error)
+      next(
+        new AppError(
+          StatusCodes.BAD_REQUEST,
+          error.message || 'Error calculating shipping fee',
+        ),
+      );
   }
 };
 
@@ -86,16 +87,18 @@ const trackOrder: RequestHandler = async (req, res, next) => {
           Token: TOKEN_SHIPMENT,
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
     res.status(StatusCodes.OK).json({ res: response.data });
-  } catch (error: any) {
-    next(
-      new AppError(
-        StatusCodes.BAD_REQUEST,
-        error.response?.data?.message || 'Error tracking order'
-      )
-    );
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      next(
+        new AppError(
+          StatusCodes.BAD_REQUEST,
+          error?.message || 'Error tracking order',
+        ),
+      );
+    }
   }
 };
 
