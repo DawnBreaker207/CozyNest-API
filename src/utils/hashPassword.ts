@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import logger from './logger';
 
 /**
  *
@@ -20,6 +21,7 @@ const hashPassword = async (password: string) => {
 const comparePassword = async (password: string, hashPassword: string) => {
   const checkPass = await bcrypt.compare(password, hashPassword);
   if (!checkPass) {
+    logger.log('error', 'Compare password error : Password not right');
     return false;
   }
   return checkPass;

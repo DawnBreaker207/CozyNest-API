@@ -4,6 +4,7 @@ import User from '@/models/User';
 import { SECRET_ACCESS_TOKEN, SECRET_REFRESH_TOKEN } from '@/utils/env';
 import { comparePassword, hashPassword } from '@/utils/hashPassword';
 import { createToken, verifyToken } from '@/utils/jwt';
+import logger from '@/utils/logger';
 import 'dotenv/config';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
@@ -19,6 +20,7 @@ const Register: RequestHandler = async (req, res, next) => {
 
     // Check if email exist in database
     if (checkEmail) {
+      logger.log('error', 'Email exist in register');
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.EMAIL_EXIST });
@@ -33,6 +35,7 @@ const Register: RequestHandler = async (req, res, next) => {
     });
 
     if (!newUser) {
+      logger.log('error', 'User is not unauthorized in register');
       return res.status(StatusCodes.UNAUTHORIZED).json({
         message: messagesError.UNAUTHORIZED,
       });
@@ -71,6 +74,7 @@ const Register: RequestHandler = async (req, res, next) => {
       res: newUser,
     });
   } catch (error) {
+    logger.log('error', `Catch error in register: ${error}`);
     next(error);
   }
 };
@@ -86,6 +90,7 @@ const Login: RequestHandler = async (req, res, next) => {
     const userExist = await User.findOne({ email });
     //Check user exist
     if (!userExist) {
+      logger.log('error', 'User is not existed in login');
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.EMAIL_NOT_FOUND });
@@ -93,6 +98,7 @@ const Login: RequestHandler = async (req, res, next) => {
 
     // If user status = false, return forbidden
     if (!userExist.status) {
+      logger.log('error', 'User status is forbidden in login');
       return res.status(StatusCodes.FORBIDDEN).json({
         message: messagesError.FORBIDDEN,
       });
@@ -100,6 +106,8 @@ const Login: RequestHandler = async (req, res, next) => {
 
     // Check password valid
     if (!(await comparePassword(password, userExist.password as string))) {
+      logger.log('error', 'User password is wrong login');
+
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.INVALID_PASSWORD });
@@ -139,6 +147,7 @@ const Login: RequestHandler = async (req, res, next) => {
       res: userExist,
     });
   } catch (error) {
+    logger.log('error', `Catch error in login: ${error}`);
     next(error);
   }
 };
@@ -202,6 +211,8 @@ const checkRefreshToken: RequestHandler = (req, res, next) => {
       }
     );
   } catch (error) {
+    logger.log('error', `Catch error in check refresh token: ${error}`);
+
     next(error);
   }
 };
@@ -216,6 +227,7 @@ const clearToken: RequestHandler = async (req, res, next) => {
       message: messagesSuccess.CLEAR_TOKEN_SUCCESS,
     });
   } catch (error) {
+    logger.log('error', `Catch error in clear token: ${error}`);
     next(error);
   }
 };

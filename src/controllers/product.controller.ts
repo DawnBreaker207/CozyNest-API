@@ -2,6 +2,7 @@ import { messagesError, messagesSuccess } from '@/constants/messages';
 import Category from '@/models/Category';
 import { Product } from '@/models/Product';
 import { AppError } from '@/utils/errorHandle';
+import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -106,6 +107,7 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
       },
     });
   } catch (error) {
+    logger.log('error', `Catch error in get all products: ${error}`);
     next(error);
   }
 };
@@ -140,6 +142,7 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
       res: data,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get one product: ${error}`);
     next(error);
   }
 };
@@ -177,6 +180,7 @@ const Create_Product: RequestHandler = async (req, res, next) => {
       res: product,
     });
   } catch (error) {
+    logger.log('error', `Catch error in create product: ${error}`);
     next(error);
   }
 };
@@ -223,6 +227,7 @@ const Update_Product: RequestHandler = async (req, res, next) => {
       res: data,
     });
   } catch (error) {
+    logger.log('error', `Catch error in update product: ${error}`);
     next(error);
   }
 };
@@ -251,6 +256,7 @@ const Hide_Product: RequestHandler = async (req, res, next) => {
       res: data,
     });
   } catch (error) {
+    logger.log('error', `Catch error in hide product: ${error}`);
     next(error);
   }
 };
@@ -272,6 +278,7 @@ const Delete_Product: RequestHandler = async (req, res, next) => {
       message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
     });
   } catch (error) {
+    logger.log('error', `Catch error in delete product: ${error}`);
     next(error);
   }
 };
@@ -326,6 +333,7 @@ const getRelatedProducts: RequestHandler = async (req, res, next) => {
       res: populatedProducts,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get related products: ${error}`);
     next(error);
   }
 };

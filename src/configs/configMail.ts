@@ -1,4 +1,7 @@
+import { StatusCodes } from '@/http-status-codes/build/cjs';
 import { EMAIL_PASSWORD, EMAIL_USERNAME } from '@/utils/env';
+import { AppError } from '@/utils/errorHandle';
+import logger from '@/utils/logger';
 import nodemailer from 'nodemailer';
 
 /**
@@ -28,6 +31,7 @@ export const configSendMail = async (input: {
     };
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    throw new Error('Error sending mail:' + error);
+    logger.log('error', `catch errors in mail config: ${error}`);
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Error sending mail:' + error);
   }
 };

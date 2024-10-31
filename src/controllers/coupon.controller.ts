@@ -1,6 +1,7 @@
 import { messagesSuccess } from '@/constants/messages';
 import Coupon from '@/models/Coupon';
 import { AppError } from '@/utils/errorHandle';
+import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import moment from 'moment';
@@ -16,6 +17,7 @@ const createCoupon: RequestHandler = async (req, res, next) => {
       res: coupon,
     });
   } catch (error) {
+    logger.log('error', `Catch error in create coupon: ${error}`);
     next(error);
   }
 };
@@ -57,6 +59,7 @@ const getAllCoupon: RequestHandler = async (req, res, next) => {
       res: docs,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get all coupon: ${error}`);
     next(error);
   }
 };
@@ -73,6 +76,7 @@ const getOneCoupon: RequestHandler = async (req, res, next) => {
       res: vouchers,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get one coupon: ${error}`);
     next(error);
   }
 };
@@ -91,6 +95,7 @@ const updateCoupon: RequestHandler = async (req, res, next) => {
       res: coupon,
     });
   } catch (error) {
+    logger.log('error', `Catch error in update coupon: ${error}`);
     next(error);
   }
 };
@@ -126,6 +131,7 @@ const getValueCoupon: RequestHandler = async (req, res, next) => {
       message: 'Get value coupon success',
     });
   } catch (error) {
+    logger.log('error', `Catch error in get value coupon: ${error}`);
     next(error);
   }
 };
@@ -146,6 +152,7 @@ const deleteCoupon: RequestHandler = async (req, res, next) => {
       .status(StatusCodes.OK)
       .json({ message: 'Soft deleted success', res: coupon });
   } catch (error) {
+    logger.log('error', `Catch error in delete coupon: ${error}`);
     next(error);
   }
 };

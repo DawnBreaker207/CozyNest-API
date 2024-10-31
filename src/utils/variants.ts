@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 import { SkuType } from '@/interfaces/Sku';
 import { sortOptions } from './sortOption';
 import { ProductCart } from '@/interfaces/Cart';
+import logger from './logger';
 
 //* Cart
 
@@ -60,6 +61,10 @@ const getOptionalValues = async (option: OptionType, id: Types.ObjectId) => {
 const getOptionalValue = async (id: Types.ObjectId) => {
   const value = await OptionalValue.findById(id).select('-_id value label');
   if (!value) {
+    logger.log(
+      'error',
+      'Get optional value error :There is some problem when find option values'
+    );
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'There is some problem when find option values'
@@ -99,6 +104,7 @@ const getVariants = async (
     variants.map(async (item) => {
       const optionFind = await Option.findById(item.option_id);
       if (!optionFind) {
+        logger.log('error', 'Option filter error: Can not find options');
         throw new AppError(StatusCodes.BAD_REQUEST, 'Can not find options');
       }
       return {

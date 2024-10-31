@@ -12,6 +12,7 @@ import {
   ZALO_PAY_KEY_1,
   ZALO_PAY_KEY_2,
 } from '@/utils/env';
+import logger from '@/utils/logger';
 import { sortObject } from '@/utils/payments';
 import axios from 'axios';
 import * as crypto from 'crypto';
@@ -86,6 +87,7 @@ const createVnPay: RequestHandler = async (req, res, next) => {
 
     res.status(StatusCodes.OK).json({ res: vnpUrl });
   } catch (error) {
+    logger.log('error', `Catch error in create VnPay: ${error}`);
     next(error);
   }
 };
@@ -125,6 +127,7 @@ const vnPayCallback: RequestHandler = async (req, res, next) => {
       });
     }
   } catch (error) {
+    logger.log('error', `Catch error in check VnPay callback: ${error}`);
     next(error);
   }
 };
@@ -200,6 +203,7 @@ const vnPayStatus: RequestHandler = async (req, res, next) => {
         .json({ RspCode: '97', Message: 'Checksum failed' });
     }
   } catch (error) {
+    logger.log('error', `Catch error in check VnPay status: ${error}`);
     next(error);
   }
 };
@@ -274,6 +278,7 @@ const createMomo: RequestHandler = async (req, res, next) => {
     result = await axios(options);
     res.status(StatusCodes.OK).json({ res: result.data });
   } catch (error) {
+    logger.log('error', `Catch error in create momo: ${error}`);
     next(error);
   }
 };
@@ -320,6 +325,7 @@ const momoStatus: RequestHandler = async (req, res, next) => {
     let result = await axios(options);
     res.status(StatusCodes.OK).json({ res: result.data });
   } catch (error) {
+    logger.log('error', `Catch error in check momo status: ${error}`);
     next(error);
   }
 };
@@ -377,6 +383,7 @@ const createZaloPay: RequestHandler = async (req, res, next) => {
 
     res.status(StatusCodes.OK).json({ res: result.data });
   } catch (error) {
+    logger.log('error', `Catch error in create zalo pay: ${error}`);
     next(error);
   }
 };
@@ -413,6 +420,7 @@ const zaloPayCallback: RequestHandler = async (req, res, next) => {
     }
     res.status(StatusCodes.OK).json({ res: result });
   } catch (error) {
+    logger.log('error', `Catch error in check zalo pay callback: ${error}`);
     next(error);
   }
 };
@@ -459,6 +467,7 @@ const zaloPayStatus: RequestHandler = async (req, res, next) => {
         }
       */
   } catch (error) {
+    logger.log('error', `Catch error in check zalo pay status: ${error}`);
     next(error);
   }
 };
