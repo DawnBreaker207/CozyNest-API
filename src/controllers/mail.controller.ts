@@ -1,5 +1,6 @@
 import { configSendMail } from '@/configs/configMail';
 import { messagesSuccess } from '@/constants/messages';
+import logger from '@/utils/logger';
 import { sendExportMail } from '@/utils/texts';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
@@ -21,6 +22,7 @@ const sendMailRequest: RequestHandler = async (req, res, next) => {
       message: messagesSuccess.SEND_EMAIL_SUCCESS,
     });
   } catch (error) {
+    logger.log('error', `Catch error in send mail request: ${error}`);
     next(error);
   }
 };

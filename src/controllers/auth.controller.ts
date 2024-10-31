@@ -7,6 +7,7 @@ import {
 } from '@/services/auth.service';
 import { SECRET_ACCESS_TOKEN, SECRET_REFRESH_TOKEN } from '@/utils/env';
 import { createToken } from '@/utils/jwt';
+import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -50,6 +51,7 @@ const Register: RequestHandler = async (req, res, next) => {
       res: newUser,
     });
   } catch (error) {
+    logger.log('error', `Catch error in register: ${error}`);
     next(error);
   }
 };
@@ -95,6 +97,7 @@ const Login: RequestHandler = async (req, res, next) => {
       res: userExist,
     });
   } catch (error) {
+    logger.log('error', `Catch error in login: ${error}`);
     next(error);
   }
 };
@@ -133,6 +136,7 @@ const checkRefreshToken: RequestHandler = async (req, res, next) => {
       res: checkToken,
     });
   } catch (error) {
+    logger.log('error', `Catch error in check refresh token: ${error}`);
     next(error);
   }
 };
@@ -147,6 +151,7 @@ const clearToken: RequestHandler = async (req, res, next) => {
       message: messagesSuccess.CLEAR_TOKEN_SUCCESS,
     });
   } catch (error) {
+    logger.log('error', `Catch error in clear token: ${error}`);
     next(error);
   }
 };

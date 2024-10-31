@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { DISTRICT_ID, SHIPMENT_SHOP, TOKEN_SHIPMENT, WARD_CODE } from './env';
+import logger from './logger';
 import { AppError } from './errorHandle';
 import { StatusCodes } from '@/http-status-codes/build/cjs';
+
 
 // Khai báo kiểu cho phản hồi từ API của GHN
 interface Province {
@@ -68,7 +70,8 @@ const getAddressLocation = async (
       (item) => item.DistrictName == location.split(',')[1].trim(),
     );
     if (!district) {
-      throw new Error('District not found');
+      logger.log('error', 'Get address location errors: District not found');
+      throw new AppError(StatusCodes.NOT_FOUND, 'District not found');
     }
     district_id = district.DistrictID;
 
@@ -89,7 +92,8 @@ const getAddressLocation = async (
       (item) => item.WardName == location.split(',')[0].trim(),
     );
     if (!ward) {
-      throw new Error('Ward not found');
+      logger.log('error', 'Get address location errors : Ward not found');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Ward not found');
     }
     ward_code = ward.WardCode;
 
@@ -98,10 +102,13 @@ const getAddressLocation = async (
       district,
     };
   } catch (error) {
+    logger.log('error', `Catch errors get address location : ${error}`);
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'Problems when get address location' + error,
     );
+
+
   }
 };
 
@@ -121,10 +128,10 @@ const getOrderInfo = async (order_code: string) => {
     );
     return order_info.data;
   } catch (error) {
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      'Can not get order info' + error,
+logger.log('error', `Catch errors get order info : ${error}`);
+    throw new AppError(StatusCodes.BAD_REQUEST,'Can not get order info' + error,
     );
+
   }
 };
 
@@ -147,10 +154,12 @@ const cancelledOrder = async (order_code: string) => {
     );
     return order_info;
   } catch (error) {
+    logger.log('error', `Catch errors cancelled order : ${error}`);
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'Problems when cancel order ' + error,
     );
+
   }
 };
 
@@ -173,10 +182,14 @@ const updateInfo = async (info: string[]) => {
     );
     return order_info.data;
   } catch (error) {
+
+    logger.log('error', `Catch errors update info : ${error}`);
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'Problems when update info' + error,
     );
+
+
   }
 };
 
@@ -200,10 +213,14 @@ const calculateTime = async (info: string[]) => {
 
     return expected_time.data;
   } catch (error) {
+
+logger.log('error', `Catch errors calculate time : ${error}`);
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'Problems when calculate time' + error,
     );
+
+
   }
 };
 
@@ -226,10 +243,13 @@ const calculateFee = async (location: string[]) => {
     );
     return calculate.data;
   } catch (error) {
+    logger.log('error', `Catch errors calculate fee : ${error}`);
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'Problems when calculate fee' + error,
     );
+
+
   }
 };
 
@@ -251,10 +271,14 @@ const getTokenPrintBill = async (order_code: string) => {
     );
     return print_bill.data;
   } catch (error) {
+
+    logger.log('error', `Catch errors get token print bill : ${error}`);
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'Problems when get token print bill' + error,
     );
+
+
   }
 };
 

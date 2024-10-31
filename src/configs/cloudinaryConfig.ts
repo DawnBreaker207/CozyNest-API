@@ -1,6 +1,7 @@
 import { StatusCodes } from '@/http-status-codes/build/cjs';
 import { API_KEY, API_SECRET, CLOUD_NAME, FOLDER_NAME } from '@/utils/env';
 import { AppError } from '@/utils/errorHandle';
+import logger from '@/utils/logger';
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
@@ -22,6 +23,7 @@ const handleUpload = async (file: string) => {
     });
     return res;
   } catch (error) {
+    logger.log('error', `Catch errors in handle upload cloudinary : ${error}`);
     throw new AppError(StatusCodes.BAD_REQUEST, error as string);
   }
 };
@@ -36,6 +38,11 @@ const handleDelete = async (id: string) => {
     const res = await cloudinary.uploader.destroy(id);
     return res;
   } catch (error) {
+    logger.log(
+      'error',
+      `Catch errors in handle delete cloudinary catch errors: ${error}`,
+    );
+
     throw new AppError(StatusCodes.BAD_REQUEST, error as string);
   }
 };

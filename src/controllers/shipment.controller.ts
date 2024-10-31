@@ -1,5 +1,6 @@
 import { SHIPMENT_SHOP, TOKEN_SHIPMENT } from '@/utils/env';
 import { AppError } from '@/utils/errorHandle';
+import logger from '@/utils/logger';
 import axios from 'axios';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
@@ -44,6 +45,7 @@ const createDeliveryOrder: RequestHandler = async (req, res, next) => {
     });
     res.status(StatusCodes.OK).json({ res: response.data });
   } catch (error) {
+    logger.log('error', `Catch error in create delivery order: ${error}`);
     next(error);
   }
 };
@@ -63,13 +65,15 @@ const calShippingFee: RequestHandler = async (req, res, next) => {
     });
     res.status(StatusCodes.OK).json({ res: response.data });
   } catch (error: unknown) {
-    if (error instanceof Error)
+    if (error instanceof Error) {
+      logger.log('error', `Catch error in calculate shipping fee: ${error}`);
       next(
         new AppError(
           StatusCodes.BAD_REQUEST,
           error.message || 'Error calculating shipping fee',
         ),
       );
+    }
   }
 };
 
@@ -92,6 +96,7 @@ const trackOrder: RequestHandler = async (req, res, next) => {
     res.status(StatusCodes.OK).json({ res: response.data });
   } catch (error: unknown) {
     if (error instanceof Error) {
+      logger.log('error', `Catch error in track order: ${error}`);
       next(
         new AppError(
           StatusCodes.BAD_REQUEST,
