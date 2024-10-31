@@ -11,7 +11,7 @@ import { StatusCodes } from 'http-status-codes';
 import { messagesError, messagesSuccess } from '../constants/messages';
 import { Product } from '../models/Product';
 import { createDeliveryOrder } from './shipment.controller';
-import { SkuType } from '@/interfaces/Sku';
+import logger from '@/utils/logger';
 
 // Create cart
 const createCart: RequestHandler = async (req, res, next) => {
@@ -26,6 +26,7 @@ const createCart: RequestHandler = async (req, res, next) => {
       res: newCart,
     });
   } catch (error) {
+    logger.log('error', `Catch error in create cart: ${error}`);
     next(error);
   }
 };
@@ -80,6 +81,7 @@ const GetCart: RequestHandler = async (req, res, next) => {
       res: { ...new_cart, products: SKUs },
     });
   } catch (error) {
+    logger.log('error', `Catch error in get cart: ${error}`);
     next(error);
   }
 };
@@ -115,6 +117,7 @@ const GetById: RequestHandler = async (req, res, next) => {
       res: cartData,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get cart by id: ${error}`);
     next(error);
   }
 };
@@ -180,6 +183,7 @@ const AddToCart: RequestHandler = async (req, res, next) => {
       res: cart,
     });
   } catch (error) {
+    logger.log('error', `Catch error in add to cart: ${error}`);
     next(error);
   }
 };
@@ -208,6 +212,7 @@ const RemoveFromCart: RequestHandler = async (req, res, next) => {
       .status(StatusCodes.CREATED)
       .json({ message: messagesSuccess.REMOVE_CART_ITEMS_SUCCESS, res: cart });
   } catch (error) {
+    logger.log('error', `Catch error in remove from cart: ${error}`);
     next(error);
   }
 };
@@ -227,6 +232,7 @@ const RemoveCart: RequestHandler = async (req, res, next) => {
       message: messagesSuccess.REMOVE_CART_SUCCESS,
     });
   } catch (error) {
+    logger.log('error', `Catch error in remove cart: ${error}`);
     next(error);
   }
 };
@@ -267,6 +273,7 @@ const increaseQuantity: RequestHandler = async (req, res, next) => {
       .status(StatusCodes.OK)
       .json({ message: messagesSuccess.UPDATE_CART_SUCCESS, res: cart });
   } catch (error) {
+    logger.log('error', `Catch error in increase quantity: ${error}`);
     next(error);
   }
 };
@@ -311,6 +318,7 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
       .status(StatusCodes.OK)
       .json({ message: messagesSuccess.UPDATE_CART_SUCCESS, res: cart });
   } catch (error) {
+    logger.log('error', `Catch error in decrease quantity: ${error}`);
     next(error);
   }
 };

@@ -3,6 +3,7 @@ import { timeCounts } from '@/constants/initialValue';
 import { messagesError, messagesSuccess } from '@/constants/messages';
 import User from '@/models/User';
 import { comparePassword, hashPassword } from '@/utils/hashPassword';
+import logger from '@/utils/logger';
 import { sendResetMail, sendVerifyMail } from '@/utils/texts';
 import crypto from 'crypto';
 import { RequestHandler } from 'express';
@@ -48,6 +49,7 @@ const getAllUser: RequestHandler = async (req, res, next) => {
       totalPages: users.totalPages,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get all user: ${error}`);
     next(error);
   }
 };
@@ -64,6 +66,7 @@ const getOneUser: RequestHandler = async (req, res, next) => {
       .status(StatusCodes.OK)
       .json({ message: messagesSuccess.GET_PROFILE_SUCCESS, res: user });
   } catch (error) {
+    logger.log('error', `Catch error in get one user: ${error}`);
     next(error);
   }
 };
@@ -95,6 +98,7 @@ const updateUser: RequestHandler = async (req, res, next) => {
       res: newUser,
     });
   } catch (error) {
+    logger.log('error', `Catch error in update user: ${error}`);
     next(error);
   }
 };
@@ -121,6 +125,7 @@ const verifyEmailToken: RequestHandler = async (req, res, next) => {
       res: req.cookies.email,
     });
   } catch (error) {
+    logger.log('error', `Catch error in verify email token: ${error}`);
     next(error);
   }
 };
@@ -164,6 +169,7 @@ const generateVerifyToken: RequestHandler = async (req, res, next) => {
       message: 'Send verify token success',
     });
   } catch (error) {
+    logger.log('error', `Catch error in generate verify token: ${error}`);
     next(error);
   }
 };
@@ -214,6 +220,7 @@ const forgotPass: RequestHandler = async (req, res, next) => {
       res: user,
     });
   } catch (error) {
+    logger.log('error', `Catch error in forgot password: ${error}`);
     next(error);
   }
 };
@@ -245,6 +252,7 @@ const changePassword: RequestHandler = async (req, res, next) => {
       res: user,
     });
   } catch (error) {
+    logger.log('error', `Catch error in change password: ${error}`);
     next(error);
   }
 };

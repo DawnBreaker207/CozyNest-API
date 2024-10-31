@@ -26,6 +26,7 @@ app.use(morgan('dev'));
 app.use(redirectPath);
 //* Init Database
 import '@/db/init.mongo';
+import logger from './utils/logger';
 
 //* Init Route
 app.use('/api/v1', router);
@@ -34,5 +35,6 @@ app.use('/api/v1', router);
 app.use(errorHandleNotFound, errorHandle);
 
 app.listen(PORT, () => {
-  console.log(`Listen on port ${PORT}`);
+  logger.log('info', `Listen on port ${PORT}`);
 });
+// TODO: Update logging in every throw error

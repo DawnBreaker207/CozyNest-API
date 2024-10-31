@@ -24,6 +24,7 @@ import {
   getVariants,
   variantOptions,
 } from '@/utils/variants';
+import logger from '@/utils/logger';
 
 //! Option controllers
 //Lấy tất cả các option của sản phẩm
@@ -60,6 +61,7 @@ const getAllOption: RequestHandler = async (req, res, next) => {
       res: data,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get all options: ${error}`);
     next(error);
   }
 };
@@ -98,6 +100,7 @@ const getOneOption: RequestHandler = async (req, res, next) => {
       },
     });
   } catch (error) {
+    logger.log('error', `Catch error in get one option: ${error}`);
     next(error);
   }
 };
@@ -143,6 +146,7 @@ const createOption: RequestHandler = async (req, res, next) => {
       res: doc,
     });
   } catch (error) {
+    logger.log('error', `Catch error in create option: ${error}`);
     next(error);
   }
 };
@@ -173,6 +177,7 @@ const updateOption: RequestHandler = async (req, res, next) => {
       res: doc,
     });
   } catch (error) {
+    logger.log('error', `Catch error in update option: ${error}`);
     next(error);
   }
 };
@@ -203,6 +208,7 @@ const deleteOption: RequestHandler = async (req, res, next) => {
       res: option,
     });
   } catch (error) {
+    logger.log('error', `Catch error in delete option: ${error}`);
     next(error);
   }
 };
@@ -239,6 +245,7 @@ const getAllOptionalValue: RequestHandler = async (req, res, next) => {
       res: optionalValues,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get all optional value: ${error}`);
     next(error);
   }
 };
@@ -264,6 +271,7 @@ const getOneOptionalValue: RequestHandler = async (req, res, next) => {
       res: optionValue,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get one optional value: ${error}`);
     next(error);
   }
 };
@@ -324,6 +332,7 @@ const createOptionalValue: RequestHandler = async (req, res, next) => {
       res: doc,
     });
   } catch (error) {
+    logger.log('error', `Catch error in create optional value: ${error}`);
     next(error);
   }
 };
@@ -353,6 +362,7 @@ const updateOptionalValue: RequestHandler = async (req, res, next) => {
       res: doc,
     });
   } catch (error) {
+    logger.log('error', `Catch error in update optional value: ${error}`);
     next(error);
   }
 };
@@ -378,6 +388,7 @@ const deleteOptionalValue: RequestHandler = async (req, res, next) => {
       res: doc,
     });
   } catch (error) {
+    logger.log('error', `Catch error in delete optional value: ${error}`);
     next(error);
   }
 };
@@ -417,6 +428,7 @@ const getAllVariant: RequestHandler = async (req, res, next) => {
       res: data,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get all variants: ${error}`);
     next(error);
   }
 };
@@ -549,6 +561,7 @@ const saveVariant: RequestHandler = async (req, res, next) => {
       res: createVariantData,
     });
   } catch (error) {
+    logger.log('error', `Catch error in save variants: ${error}`);
     next(error);
   }
 };
@@ -592,6 +605,7 @@ const deleteVariant: RequestHandler = async (req, res, next) => {
       res: variants,
     });
   } catch (error) {
+    logger.log('error', `Catch error in delete variant: ${error}`);
     next(error);
   }
 };
@@ -668,6 +682,7 @@ const getOneVariant: RequestHandler = async (req, res, next) => {
       },
     });
   } catch (error) {
+    logger.log('error', `Catch error in get one variant: ${error}`);
     next(error);
   }
 };
@@ -733,6 +748,7 @@ const updateVariant: RequestHandler = async (req, res, next) => {
       res: doc,
     });
   } catch (error) {
+    logger.log('error', `Catch error in update variant: ${error}`);
     next(error);
   }
 };
