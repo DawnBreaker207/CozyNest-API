@@ -52,3 +52,4 @@ app.listen(PORT, () => {
   logger.log('info', `Listen on port ${PORT}`);
 });
 // TODO: Update logging in every throw error
+// TODO: Update tsDocs input
