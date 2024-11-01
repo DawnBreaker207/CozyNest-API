@@ -5,5 +5,10 @@ import { Router } from 'express';
 
 const routeMail = Router();
 //* Send mail - Testing feature
-routeMail.post('/', validBodyRequest(mailSchema), sendMailRequest);
+routeMail.post(
+  '/',
+  validBodyRequest(mailSchema),
+  // #swagger.tags = ['Mail']
+  sendMailRequest,
+);
 export default routeMail;

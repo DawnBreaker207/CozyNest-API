@@ -8,21 +8,36 @@ import validBodyRequest from '@/middlewares/validBodyRequest';
 import { loginSchema, registerSchema } from '@/validations/auth.validation';
 import { Router } from 'express';
 
-const routeAuthentication = Router();
+const routeAuth = Router();
+
 //* Register new account
-routeAuthentication.post(
+routeAuth.post(
   '/register',
   validBodyRequest(registerSchema),
-  Register
+  // #swagger.tags = ['Authentication']
+  Register,
 );
 
 //* Login exist account
-routeAuthentication.post('/login', validBodyRequest(loginSchema), Login);
+routeAuth.post(
+  '/login',
+  validBodyRequest(loginSchema),
+  // #swagger.tags = ['Authentication']
+  Login,
+);
 
 //* Get refresh token
-routeAuthentication.get('/token', checkRefreshToken);
+routeAuth.get(
+  '/token',
+  // #swagger.tags = ['Authentication']
+  checkRefreshToken,
+);
 
 //* Clear token = log out
-routeAuthentication.delete('/token', clearToken);
+routeAuth.delete(
+  '/token',
+  // #swagger.tags = ['Authentication']
+  clearToken,
+);
 
-export default routeAuthentication;
+export default routeAuth;

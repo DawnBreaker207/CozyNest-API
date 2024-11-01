@@ -1,7 +1,6 @@
 import swaggerAutogen from 'swagger-autogen';
 const doc = {
   swagger: '2.0',
-  openapi: '3.1.0',
   info: {
     title: 'CozyNest API',
     description: 'Simple API with Node.js, TypeScript, Express, and Swagger',
@@ -13,6 +12,17 @@ const doc = {
     { name: 'Authentication', description: 'Endpoints for authentication' },
     { name: 'User', description: 'User-related endpoints' },
     { name: 'Product', description: 'Product-related endpoints' },
+    { name: 'Category', description: 'Endpoints for categories' },
+    { name: 'Upload', description: 'Endpoints for image uploads' },
+    { name: 'Mail', description: 'Endpoints for mail sending' },
+    { name: 'Order', description: 'Endpoints for orders' },
+    { name: 'Cart', description: 'Endpoints for cart' },
+    { name: 'Shipment', description: 'Endpoints for shipment' },
+    { name: 'Payment', description: 'Endpoints for payment' },
+    { name: 'Option', description: 'Endpoints for product options' },
+    { name: 'OptionalValue', description: 'Endpoints for optional values' },
+    { name: 'Variant', description: 'Endpoints for variants' },
+    { name: 'Coupon', description: 'Endpoints for coupons' },
   ],
   securityDefinitions: {
     Bearer: {
@@ -29,7 +39,7 @@ const doc = {
 
 const outputFile = '../../docs/swagger-output.json';
 const endpointsFiles = [
-  './src/routes/authentication.route.ts',
+  './src/routes/auth.route.ts',
   './src/routes/cart.route.ts',
   './src/routes/categories.route.ts',
   './src/routes/coupon.route.ts',

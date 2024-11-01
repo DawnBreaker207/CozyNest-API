@@ -12,6 +12,7 @@ import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 const Register: RequestHandler = async (req, res, next) => {
+
   /**
    * @param {string} req.body.email Email user input
    * @param {string} req.body.password Password user input

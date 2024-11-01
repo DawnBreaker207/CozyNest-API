@@ -15,11 +15,16 @@ const routeOptionalValue = Router();
 
 // api option values
 //* Get all optional value in product
-routeOptionalValue.get('/:product_id/:option_id', getAllOptionalValue);
+routeOptionalValue.get(
+  '/:product_id/:option_id',
+  // #swagger.tags = ['OptionalValue']
+  getAllOptionalValue,
+);
 
 //* Get one optional value in product
 routeOptionalValue.get(
   '/:product_id/:option_id/:value_id',
+  // #swagger.tags = ['OptionalValue']
   getSingleOptionalValue,
 );
 
@@ -29,6 +34,7 @@ routeOptionalValue.post(
   checkAuth,
   checkPermission,
   validBodyRequest(optionalValuesSchema),
+  // #swagger.tags = ['OptionalValue']
   createOptionalValue,
 );
 
@@ -38,6 +44,7 @@ routeOptionalValue.put(
   checkAuth,
   checkPermission,
   validBodyRequest(optionalValuesSchema),
+  // #swagger.tags = ['OptionalValue']
   updateOptionalValue,
 );
 
@@ -46,6 +53,7 @@ routeOptionalValue.delete(
   '/:product_id/:option_id/:value_id',
   checkAuth,
   checkPermission,
+  // #swagger.tags = ['OptionalValue']
   deleteOptionalValue,
 );
 
