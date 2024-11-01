@@ -3,6 +3,7 @@ import { CategoryType } from '@/interfaces/Category';
 import Category from '@/models/Category';
 import { Product } from '@/models/Product';
 import { AppError } from '@/utils/errorHandle';
+import logger from '@/utils/logger';
 
 const GetAllCategoryService = async (query: object) => {
   const category = await Category.find({
@@ -12,6 +13,7 @@ const GetAllCategoryService = async (query: object) => {
     },
   }).populate('products');
   if (!category || category.length === 0) {
+    logger.log('error', 'Category is not found in get all category');
     throw new AppError(StatusCodes.NOT_FOUND, 'Category not found');
   }
   return category;
@@ -20,6 +22,7 @@ const GetAllCategoryService = async (query: object) => {
 const getOneCategoryService = async (id: string) => {
   const category = await Category.findById(id).populate('products');
   if (!category) {
+    logger.log('error', 'Category is not found in get one category');
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found category');
   }
   return category;
@@ -31,14 +34,13 @@ const createCategoryService = async (
 ): Promise<CategoryType> => {
   const defaultCategory = await Category.findOne({ type: type });
   if (defaultCategory && defaultCategory.type === 'default') {
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      'Can not find default category',
-    );
+    logger.log('error', 'Category default are exist in get all category');
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Default category exist');
   }
 
   const category = await Category.create(input);
   if (!category) {
+    logger.log('error', 'Category is error when creating in create category');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Error when creating category');
   }
   return category;
@@ -48,6 +50,7 @@ const updateCategoryService = async (id: string, input: CategoryType) => {
   const existCategory = await Category.findById({ _id: id });
 
   if (!existCategory) {
+    logger.log('error', 'Category is not found in update category');
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found existing category');
   }
 
@@ -66,6 +69,7 @@ const hideCategoryService = async (id: string): Promise<CategoryType> => {
     { new: true },
   );
   if (!data) {
+    logger.log('error', 'Category is error when soft delete in hide category');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'Something is wrong when soft delete',
@@ -77,6 +81,7 @@ const hideCategoryService = async (id: string): Promise<CategoryType> => {
 const deleteCategoryService = async (id: string): Promise<CategoryType> => {
   const category = await Category.findOne({ _id: id });
   if (!category) {
+    logger.log('error', 'Category is not found in delete category');
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found category');
   }
 
@@ -84,10 +89,8 @@ const deleteCategoryService = async (id: string): Promise<CategoryType> => {
   const defaultCategory = await Category.findOne({ type: 'default' });
 
   if (category?.type === 'default') {
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      'This is not a default category',
-    );
+    logger.log('error', 'Category default can not delete in delete category');
+    throw new AppError(StatusCodes.BAD_REQUEST, 'This is a default category');
   }
 
   if (defaultCategory) {
@@ -118,6 +121,7 @@ const deleteCategoryService = async (id: string): Promise<CategoryType> => {
   });
 
   if (!removeCategory) {
+    logger.log('error', 'Category is not found in remove category');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Remove category failed');
   }
   return removeCategory;

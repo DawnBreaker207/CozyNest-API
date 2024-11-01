@@ -1,28 +1,27 @@
-
 import { handleDelete } from '@/configs/cloudinaryConfig';
 import { messagesSuccess } from '@/constants/messages';
 import {
-  uploadImagesService,
-  uploadMultipleService
+  uploadSingleService,
+  uploadMultipleService,
 } from '@/services/upload.service';
 import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-const uploadImages: RequestHandler = async (req, res, next) => {
+const uploadSingle: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.file file input
    */
   const file = req.file;
   try {
-    const upload = await uploadImagesService(file);
+    const upload = await uploadSingleService(file);
 
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_IMAGES_SUCCESS,
       res: upload,
     });
   } catch (error) {
-    logger.log('error', `Catch error in upload single images: ${error}`);
+    logger.log('error', `Catch error in upload single image: ${error}`);
     next(error);
   }
 };
@@ -40,7 +39,7 @@ const uploadMultiple: RequestHandler = async (req, res, next) => {
       res: uploadFiles,
     });
   } catch (error) {
-    logger.log('error', `Catch error in upload multiples images: ${error}`);
+    logger.log('error', `Catch error in upload multiple images: ${error}`);
     next(error);
   }
 };
@@ -63,5 +62,4 @@ const deleteImage: RequestHandler = async (req, res, next) => {
   }
 };
 
-export { deleteImage, uploadImages, uploadMultiple };
-
+export { deleteImage, uploadSingle, uploadMultiple };

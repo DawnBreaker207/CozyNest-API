@@ -6,6 +6,7 @@ import { Product } from '@/models/Product';
 import { Sku } from '@/models/Sku';
 import { Variant } from '@/models/Variant';
 import { AppError } from '@/utils/errorHandle';
+import logger from '@/utils/logger';
 import { Types } from 'mongoose';
 
 //* Cart
@@ -45,6 +46,7 @@ const createCartService = async (input: CartType) => {
 const GetCartService = async (userId: string) => {
   const cart = await Cart.findOne({ userId }).populate('products.sku_id');
   if (!cart) {
+    logger.log('error', 'Cart is not found in get cart');
     throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
   }
   cart.totalPrice = countTotal(cart?.products);
@@ -85,6 +87,7 @@ const GetByIdService = async (userId: string) => {
     },
   });
   if (!cart) {
+    logger.log('error', 'Cart is not found in get cart by id');
     throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
   }
   const cartData = {
@@ -121,12 +124,14 @@ const AddToCartService = async (
   const variant = await Variant.findOne({ sku_id });
 
   if (!variant) {
+    logger.log('error', 'Variant is not exist in add to cart');
     throw new AppError(StatusCodes.NOT_FOUND, 'Variant not exist');
   }
 
   // Find product match with product id in variant
   const product = await Product.findById(variant.product_id);
   if (!product) {
+    logger.log('error', 'Product is not found in add to cart');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
   }
 
@@ -166,6 +171,7 @@ const RemoveFromCartService = async (userId: string, sku_id: string) => {
   const cart = await Cart.findOne({ userId });
   // If not found
   if (!cart) {
+    logger.log('error', 'Cart is not found in remove from cart');
     throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
   }
 
@@ -186,6 +192,7 @@ const RemoveCartService = async (id: string) => {
   }).select('-deleted_at -deleted -__v');
   // If not find id product in cart
   if (!data) {
+    logger.log('error', 'Cart is not found in remove from cart');
     throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
   }
   return data;
@@ -196,6 +203,7 @@ const increaseQuantityService = async (userId: string, sku_id: string) => {
   const cart = await Cart.findOne({ userId });
   // If not exist
   if (!cart) {
+    logger.log('error', 'Cart is not exist in increase quantity');
     throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
   }
   // Find product exist in cart
@@ -209,6 +217,7 @@ const increaseQuantityService = async (userId: string, sku_id: string) => {
   // If not exist
 
   if (!product) {
+    logger.log('error', 'Product is not found in increase quantity');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
   }
   if (product?.quantity) {
@@ -227,6 +236,7 @@ const decreaseQuantityService = async (userId: string, sku_id: string) => {
   const cart = await Cart.findOne({ userId });
   // If not exist
   if (!cart) {
+    logger.log('error', 'Cart is not exist in decrease quantity');
     throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
   }
   // Find product exist in cart
@@ -238,6 +248,7 @@ const decreaseQuantityService = async (userId: string, sku_id: string) => {
 
   // If not exist
   if (!product) {
+    logger.log('error', 'Product is not exist in decrease quantity');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
   }
 
@@ -268,6 +279,5 @@ export {
   increaseQuantityService,
   RemoveCartService,
   removeFromCart,
-  RemoveFromCartService
+  RemoveFromCartService,
 };
-

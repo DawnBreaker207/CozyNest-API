@@ -1,3 +1,4 @@
+import swagger from '@/docs/swagger-output.json';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -7,7 +8,6 @@ import { createServer } from 'http';
 import morgan from 'morgan';
 import { Server } from 'socket.io';
 import swaggerUI from 'swagger-ui-express';
-import swagger from '@/docs/swagger-output.json';
 import redirectPath from './middlewares/redirectPath';
 import router from './routes';
 import { PORT } from './utils/env';

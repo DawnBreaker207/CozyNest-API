@@ -1,6 +1,6 @@
 import {
   deleteImage,
-  uploadImages,
+  uploadSingle,
   uploadMultiple,
 } from '@/controllers/upload.controller';
 import { upload } from '@/middlewares/uploadImages';
@@ -13,7 +13,7 @@ routeUpload.post(
   '/',
   upload.single('upload'),
   // #swagger.tags = ['Upload']
-  uploadImages,
+  uploadSingle,
 );
 
 //* Upload multiple image

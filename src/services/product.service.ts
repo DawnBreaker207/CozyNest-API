@@ -3,12 +3,14 @@ import { ProductType } from '@/interfaces/Product';
 import Category from '@/models/Category';
 import { Product } from '@/models/Product';
 import { AppError } from '@/utils/errorHandle';
+import logger from '@/utils/logger';
 
 const getAllService = async (query: object, options: object) => {
   const products = await Product.paginate(query, options);
 
   // Check if any product exist
   if (!products || products.docs.length === 0) {
+    logger.log('error', 'Product not found in get all products');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
   }
 
@@ -24,7 +26,7 @@ const getAllService = async (query: object, options: object) => {
   return products;
 };
 
-const getOneProduct = async (id: string): Promise<ProductType> => {
+const getOneProductService = async (id: string): Promise<ProductType> => {
   const data = await Product.findById(id).populate([
     { path: 'categoryId', select: 'name' },
     {
@@ -40,16 +42,20 @@ const getOneProduct = async (id: string): Promise<ProductType> => {
 
   // If data not exist
   if (!data) {
+    logger.log('error', 'Product not found in get one product');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
   }
 
   return data;
 };
 
-const createProduct = async (input: ProductType): Promise<ProductType> => {
+const createProductService = async (
+  input: ProductType,
+): Promise<ProductType> => {
   // Check if SKU exist
   const checkSKU = await Product.findOne({ SKU: input.SKU });
   if (checkSKU) {
+    logger.log('error', 'SKU exist in get create product');
     throw new AppError(StatusCodes.BAD_REQUEST, 'SKU exist');
   }
 
@@ -66,19 +72,24 @@ const createProduct = async (input: ProductType): Promise<ProductType> => {
 
   // If not exist return error
   if (!product || !updateCategory) {
+    logger.log(
+      'error',
+      'Product create failed or category update failed in create product',
+    );
     throw new AppError(StatusCodes.BAD_REQUEST, 'Something was wrong');
   }
 
   return product;
 };
 
-const updateProduct = async (
+const updateProductService = async (
   id: string,
   input: ProductType,
 ): Promise<ProductType> => {
   // Check product id exist
   const currentData = await Product.findById(id);
   if (!currentData) {
+    logger.log('error', 'Product not exist in get update product');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not exist or not found');
   }
   // Find product id and update new data
@@ -88,6 +99,7 @@ const updateProduct = async (
 
   // Return error if not find
   if (!data) {
+    logger.log('error', 'Product not found in get update product');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
   }
 
@@ -106,7 +118,7 @@ const updateProduct = async (
   return data;
 };
 
-const softDelete = async (id: string): Promise<ProductType> => {
+const hideProductService = async (id: string): Promise<ProductType> => {
   const data = await Product.findByIdAndUpdate(
     `${id}`,
     {
@@ -116,25 +128,35 @@ const softDelete = async (id: string): Promise<ProductType> => {
   );
 
   if (!data) {
+    logger.log('error', 'Product not found in hide product');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Some thing is wrong');
   }
   return data;
 };
-const hardDelete = async (id: string): Promise<ProductType> => {
+const deleteProductService = async (id: string): Promise<ProductType> => {
   const product = await Product.findById(id);
   if (!product) {
+    logger.log('error', 'Product not found in delete product');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
   }
 
   const data = await Product.findByIdAndDelete(id);
   if (!data) {
+    logger.log('error', 'Product can not delete in get delete product');
     throw new AppError(StatusCodes.BAD_GATEWAY, 'Something is not right');
   }
   return data;
 };
-const findRelatedProduct = async (categoryId: string, productId: string) => {
+const findRelatedProductService = async (
+  categoryId: string,
+  productId: string,
+) => {
   // Check category id and product id exist
   if (!categoryId || !productId) {
+    logger.log(
+      'error',
+      'Product or category not found  in find related product',
+    );
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'Can not found category or product ID',
@@ -151,6 +173,7 @@ const findRelatedProduct = async (categoryId: string, productId: string) => {
 
   // If related product length = 0 return error
   if (relatedProducts.length === 0) {
+    logger.log('error', 'Product not found in find related product');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not exist');
   }
   // Sort product to random
@@ -166,16 +189,17 @@ const findRelatedProduct = async (categoryId: string, productId: string) => {
 
   // If populate not exist return error
   if (!populatedProducts) {
+    logger.log('error', 'Product related not found in find related product');
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found any related product');
   }
   return populatedProducts;
 };
 export {
+  createProductService,
+  findRelatedProductService,
   getAllService,
-  getOneProduct,
-  createProduct,
-  updateProduct,
-  softDelete,
-  hardDelete,
-  findRelatedProduct,
+  getOneProductService,
+  deleteProductService,
+  hideProductService,
+  updateProductService,
 };

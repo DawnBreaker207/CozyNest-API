@@ -1,12 +1,12 @@
 import { messagesSuccess } from '@/constants/messages';
 import {
-  createProduct,
-  findRelatedProduct,
+  createProductService,
+  findRelatedProductService,
   getAllService,
-  getOneProduct,
-  hardDelete,
-  softDelete,
-  updateProduct,
+  getOneProductService,
+  deleteProductService,
+  hideProductService,
+  updateProductService,
 } from '@/services/product.service';
 import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
@@ -107,7 +107,7 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
    */
   const { id } = req.params;
   try {
-    const data = await getOneProduct(id);
+    const data = await getOneProductService(id);
 
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.GET_PRODUCT_SUCCESS,
@@ -124,7 +124,7 @@ const Create_Product: RequestHandler = async (req, res, next) => {
    * @param {ProductType} req.body Param body input
    */
   try {
-    const product = await createProduct(req.body);
+    const product = await createProductService(req.body);
     res.status(200).json({
       message: messagesSuccess.CREATE_PRODUCT_SUCCESS,
       res: product,
@@ -142,7 +142,7 @@ const Update_Product: RequestHandler = async (req, res, next) => {
    */
   const { id } = req.params;
   try {
-    const data = await updateProduct(id, req.body);
+    const data = await updateProductService(id, req.body);
 
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.UPDATE_PRODUCT_SUCCESS,
@@ -161,7 +161,7 @@ const Hide_Product: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
     // Find product exist and hidden
-    const data = await softDelete(id);
+    const data = await hideProductService(id);
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
       res: data,
@@ -178,7 +178,7 @@ const Delete_Product: RequestHandler = async (req, res, next) => {
    */
   const { id } = req.params;
   try {
-    await hardDelete(id);
+    await deleteProductService(id);
     res.status(StatusCodes.NO_CONTENT);
   } catch (error) {
     logger.log('error', `Catch error in delete product: ${error}`);
@@ -193,7 +193,10 @@ const getRelatedProducts: RequestHandler = async (req, res, next) => {
    */
   const { cate_id, product_id } = req.params;
   try {
-    const populatedProducts = await findRelatedProduct(cate_id, product_id);
+    const populatedProducts = await findRelatedProductService(
+      cate_id,
+      product_id,
+    );
     res.status(StatusCodes.OK).json({
       res: populatedProducts,
     });
@@ -210,6 +213,5 @@ export {
   Get_One_Product,
   getRelatedProducts,
   Hide_Product,
-  Update_Product
+  Update_Product,
 };
-

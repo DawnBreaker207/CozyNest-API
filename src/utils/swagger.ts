@@ -38,23 +38,7 @@ const doc = {
 };
 
 const outputFile = '../../docs/swagger-output.json';
-const endpointsFiles = [
-  './src/routes/auth.route.ts',
-  './src/routes/cart.route.ts',
-  './src/routes/categories.route.ts',
-  './src/routes/coupon.route.ts',
-  './src/routes/index.ts',
-  './src/routes/mail.route.ts',
-  './src/routes/option.router.ts',
-  './src/routes/optionalValue.route.ts',
-  './src/routes/order.route.ts',
-  './src/routes/payment.route.ts',
-  './src/routes/products.route.ts',
-  './src/routes/shipment.route.ts',
-  './src/routes/upload.route.ts',
-  './src/routes/user.route.ts',
-  './src/routes/variant.router.ts',
-];
+const endpointsFiles = ['./src/index.ts'];
 
 const generateSwaggerDoc = async () => {
   swaggerAutogen(outputFile, endpointsFiles, doc);

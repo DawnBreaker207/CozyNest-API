@@ -58,7 +58,7 @@ const loginService = async (
   if (
     !(await comparePassword(password as string, userExist.password as string))
   ) {
-    logger.log('error', 'User password is wrong login');
+    logger.log('error', 'User password is wrong in login');
     throw new AppError(StatusCodes.BAD_REQUEST, messagesError.INVALID_PASSWORD);
   }
   userExist.password = undefined;
@@ -76,6 +76,7 @@ const checkTokenService = async (refreshToken: string): Promise<UserType> => {
 
   // If user not exist, return error
   if (!user) {
+    logger.log('error', 'User is not found in check token');
     throw new AppError(StatusCodes.NOT_FOUND, 'User not found');
   }
   return user;
