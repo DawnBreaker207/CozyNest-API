@@ -6,12 +6,13 @@ import express from 'express';
 import helmet from 'helmet';
 import { createServer } from 'http';
 import morgan from 'morgan';
+import swaggerUI from 'swagger-ui-express';
 import redirectPath from './middlewares/redirectPath';
 import router from './routes';
+import swaggerDocument from '../docs/swagger-output.json';
 import { PORT } from './utils/env';
 import { errorHandle, errorHandleNotFound } from './utils/errorHandle';
 import { realTime } from './utils/socket';
-
 const app = express();
 //* Create server real time
 const server = createServer(app);
@@ -28,7 +29,7 @@ app.use(cookieParser());
 app.use(
   express.urlencoded({
     extended: true,
-  })
+  }),
 );
 app.use(helmet());
 app.use(compression());
@@ -43,7 +44,7 @@ import logger from './utils/logger';
 realTime(io);
 //* Init Route
 app.use('/api/v1', router);
-
+app.use('/api/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 //* Error Handling
 app.use(errorHandleNotFound, errorHandle);
 
@@ -52,4 +53,3 @@ app.listen(PORT, () => {
 });
 
 // TODO: Update logging in every throw error
-
