@@ -24,34 +24,40 @@ import qs from 'qs';
 //* VNPay
 // Hàm tạo yêu cầu thanh toán VNPay
 const createVnPay: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {number} req.body.amount Param amount input
+   * @param {string} req.body.backCode Param backCode input
+   * @param {string} req.body.socket Param socket input
+   * @param {string} req.body.ip Param ip input
+   */
   try {
     process.env.TZ = 'Asia/Ho_Chi_Minh';
 
-    let date: Date = new Date();
-    let createDate: string = moment(date).format('YYYYMMDDHHmmss');
+    const date: Date = new Date();
+    const createDate: string = moment(date).format('YYYYMMDDHHmmss');
 
-    let ipAddr: string | undefined =
+    const ipAddr: string | undefined =
       (req.headers['x-forwarded-for'] as string) ||
       req.socket.remoteAddress ||
       req.ip;
 
-    let tmnCode: string = VN_PAY_TMN_CODE as string;
+    const tmnCode: string = VN_PAY_TMN_CODE as string;
 
-    let secretKey: string = VN_PAY_HASH_SECRET as string;
+    const secretKey: string = VN_PAY_HASH_SECRET as string;
 
     let vnpUrl: string = VN_PAY_URL as string;
 
-    let returnUrl: string = VN_PAY_RETURN_URL as string;
+    const returnUrl: string = VN_PAY_RETURN_URL as string;
 
-    let orderId: string = moment(date).format('DDHHmmss');
+    const orderId: string = moment(date).format('DDHHmmss');
 
-    let amount: number = req.body.amount || 100000;
+    const amount: number = req.body.amount || 100000;
 
-    let bankCode: string = req.body.backCode || 'NCB';
+    const bankCode: string = req.body.backCode || 'NCB';
 
-    let locale: string = req.body.language || 'vn';
+    const locale: string = req.body.language || 'vn';
 
-    let currCode: string = 'VND';
+    const currCode: string = 'VND';
 
     let vnp_Params: { [key: string]: string | number } = {};
     vnp_Params['vnp_Version'] = '2.1.0';
@@ -73,11 +79,11 @@ const createVnPay: RequestHandler = async (req, res, next) => {
 
     vnp_Params = sortObject(vnp_Params);
 
-    let signData = qs.stringify(vnp_Params, { encode: false });
+    const signData = qs.stringify(vnp_Params, { encode: false });
 
-    let hmac = crypto.createHmac('sha512', secretKey);
+    const hmac = crypto.createHmac('sha512', secretKey);
 
-    let signed: string = hmac
+    const signed: string = hmac
       .update(Buffer.from(signData, 'utf-8'))
       .digest('hex');
 
@@ -97,20 +103,20 @@ const vnPayCallback: RequestHandler = async (req, res, next) => {
   try {
     let vnp_Params = req.query as Record<string, string>;
 
-    let secureHash = vnp_Params['vnp_SecureHash'];
+    const secureHash = vnp_Params['vnp_SecureHash'];
 
     delete vnp_Params['vnp_SecureHash'];
     delete vnp_Params['vnp_SecureHashType'];
 
     vnp_Params = sortObject(vnp_Params);
 
-    let tmnCode: string = VN_PAY_TMN_CODE as string;
-    let secretKey: string = VN_PAY_HASH_SECRET as string;
+    // const tmnCode: string = VN_PAY_TMN_CODE as string;
+    const secretKey: string = VN_PAY_HASH_SECRET as string;
 
-    let signData: string = qs.stringify(vnp_Params, { encode: false });
-    let hmac = crypto.createHmac('sha512', secretKey);
+    const signData: string = qs.stringify(vnp_Params, { encode: false });
+    const hmac = crypto.createHmac('sha512', secretKey);
 
-    let signed: string = hmac
+    const signed: string = hmac
       .update(Buffer.from(signData, 'utf-8'))
       .digest('hex');
 
@@ -136,31 +142,31 @@ const vnPayCallback: RequestHandler = async (req, res, next) => {
 const vnPayStatus: RequestHandler = async (req, res, next) => {
   try {
     let vnp_Params = req.query as { [key: string]: string };
-    let secureHash = vnp_Params['vnp_SecureHash'];
+    const secureHash = vnp_Params['vnp_SecureHash'];
 
-    let orderId = vnp_Params['vnp_TxnRef'];
-    let rspCode = vnp_Params['vnp_ResponseCode'];
+    // const orderId = vnp_Params['vnp_TxnRef'];
+    const rspCode = vnp_Params['vnp_ResponseCode'];
 
     delete vnp_Params['vnp_SecureHash'];
     delete vnp_Params['vnp_SecureHashType'];
 
     vnp_Params = sortObject(vnp_Params);
 
-    let secretKey: string = VN_PAY_HASH_SECRET as string;
+    const secretKey: string = VN_PAY_HASH_SECRET as string;
 
-    let signData: string = qs.stringify(vnp_Params, { encode: false });
+    const signData: string = qs.stringify(vnp_Params, { encode: false });
 
-    let hmac = crypto.createHmac('sha512', secretKey);
-    let signed: string = hmac
+    const hmac = crypto.createHmac('sha512', secretKey);
+    const signed: string = hmac
       .update(Buffer.from(signData, 'utf-8'))
       .digest('hex');
 
-    let paymentStatus = '0'; // Giả sử '0' là trạng thái khởi tạo giao dịch, chưa có IPN. Trạng thái này được lưu khi yêu cầu thanh toán chuyển hướng sang Cổng thanh toán VNPAY tại đầu khởi tạo đơn hàng.
+    const paymentStatus = '0'; // Giả sử '0' là trạng thái khởi tạo giao dịch, chưa có IPN. Trạng thái này được lưu khi yêu cầu thanh toán chuyển hướng sang Cổng thanh toán VNPAY tại đầu khởi tạo đơn hàng.
     //let paymentStatus = '1'; // Giả sử '1' là trạng thái thành công bạn cập nhật sau IPN được gọi và trả kết quả về nó
     //let paymentStatus = '2'; // Giả sử '2' là trạng thái thất bại bạn cập nhật sau IPN được gọi và trả kết quả về nó
 
-    let checkOrderId = true; // Mã đơn hàng "giá trị của vnp_TxnRef" VNPAY phản hồi tồn tại trong CSDL của bạn
-    let checkAmount = true; // Kiểm tra số tiền "giá trị của vnp_Amout/100" trùng khớp với số tiền của đơn hàng trong CSDL của bạn
+    const checkOrderId = true; // Mã đơn hàng "giá trị của vnp_TxnRef" VNPAY phản hồi tồn tại trong CSDL của bạn
+    const checkAmount = true; // Kiểm tra số tiền "giá trị của vnp_Amout/100" trùng khớp với số tiền của đơn hàng trong CSDL của bạn
     if (secureHash === signed) {
       //kiểm tra checksum
       if (checkOrderId) {
@@ -314,7 +320,7 @@ const momoStatus: RequestHandler = async (req, res, next) => {
       data: requestBody,
     };
 
-    let result = await axios(options);
+    const result = await axios(options);
     res.status(StatusCodes.OK).json({ res: result.data });
   } catch (error) {
     logger.log('error', `Catch error in check momo status: ${error}`);
@@ -384,12 +390,12 @@ const createZaloPay: RequestHandler = async (req, res, next) => {
 };
 
 const zaloPayCallback: RequestHandler = async (req, res, next) => {
-  let result = {} as Record<string, unknown>;
+  const result = {} as Record<string, unknown>;
   try {
-    let dataStr = req.body.data;
-    let reqMac = req.body.mac;
+    const dataStr = req.body.data;
+    const reqMac = req.body.mac;
 
-    let mac = crypto
+    const mac = crypto
       .createHmac('sha256', ZALO_PAY_KEY_2 as string)
       .update(dataStr)
       .digest('hex');
@@ -403,10 +409,10 @@ const zaloPayCallback: RequestHandler = async (req, res, next) => {
     } else {
       // thanh toán thành công
       // merchant cập nhật trạng thái cho đơn hàng ở đây
-      let dataJson = JSON.parse(dataStr);
+      const dataJson = JSON.parse(dataStr);
       console.log(
         "update order's status = success where app_trans_id =",
-        dataJson['app_trans_id']
+        dataJson['app_trans_id'],
       );
 
       result.return_code = 1;
@@ -421,12 +427,12 @@ const zaloPayCallback: RequestHandler = async (req, res, next) => {
 };
 
 const zaloPayStatus: RequestHandler = async (req, res, next) => {
-  let postData = {
+  const postData = {
     app_id: ZALO_PAY_APP_ID as string,
     app_trans_id: '<app_trans_id>',
   };
 
-  let data =
+  const data =
     postData.app_id + '|' + postData.app_trans_id + '|' + ZALO_PAY_KEY_1; // appid|app_trans_id|key1
 
   (postData as any).mac = crypto
@@ -434,7 +440,7 @@ const zaloPayStatus: RequestHandler = async (req, res, next) => {
     .update(data)
     .digest('hex');
 
-  let postConfig = {
+  const postConfig = {
     method: 'post',
     url: ZALO_PAY_ENDPOINT,
     headers: {

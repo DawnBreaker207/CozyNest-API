@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import routeAuthentication from './authentication.route';
+import routeAuth from './auth.route';
 import routeCart from './cart.route';
 import routeCategory from './categories.route';
 import routeMail from './mail.route';
@@ -23,7 +23,7 @@ router.use('/products', routeProduct);
 router.use('/categories', routeCategory);
 
 //* AuthenticationO
-router.use('/auth', routeAuthentication);
+router.use('/auth', routeAuth);
 
 //* Upload images
 router.use('/upload', routeUpload);

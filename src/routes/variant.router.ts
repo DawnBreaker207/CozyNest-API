@@ -15,10 +15,18 @@ const routeVariant = Router();
 
 // Variant Route
 //* Get all variants exist
-routeVariant.get('/:product_id', getAllVariant);
+routeVariant.get(
+  '/:product_id',
+  // #swagger.tags = ['Variant']
+  getAllVariant,
+);
 
 //* Get one variant
-routeVariant.get('/:product_id/:sku_id', getOneVariant);
+routeVariant.get(
+  '/:product_id/:sku_id',
+  // #swagger.tags = ['Variant']
+  getOneVariant,
+);
 
 //* Create variant
 routeVariant.post(
@@ -26,7 +34,8 @@ routeVariant.post(
   checkAuth,
   checkPermission,
   validBodyRequest(variantSchema),
-  saveVariant
+  // #swagger.tags = ['Variant']
+  saveVariant,
 );
 
 //* Update variant
@@ -35,7 +44,8 @@ routeVariant.put(
   checkAuth,
   checkPermission,
   validBodyRequest(variantSchema),
-  updateVariant
+  // #swagger.tags = ['Variant']
+  updateVariant,
 );
 
 //* Delete variant
@@ -43,7 +53,8 @@ routeVariant.delete(
   '/:product_id/:sku_id',
   checkAuth,
   checkPermission,
-  deleteVariant
+  // #swagger.tags = ['Variant']
+  deleteVariant,
 );
 
 export default routeVariant;

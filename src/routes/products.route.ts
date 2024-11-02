@@ -16,13 +16,25 @@ import { checkPermission } from '@/middlewares/checkPermission';
 const routeProduct = Router();
 
 //* Get all products exist
-routeProduct.get('/', Get_All_Product);
+routeProduct.get(
+  '/',
+  // #swagger.tags = ['Product']
+  Get_All_Product,
+);
 
 //* Get one product
-routeProduct.get('/:id', Get_One_Product);
+routeProduct.get(
+  '/:id',
+  // #swagger.tags = ['Product']
+  Get_One_Product,
+);
 
 //* Get relate product by category id
-routeProduct.get('/:cate_id/:product_id', getRelatedProducts);
+routeProduct.get(
+  '/:cate_id/:product_id',
+  // #swagger.tags = ['Product']
+  getRelatedProducts,
+);
 
 // routeProduct.use(checkAuth, checkPermission);
 
@@ -32,7 +44,8 @@ routeProduct.post(
   checkAuth,
   checkPermission,
   validBodyRequest(productSchema),
-  Create_Product
+  // #swagger.tags = ['Product']
+  Create_Product,
 );
 
 //* Update product
@@ -41,13 +54,26 @@ routeProduct.put(
   checkAuth,
   checkPermission,
   validBodyRequest(productSchema),
-  Update_Product
+  // #swagger.tags = ['Product']
+  Update_Product,
 );
 
 //* Soft delete product
-routeProduct.patch('/:id', checkAuth, checkPermission, Hide_Product);
+routeProduct.patch(
+  '/:id',
+  checkAuth,
+  checkPermission,
+  // #swagger.tags = ['Product']
+  Hide_Product,
+);
 
 //* Hard delete product
-routeProduct.delete('/:id', checkAuth, checkPermission, Delete_Product);
+routeProduct.delete(
+  '/:id',
+  checkAuth,
+  checkPermission,
+  // #swagger.tags = ['Product']
+  Delete_Product,
+);
 
 export default routeProduct;

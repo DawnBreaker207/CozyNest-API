@@ -6,6 +6,12 @@ import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 const sendMailRequest: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.body.email Param email input
+   * @param {string} req.body.subject Param subject input
+   * @param {string} req.body.content Param content input
+   */
+  const { email, subject, content } = req.body;
   try {
 
     // TODO: Fix this shit code later, move it into a service in controller update order
@@ -37,9 +43,9 @@ const sendMailRequest: RequestHandler = async (req, res, next) => {
     // // Phản hồi thành công
 
     await configSendMail({
-      email: req.body.email,
-      subject: req.body.subject,
-      text: sendExportMail(req.body.subject, req.body.content),
+      email: email,
+      subject: email,
+      text: sendExportMail(subject, content),
     });
 
     return res.status(StatusCodes.OK).json({
