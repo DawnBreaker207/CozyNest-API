@@ -10,6 +10,8 @@ import {
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { productSchema } from '@/validations/product.validation';
 import { Router } from 'express';
+import { checkAuth } from '../middlewares/checkAuth';
+import { checkPermission } from '@/middlewares/checkPermission';
 
 const routeProduct = Router();
 
@@ -25,15 +27,27 @@ routeProduct.get('/:cate_id/:product_id', getRelatedProducts);
 // routeProduct.use(checkAuth, checkPermission);
 
 //* Create new product
-routeProduct.post('/', validBodyRequest(productSchema), Create_Product);
+routeProduct.post(
+  '/',
+  checkAuth,
+  checkPermission,
+  validBodyRequest(productSchema),
+  Create_Product
+);
 
 //* Update product
-routeProduct.put('/:id', validBodyRequest(productSchema), Update_Product);
+routeProduct.put(
+  '/:id',
+  checkAuth,
+  checkPermission,
+  validBodyRequest(productSchema),
+  Update_Product
+);
 
 //* Soft delete product
-routeProduct.patch('/:id', Hide_Product);
+routeProduct.patch('/:id', checkAuth, checkPermission, Hide_Product);
 
 //* Hard delete product
-routeProduct.delete('/:id', Delete_Product);
+routeProduct.delete('/:id', checkAuth, checkPermission, Delete_Product);
 
 export default routeProduct;

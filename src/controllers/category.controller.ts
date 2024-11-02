@@ -3,6 +3,7 @@ import Category from '@/models/Category';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Product } from '../models/Product';
+import logger from '@/utils/logger';
 
 const Get_All_Category: RequestHandler = async (req, res, next) => {
   try {
@@ -22,6 +23,7 @@ const Get_All_Category: RequestHandler = async (req, res, next) => {
       res: category,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get all category: ${error}`);
     next(error);
   }
 };
@@ -44,6 +46,7 @@ const Get_One_Category: RequestHandler = async (req, res, next) => {
       res: category,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get one category: ${error}`);
     next(error);
   }
 };
@@ -72,6 +75,7 @@ const Create_Category: RequestHandler = async (req, res, next) => {
       res: category,
     });
   } catch (error) {
+    logger.log('error', `Catch error in create category: ${error}`);
     next(error);
   }
 };
@@ -99,6 +103,7 @@ const Update_Category: RequestHandler = async (req, res, next) => {
       res: category,
     });
   } catch (error) {
+    logger.log('error', `Catch error in update category: ${error}`);
     next(error);
   }
 };
@@ -124,6 +129,7 @@ const Hide_Category: RequestHandler = async (req, res, next) => {
       message: messagesSuccess.UPDATE_CATEGORY_SUCCESS,
     });
   } catch (error) {
+    logger.log('error', `Catch error in hide category: ${error}`);
     next(error);
   }
 };
@@ -185,6 +191,7 @@ const Delete_Category: RequestHandler = async (req, res, next) => {
       message: messagesSuccess.DELETE_CATEGORY_SUCCESS,
     });
   } catch (error) {
+    logger.log('error', `Catch error in delete category: ${error}`);
     next(error);
   }
 };

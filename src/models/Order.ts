@@ -1,16 +1,16 @@
-import { OrderItemType, OrderType, ShippingInfoType } from "@/interfaces/Order";
-import mongoose, { PaginateModel } from "mongoose";
-import mongoosePaginate from "mongoose-paginate-v2";
+import { OrderItemType, OrderType, ShippingInfoType } from '@/interfaces/Order';
+import mongoose, { PaginateModel } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 const orderItemSchema = new mongoose.Schema<OrderItemType>(
   {
     order_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Order",
+      ref: 'Order',
     },
     sku_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Sku",
+      ref: 'Sku',
       required: true,
     },
     quantity: {
@@ -35,7 +35,7 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
     },
   },
   {
-    collection: "order_details",
+    collection: 'order_details',
     timestamps: true,
     versionKey: false,
   }
@@ -50,7 +50,7 @@ const shippingInfoSchema = new mongoose.Schema<ShippingInfoType>(
     estimated_delivery_date: Date,
     shipping_company: {
       type: String,
-      default: "Giao hàng nhanh",
+      default: 'Giao hàng nhanh',
     },
     transportation_fee: {
       type: Number,
@@ -61,7 +61,7 @@ const shippingInfoSchema = new mongoose.Schema<ShippingInfoType>(
     },
   },
   {
-    collection: "shippings",
+    collection: 'shippings',
     timestamps: true,
     versionKey: false,
   }
@@ -82,7 +82,7 @@ const orderSchema = new mongoose.Schema<OrderType>(
     email: { type: String, required: true },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     payment_url: {
       type: String,
@@ -90,7 +90,7 @@ const orderSchema = new mongoose.Schema<OrderType>(
     },
     coupon_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Coupon",
+      ref: 'Coupon',
     },
     shop_address: {
       type: String,
@@ -101,8 +101,8 @@ const orderSchema = new mongoose.Schema<OrderType>(
     },
     payment_status: {
       type: String,
-      enum: ["paid", "unpaid"],
-      default: "unpaid",
+      enum: ['paid', 'unpaid'],
+      default: 'unpaid',
     },
     payment_method: [
       {
@@ -115,29 +115,29 @@ const orderSchema = new mongoose.Schema<OrderType>(
     ],
     status: {
       type: String,
-      default: "processing",
+      default: 'processing',
       enum: [
-        "processing",
-        "confirmed",
-        "delivering",
-        "cancelled",
-        "pendingComplete",
-        "delivered",
-        "returned",
+        'processing',
+        'confirmed',
+        'delivering',
+        'cancelled',
+        'pendingComplete',
+        'delivered',
+        'returned',
       ],
     },
     status_detail: [
       {
         status: {
           type: String,
-          default: "processing",
+          default: 'processing',
           enum: [
-            "processing",
-            "confirmed",
-            "delivering",
-            "cancelled",
-            "delivered",
-            "returned",
+            'processing',
+            'confirmed',
+            'delivering',
+            'cancelled',
+            'delivered',
+            'returned',
           ],
         },
         created_at: {
@@ -155,18 +155,18 @@ const orderSchema = new mongoose.Schema<OrderType>(
     },
     shipping_method: {
       type: String,
-      enum: ["shipped", "at_store"],
-      default: "shipped",
+      enum: ['shipped', 'at_store'],
+      default: 'shipped',
     },
     shipping_info: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Shipping",
+      ref: 'Shipping',
     },
     products: [
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
+          ref: 'Product',
           required: true,
         },
         originName: { type: String, required: true },
@@ -177,7 +177,7 @@ const orderSchema = new mongoose.Schema<OrderType>(
     ],
   },
   {
-    collection: "orders",
+    collection: 'orders',
     timestamps: true,
     versionKey: false,
   }
@@ -186,15 +186,15 @@ const orderSchema = new mongoose.Schema<OrderType>(
 orderSchema.plugin(mongoosePaginate);
 
 const Order = mongoose.model<OrderType, PaginateModel<OrderType>>(
-  "Order",
+  'Order',
   orderSchema
 );
 const Order_Detail = mongoose.model<OrderItemType>(
-  "OrderDetail",
+  'OrderDetail',
   orderItemSchema
 );
 const Shipping = mongoose.model<ShippingInfoType>(
-  "Shipping",
+  'Shipping',
   shippingInfoSchema
 );
 

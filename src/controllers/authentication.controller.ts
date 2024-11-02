@@ -4,6 +4,7 @@ import User from '@/models/User';
 import { SECRET_ACCESS_TOKEN, SECRET_REFRESH_TOKEN } from '@/utils/env';
 import { comparePassword, hashPassword } from '@/utils/hashPassword';
 import { createToken, verifyToken } from '@/utils/jwt';
+import logger from '@/utils/logger';
 import 'dotenv/config';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
@@ -19,6 +20,7 @@ const Register: RequestHandler = async (req, res, next) => {
 
     // Check if email exist in database
     if (checkEmail) {
+      logger.log('error', 'Email exist in register');
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.EMAIL_EXIST });
@@ -33,36 +35,35 @@ const Register: RequestHandler = async (req, res, next) => {
     });
 
     if (!newUser) {
+      logger.log('error', 'User is not unauthorized in register');
       return res.status(StatusCodes.UNAUTHORIZED).json({
         message: messagesError.UNAUTHORIZED,
       });
     }
 
-    // Create access token
     const accessToken = createToken(
       { _id: newUser.id },
       SECRET_ACCESS_TOKEN as string,
       '5m'
     );
 
-    // Create refresh token
-    const refreshToken = createToken(
-      { _id: newUser.id },
-      SECRET_REFRESH_TOKEN as string,
-      '1d'
-    );
-
+    // save access token in cookie
     res.cookie('accessToken', accessToken, {
       expires: new Date(Date.now() + (timeCounts.mins_5 || 5 * 60 * 1000)),
       httpOnly: true,
     });
 
-    res.cookie('refreshToken', refreshToken, {
-      expires: new Date(
-        Date.now() + (timeCounts.hours_24 || 24 * 60 * 60 * 1000)
-      ),
-      httpOnly: true,
-    });
+    // Create refresh token and save in cookie
+    res.cookie(
+      'refreshToken',
+      createToken({ _id: newUser.id }, SECRET_REFRESH_TOKEN as string, '1d'),
+      {
+        expires: new Date(
+          Date.now() + (timeCounts.hours_24 || 24 * 60 * 60 * 1000)
+        ),
+        httpOnly: true,
+      }
+    );
 
     newUser.password = undefined;
 
@@ -73,6 +74,7 @@ const Register: RequestHandler = async (req, res, next) => {
       res: newUser,
     });
   } catch (error) {
+    logger.log('error', `Catch error in register: ${error}`);
     next(error);
   }
 };
@@ -86,9 +88,9 @@ const Login: RequestHandler = async (req, res, next) => {
     const { email, password } = req.body;
 
     const userExist = await User.findOne({ email });
-
-    //Check user exist in database
+    //Check user exist
     if (!userExist) {
+      logger.log('error', 'User is not existed in login');
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.EMAIL_NOT_FOUND });
@@ -96,6 +98,7 @@ const Login: RequestHandler = async (req, res, next) => {
 
     // If user status = false, return forbidden
     if (!userExist.status) {
+      logger.log('error', 'User status is forbidden in login');
       return res.status(StatusCodes.FORBIDDEN).json({
         message: messagesError.FORBIDDEN,
       });
@@ -103,6 +106,8 @@ const Login: RequestHandler = async (req, res, next) => {
 
     // Check password valid
     if (!(await comparePassword(password, userExist.password as string))) {
+      logger.log('error', 'User password is wrong login');
+
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.INVALID_PASSWORD });
@@ -115,24 +120,23 @@ const Login: RequestHandler = async (req, res, next) => {
       '5m'
     );
 
-    // Create refresh token
-    const refreshToken = createToken(
-      { _id: userExist.id },
-      SECRET_REFRESH_TOKEN as string,
-      '1d'
-    );
-
+    // Save access token in cookie
     res.cookie('accessToken', accessToken, {
       expires: new Date(Date.now() + (timeCounts.mins_5 || 5 * 60 * 1000)),
       httpOnly: true,
     });
 
-    res.cookie('refreshToken', refreshToken, {
-      expires: new Date(
-        Date.now() + (timeCounts.hours_24 || 24 * 60 * 60 * 1000)
-      ),
-      httpOnly: true,
-    });
+    // Create refresh token and save to cookie
+    res.cookie(
+      'refreshToken',
+      createToken({ _id: userExist.id }, SECRET_REFRESH_TOKEN as string, '1d'),
+      {
+        expires: new Date(
+          Date.now() + (timeCounts.hours_24 || 24 * 60 * 60 * 1000)
+        ),
+        httpOnly: true,
+      }
+    );
 
     userExist.password = undefined;
 
@@ -143,6 +147,7 @@ const Login: RequestHandler = async (req, res, next) => {
       res: userExist,
     });
   } catch (error) {
+    logger.log('error', `Catch error in login: ${error}`);
     next(error);
   }
 };
@@ -206,6 +211,8 @@ const checkRefreshToken: RequestHandler = (req, res, next) => {
       }
     );
   } catch (error) {
+    logger.log('error', `Catch error in check refresh token: ${error}`);
+
     next(error);
   }
 };
@@ -220,6 +227,7 @@ const clearToken: RequestHandler = async (req, res, next) => {
       message: messagesSuccess.CLEAR_TOKEN_SUCCESS,
     });
   } catch (error) {
+    logger.log('error', `Catch error in clear token: ${error}`);
     next(error);
   }
 };

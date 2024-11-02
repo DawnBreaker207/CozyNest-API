@@ -5,6 +5,8 @@ import {
   getOneOptionalValue,
   updateOptionalValue,
 } from '@/controllers/variants.controller';
+import { checkAuth } from '@/middlewares/checkAuth';
+import { checkPermission } from '@/middlewares/checkPermission';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { optionalValuesSchema } from '@/validations/variant.validation';
 import { Router } from 'express';
@@ -24,6 +26,8 @@ routeOptionalValue.get(
 //* Create optional value depend option model
 routeOptionalValue.post(
   '/:product_id/:option_id',
+  checkAuth,
+  checkPermission,
   validBodyRequest(optionalValuesSchema),
   createOptionalValue
 );
@@ -31,6 +35,8 @@ routeOptionalValue.post(
 //* Update option value depend option model
 routeOptionalValue.put(
   '/:product_id/:option_id/:value_id',
+  checkAuth,
+  checkPermission,
   validBodyRequest(optionalValuesSchema),
   updateOptionalValue
 );
@@ -38,6 +44,8 @@ routeOptionalValue.put(
 //* Delete option value depend option model
 routeOptionalValue.delete(
   '/:product_id/:option_id/:value_id',
+  checkAuth,
+  checkPermission,
   deleteOptionalValue
 );
 

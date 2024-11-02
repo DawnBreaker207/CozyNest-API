@@ -2,6 +2,7 @@ import { messagesError, messagesSuccess } from '@/constants/messages';
 import Category from '@/models/Category';
 import { Product } from '@/models/Product';
 import { AppError } from '@/utils/errorHandle';
+import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -39,7 +40,19 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
     sort: {
       [sortField]: _order === 'desc' ? -1 : 1,
     },
-    populate: ['categoryId', 'variants'],
+
+    populate: [
+      { path: 'categoryId', select: 'name' },
+      {
+        path: 'variants',
+        select: 'sku_id option_id option_value_id',
+        populate: [
+          { path: 'sku_id', select: 'SKU name price stock' },
+          { path: 'option_id', select: 'name' },
+          { path: 'option_value_id', select: 'value' },
+        ],
+      },
+    ],
   };
 
   const query: any = {};
@@ -71,25 +84,17 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: messagesError.BAD_REQUEST });
     }
-    // Find data with the config
-    const data = await Product.find();
 
     let maxPrice = 0;
     let minPrice = Number.MAX_SAFE_INTEGER;
 
     // Check data with the min and max price with the discount
-    for (const item of data) {
+    for (const item of products.docs) {
       const price = item.price - (item.price * item.discount) / 100;
       maxPrice = Math.max(maxPrice, price);
       minPrice = Math.min(minPrice, price);
     }
 
-    // If not found of error return error
-    if (!data) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: messagesError.BAD_REQUEST });
-    }
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.GET_PRODUCT_SUCCESS,
       res: products.docs,
@@ -102,6 +107,7 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
       },
     });
   } catch (error) {
+    logger.log('error', `Catch error in get all products: ${error}`);
     next(error);
   }
 };
@@ -111,7 +117,18 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
    * @param {string} req.params.id
    */
   try {
-    const data = await Product.findById(req.params.id).populate('variants');
+    const data = await Product.findById(req.params.id).populate([
+      { path: 'categoryId', select: 'name' },
+      {
+        path: 'variants',
+        select: 'sku_id option_id option_value_id',
+        populate: [
+          { path: 'sku_id', select: 'SKU name price stock' },
+          { path: 'option_id', select: 'name' },
+          { path: 'option_value_id', select: 'value' },
+        ],
+      },
+    ]);
 
     // If data not exist
     if (!data) {
@@ -120,14 +137,12 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
         .json({ message: messagesError.BAD_REQUEST });
     }
 
-    // Populate to category
-    await data.populate('categoryId.productId');
-
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.GET_PRODUCT_SUCCESS,
       res: data,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get one product: ${error}`);
     next(error);
   }
 };
@@ -140,9 +155,7 @@ const Create_Product: RequestHandler = async (req, res, next) => {
     // Check if SKU exist
     const checkSKU = await Product.findOne({ SKU: req.body.SKU });
     if (checkSKU) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
+      throw new AppError(StatusCodes.BAD_REQUEST, 'SKU exist');
     }
 
     const product = await Product.create(req.body);
@@ -167,6 +180,7 @@ const Create_Product: RequestHandler = async (req, res, next) => {
       res: product,
     });
   } catch (error) {
+    logger.log('error', `Catch error in create product: ${error}`);
     next(error);
   }
 };
@@ -213,6 +227,7 @@ const Update_Product: RequestHandler = async (req, res, next) => {
       res: data,
     });
   } catch (error) {
+    logger.log('error', `Catch error in update product: ${error}`);
     next(error);
   }
 };
@@ -241,6 +256,7 @@ const Hide_Product: RequestHandler = async (req, res, next) => {
       res: data,
     });
   } catch (error) {
+    logger.log('error', `Catch error in hide product: ${error}`);
     next(error);
   }
 };
@@ -262,6 +278,7 @@ const Delete_Product: RequestHandler = async (req, res, next) => {
       message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
     });
   } catch (error) {
+    logger.log('error', `Catch error in delete product: ${error}`);
     next(error);
   }
 };
@@ -316,6 +333,7 @@ const getRelatedProducts: RequestHandler = async (req, res, next) => {
       res: populatedProducts,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get related products: ${error}`);
     next(error);
   }
 };

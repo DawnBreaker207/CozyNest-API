@@ -1,5 +1,6 @@
 import { handleDelete, handleUpload } from '@/configs/cloudinaryConfig';
 import { messagesError, messagesSuccess } from '@/constants/messages';
+import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -28,6 +29,7 @@ const uploadImages: RequestHandler = async (req, res, next) => {
       res: data,
     });
   } catch (error) {
+    logger.log('error', `Catch error in upload single images: ${error}`);
     next(error);
   }
 };
@@ -64,8 +66,7 @@ const uploadMultiple: RequestHandler = async (req, res, next) => {
       res: uploadFiles,
     });
   } catch (error) {
-    console.log(error);
-
+    logger.log('error', `Catch error in upload multiples images: ${error}`);
     next(error);
   }
 };
@@ -83,6 +84,7 @@ const deleteImage: RequestHandler = async (req, res, next) => {
       message: messagesSuccess.DELETE_IMAGES_SUCCESS,
     });
   } catch (error) {
+    logger.log('error', `Catch error in delete image: ${error}`);
     next(error);
   }
 };

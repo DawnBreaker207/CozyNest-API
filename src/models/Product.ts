@@ -15,13 +15,12 @@ const productSchema = new mongoose.Schema<ProductType>(
         _id: false,
       },
     ],
-    categoryId: [
-      {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Category',
-        required: true,
-      },
-    ],
+    categoryId: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Category',
+      required: true,
+    },
+
     brand: { type: String },
     description: { type: String, required: true },
     price: { type: Number, required: true },
@@ -30,7 +29,6 @@ const productSchema = new mongoose.Schema<ProductType>(
     isSale: { type: Boolean, default: false },
     // Thêm liên kết đến SKU và biến thể
     SKU: { type: String, unique: true },
-    // TODO: Kiểm tra ref đến variants
     variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }],
     isHidden: { type: Boolean, default: false },
   },

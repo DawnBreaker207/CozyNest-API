@@ -3,12 +3,12 @@ import { timeCounts } from '@/constants/initialValue';
 import { messagesError, messagesSuccess } from '@/constants/messages';
 import User from '@/models/User';
 import { comparePassword, hashPassword } from '@/utils/hashPassword';
+import logger from '@/utils/logger';
 import { sendResetMail, sendVerifyMail } from '@/utils/texts';
 import crypto from 'crypto';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-// TODO CRUD user, forget password ,verify token , change password
 const getAllUser: RequestHandler = async (req, res, next) => {
   try {
     const {
@@ -49,6 +49,7 @@ const getAllUser: RequestHandler = async (req, res, next) => {
       totalPages: users.totalPages,
     });
   } catch (error) {
+    logger.log('error', `Catch error in get all user: ${error}`);
     next(error);
   }
 };
@@ -65,6 +66,7 @@ const getOneUser: RequestHandler = async (req, res, next) => {
       .status(StatusCodes.OK)
       .json({ message: messagesSuccess.GET_PROFILE_SUCCESS, res: user });
   } catch (error) {
+    logger.log('error', `Catch error in get one user: ${error}`);
     next(error);
   }
 };
@@ -72,13 +74,14 @@ const getOneUser: RequestHandler = async (req, res, next) => {
 const updateUser: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
+    // Check user exist
     const user = await User.findById(id);
-
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: messagesError.BAD_REQUEST,
       });
     }
+    // Check email exist
     const emailExist = await User.findOne({ email: req.body.email });
     if (emailExist && !emailExist._id.equals(user.id)) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -95,6 +98,7 @@ const updateUser: RequestHandler = async (req, res, next) => {
       res: newUser,
     });
   } catch (error) {
+    logger.log('error', `Catch error in update user: ${error}`);
     next(error);
   }
 };
@@ -121,6 +125,7 @@ const verifyEmailToken: RequestHandler = async (req, res, next) => {
       res: req.cookies.email,
     });
   } catch (error) {
+    logger.log('error', `Catch error in verify email token: ${error}`);
     next(error);
   }
 };
@@ -141,28 +146,30 @@ const generateVerifyToken: RequestHandler = async (req, res, next) => {
       });
     }
 
-    const verificationExpire = timeCounts.mins_5 || 5 * 60 * 1000; //Expire in 5 min
-    const mailOptions = {
+    await configSendMail({
       email: req.body.email,
       subject: 'CozyNest - Forget password',
       text: sendVerifyMail('CozyNest - Forget password', verification),
-    };
-
-    await configSendMail(mailOptions);
+    });
 
     res.cookie('verify', verification, {
       maxAge: 60 * 60 * 1000,
       httpOnly: true,
     });
-    res.cookie('verificationExpire', Date.now() + verificationExpire, {
-      maxAge: 60 * 60 * 1000,
-      httpOnly: true,
-    });
+    res.cookie(
+      'verificationExpire',
+      Date.now() + (timeCounts.mins_5 || 5 * 60 * 1000),
+      {
+        maxAge: 60 * 60 * 1000,
+        httpOnly: true,
+      }
+    );
     res.cookie('email', req.body.email);
     res.status(StatusCodes.OK).json({
       message: 'Send verify token success',
     });
   } catch (error) {
+    logger.log('error', `Catch error in generate verify token: ${error}`);
     next(error);
   }
 };
@@ -198,12 +205,11 @@ const forgotPass: RequestHandler = async (req, res, next) => {
       });
     }
 
-    const emailOptions = {
+    await configSendMail({
       email: email,
       subject: 'Password reset from CozyNest',
       text: sendResetMail('Password reset from CozyNest', newPassword),
-    };
-    await configSendMail(emailOptions);
+    });
 
     res.clearCookie('email');
     res.clearCookie('verify');
@@ -214,6 +220,7 @@ const forgotPass: RequestHandler = async (req, res, next) => {
       res: user,
     });
   } catch (error) {
+    logger.log('error', `Catch error in forgot password: ${error}`);
     next(error);
   }
 };
@@ -245,6 +252,7 @@ const changePassword: RequestHandler = async (req, res, next) => {
       res: user,
     });
   } catch (error) {
+    logger.log('error', `Catch error in change password: ${error}`);
     next(error);
   }
 };

@@ -1,4 +1,5 @@
 import { API_KEY, API_SECRET, CLOUD_NAME, FOLDER_NAME } from '@/utils/env';
+import logger from '@/utils/logger';
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
@@ -20,7 +21,7 @@ const handleUpload = async (file: string) => {
     });
     return res;
   } catch (error) {
-    console.log(error);
+    logger.log('error', `Catch errors in handle upload cloudinary : ${error}`);
   }
 };
 
@@ -34,7 +35,10 @@ const handleDelete = async (id: string) => {
     const res = await cloudinary.uploader.destroy(id);
     return res;
   } catch (error) {
-    console.log(error);
+    logger.log(
+      'error',
+      `Catch errors in handle delete cloudinary catch errors: ${error}`
+    );
   }
 };
 
