@@ -53,3 +53,5 @@ app.listen(PORT, () => {
 });
 
 // TODO: Update logging in every throw error
+// TODO: Spilt logic in payment and shipment into service
+// TODO: Fix logic in order and split into service
