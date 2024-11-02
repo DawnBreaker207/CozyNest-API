@@ -1,6 +1,7 @@
+import { StatusCodes } from '@/http-status-codes/build/cjs';
 import jwt from 'jsonwebtoken';
-import { JWT } from './env';
-
+import { JWT, SECRET_ACCESS_TOKEN, SECRET_REFRESH_TOKEN } from './env';
+import { AppError } from './errorHandle';
 /**
  *
  * @param payload
@@ -28,9 +29,37 @@ const createToken = (
  */
 const verifyToken = (
   token: string,
-  SECRET_CODE: string = JWT as string,
+  SECRET_CODE: string = SECRET_ACCESS_TOKEN ||
+    JWT ||
+    (SECRET_REFRESH_TOKEN as string),
   options?: any
 ) => {
-  return jwt.verify(token, SECRET_CODE, options);
+  return <jwt.JwtPayload>jwt.verify(token, SECRET_CODE, options);
 };
-export { createToken, verifyToken };
+
+// Decode token and take payload
+const decodedToken = async (token: string) => {
+  const decoded = <jwt.Jwt>jwt.decode(token, { complete: true });
+  return decoded as jwt.JwtPayload;
+};
+
+const checkExpiredToken = async (token: string) => {
+  // Decode token and take payload
+  const checkToken = await decodedToken(token);
+  if (!checkToken) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid token');
+  }
+
+  const tokenTimes = new Date((checkToken.exp as number) * 1000);
+  const now = new Date();
+  // Check token expired
+  if (tokenTimes < now) {
+    // TODO: check if have refresh token, return new access token
+    return createToken(checkToken.sub as string, SECRET_ACCESS_TOKEN as string);
+  }
+  if (tokenTimes > now) {
+    return;
+  }
+};
+export { checkExpiredToken, createToken, decodedToken, verifyToken };
+

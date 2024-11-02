@@ -12,6 +12,7 @@ import {
   ZALO_PAY_KEY_1,
   ZALO_PAY_KEY_2,
 } from '@/utils/env';
+import logger from '@/utils/logger';
 import { sortObject } from '@/utils/payments';
 import axios from 'axios';
 import * as crypto from 'crypto';
@@ -87,6 +88,7 @@ const createVnPay: RequestHandler = async (req, res, next) => {
     res.status(StatusCodes.OK).json({ res: vnpUrl });
     return { payUrl: vnpUrl };
   } catch (error) {
+    logger.log('error', `Catch error in create VnPay: ${error}`);
     next(error);
   }
 };
@@ -126,6 +128,7 @@ const vnPayCallback: RequestHandler = async (req, res, next) => {
       });
     }
   } catch (error) {
+    logger.log('error', `Catch error in check VnPay callback: ${error}`);
     next(error);
   }
 };
@@ -201,6 +204,7 @@ const vnPayStatus: RequestHandler = async (req, res, next) => {
         .json({ RspCode: '97', Message: 'Checksum failed' });
     }
   } catch (error) {
+    logger.log('error', `Catch error in check VnPay status: ${error}`);
     next(error);
   }
 };
@@ -257,13 +261,14 @@ const createMomo = async (req: Request, res: Response, next: NextFunction) => {
 
     if (result && result.data && result.data.resultCode === 0) {
       // Trả về `payUrl` nếu phản hồi thành công
-      return { payUrl: result.data.payUrl };
+      res.status(StatusCodes.OK).json({ res: result.data });
     } else {
       throw new Error(`Invalid response from MoMo API: ${result.data.message || 'Unknown error'}`);
     }
   } catch (error:any) {
+    logger.log('error', `Catch error in create momo: ${error}`);
     console.error('Error while calling MoMo API:', error.response ? error.response.data : error.message);
-    next(error);
+    next(error); 
   }
 };
 
@@ -312,6 +317,7 @@ const momoStatus: RequestHandler = async (req, res, next) => {
     let result = await axios(options);
     res.status(StatusCodes.OK).json({ res: result.data });
   } catch (error) {
+    logger.log('error', `Catch error in check momo status: ${error}`);
     next(error);
   }
 };
@@ -372,6 +378,7 @@ const createZaloPay: RequestHandler = async (req, res, next) => {
       throw new Error("Invalid response from ZaloPay API");
     }
   } catch (error) {
+    logger.log('error', `Catch error in create zalo pay: ${error}`);
     next(error);
   }
 };
@@ -408,6 +415,7 @@ const zaloPayCallback: RequestHandler = async (req, res, next) => {
     }
     res.status(StatusCodes.OK).json({ res: result });
   } catch (error) {
+    logger.log('error', `Catch error in check zalo pay callback: ${error}`);
     next(error);
   }
 };
@@ -454,6 +462,7 @@ const zaloPayStatus: RequestHandler = async (req, res, next) => {
         }
       */
   } catch (error) {
+    logger.log('error', `Catch error in check zalo pay status: ${error}`);
     next(error);
   }
 };

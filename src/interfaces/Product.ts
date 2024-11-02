@@ -1,22 +1,5 @@
-import { Variant_Id } from '@/models/Variant';
 import { Document, Types } from 'mongoose';
 import { Category_Id } from './Category';
-
-// export interface SizeType {
-//   name: string;
-// }
-// export interface ColorType {
-//   name: string;
-// }
-
-// export interface VariantType {
-//   name: string;
-//   extra_price: number;
-//   size: SizeType;
-//   color: ColorType;
-//   thumbnail: string;
-//   stock: number;
-// }
 
 export interface Image {
   url: string;

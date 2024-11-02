@@ -23,14 +23,26 @@ routeCategory.get('/:id', Get_One_Category);
 // routeCategory.use(checkAuth, checkPermission);
 
 //* Create new category
-routeCategory.post('/', validBodyRequest(categorySchema), Create_Category);
+routeCategory.post(
+  '/',
+  checkAuth,
+  checkPermission,
+  validBodyRequest(categorySchema),
+  Create_Category
+);
 
 //* Update category
-routeCategory.put('/:id', validBodyRequest(categorySchema), Update_Category);
+routeCategory.put(
+  '/:id ',
+  checkAuth,
+  checkPermission,
+  validBodyRequest(categorySchema),
+  Update_Category
+);
 
 //* Soft delete category
-routeCategory.patch('/:id', Hide_Category);
+routeCategory.patch('/:id', checkAuth, checkPermission, Hide_Category);
 //* Hard delete category
-routeCategory.delete('/:id', Delete_Category);
+routeCategory.delete('/:id', checkAuth, checkPermission, Delete_Category);
 
 export default routeCategory;
