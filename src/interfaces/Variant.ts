@@ -21,7 +21,7 @@ export interface OptionalValueType {
 export interface VariantType {
   _id: Types.ObjectId;
   sku_id: Types.ObjectId;
-  option_id: Types.ObjectId;
+  option_id: OptionType[];
   option_value_id: Types.ObjectId;
   product_id: Types.ObjectId;
   deleted: boolean;

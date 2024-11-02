@@ -12,7 +12,7 @@ import { AppError } from './errorHandle';
 const createToken = (
   payload: Object,
   SECRET_CODE: string,
-  expiresIn = '5m'
+  expiresIn = '5m',
 ) => {
   const token = jwt.sign(payload, SECRET_CODE, {
     expiresIn: expiresIn,
@@ -32,7 +32,7 @@ const verifyToken = (
   SECRET_CODE: string = SECRET_ACCESS_TOKEN ||
     JWT ||
     (SECRET_REFRESH_TOKEN as string),
-  options?: any
+  options?: jwt.SignOptions | undefined,
 ) => {
   return <jwt.JwtPayload>jwt.verify(token, SECRET_CODE, options);
 };
@@ -62,4 +62,3 @@ const checkExpiredToken = async (token: string) => {
   }
 };
 export { checkExpiredToken, createToken, decodedToken, verifyToken };
-

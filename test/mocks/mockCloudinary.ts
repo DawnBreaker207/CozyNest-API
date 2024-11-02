@@ -1,4 +1,3 @@
-import { upload } from '../../src/middlewares/uploadImages';
 export const mockFile = {
   name: 'test-image.jpg',
   path: 'path/to/test-image.jpg',

@@ -18,7 +18,7 @@ const optionSchema = new mongoose.Schema<OptionType>(
     name: { type: String, unique: true, required: true },
     position: { type: Number },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 // OptionalValue Schema
@@ -37,7 +37,7 @@ const optionalValueSchema = new mongoose.Schema<OptionalValueType>(
     label: { type: String, required: true },
     value: { type: String, required: true },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 const variantSchema = new mongoose.Schema<VariantType>(
@@ -47,11 +47,13 @@ const variantSchema = new mongoose.Schema<VariantType>(
       ref: 'Sku',
       required: true,
     },
-    option_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Option',
-      required: true,
-    },
+    option_id: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Option',
+        required: true,
+      },
+    ],
     option_value_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'OptionalValue',
@@ -63,7 +65,7 @@ const variantSchema = new mongoose.Schema<VariantType>(
       required: true,
     },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 // Paginate
@@ -79,7 +81,7 @@ export type Variant_Id = Pick<VariantType, '_id'>;
 // Export Option Models
 export const Option = mongoose.model<OptionType, PaginateModel<OptionType>>(
   'Option',
-  optionSchema
+  optionSchema,
 );
 // Export OptionalValue Models
 export const OptionalValue = mongoose.model<
@@ -89,5 +91,5 @@ export const OptionalValue = mongoose.model<
 // Export Variant Models
 export const Variant = mongoose.model<VariantType, PaginateModel<VariantType>>(
   'Variant',
-  variantSchema
+  variantSchema,
 );

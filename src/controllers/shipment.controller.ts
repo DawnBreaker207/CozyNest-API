@@ -32,8 +32,9 @@ const createDeliveryOrder: RequestHandler = async (req, res, next) => {
     });
   }
 
-  const URL = `${GHN_API_BASE_URL}/shipping-order/create`;
-  // 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create';
+  // const URL = `${GHN_API_BASE_URL}/shipping-order/create`;
+  const URL =
+    'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create';
   try {
     const response = await axios.post(URL, orderData, {
       headers: {
@@ -63,14 +64,16 @@ const calShippingFee: RequestHandler = async (req, res, next) => {
       },
     });
     res.status(StatusCodes.OK).json({ res: response.data });
-  } catch (error: any) {
-    logger.log('error', `Catch error in calculate shipping fee: ${error}`);
-    next(
-      new AppError(
-        StatusCodes.BAD_REQUEST,
-        error.response?.data?.message || 'Error calculating shipping fee'
-      )
-    );
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      logger.log('error', `Catch error in calculate shipping fee: ${error}`);
+      next(
+        new AppError(
+          StatusCodes.BAD_REQUEST,
+          error.message || 'Error calculating shipping fee',
+        ),
+      );
+    }
   }
 };
 
@@ -88,17 +91,19 @@ const trackOrder: RequestHandler = async (req, res, next) => {
           Token: TOKEN_SHIPMENT,
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
     res.status(StatusCodes.OK).json({ res: response.data });
-  } catch (error: any) {
-    logger.log('error', `Catch error in track order: ${error}`);
-    next(
-      new AppError(
-        StatusCodes.BAD_REQUEST,
-        error.response?.data?.message || 'Error tracking order'
-      )
-    );
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      logger.log('error', `Catch error in track order: ${error}`);
+      next(
+        new AppError(
+          StatusCodes.BAD_REQUEST,
+          error?.message || 'Error tracking order',
+        ),
+      );
+    }
   }
 };
 

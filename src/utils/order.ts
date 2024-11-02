@@ -5,6 +5,7 @@ import { sendOrder } from '@/utils/texts';
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import moment from 'moment';
+import { timeCounts } from '../constants/initialValue';
 
 /**
  *
@@ -29,13 +30,14 @@ const filterOrderDay = async (
   day: number,
   res: Response,
   from?: string,
-  to?: string
+  to?: string,
 ) => {
   const today = new Date();
   const filterData: OrderType[] = [];
 
   if (day) {
-    const dayOfPast = today.getTime() - day * (24 * 60 * 60 * 1000);
+    const dayOfPast =
+      today.getTime() - day * (timeCounts.hours_24 || 24 * 60 * 60 * 1000);
     for (const item of data) {
       const itemDate = new Date(item.createdAt || Date.now());
       if (itemDate.getTime() >= dayOfPast && itemDate <= today) {
@@ -85,7 +87,7 @@ const filterOrderDay = async (
 const sendOrderMail = async (
   email?: string,
   data?: any,
-  amountReduced?: number
+  amountReduced?: number,
 ) => {
   let subject: string | null = null;
   let message: string | null = null;
@@ -100,7 +102,7 @@ const sendOrderMail = async (
     message = messagesSuccess.ORDER_UPDATE_MESSAGE;
   }
 
-  let code = null;
+  // const code = null;
 
   const totalPayment = data.totalPayment != null ? data.totalPayment : 0;
   const formattedTotalPayment =
@@ -116,7 +118,7 @@ const sendOrderMail = async (
       data,
       message,
       amountReduced,
-      formattedTotalPayment
+      formattedTotalPayment,
     ),
   });
 };
