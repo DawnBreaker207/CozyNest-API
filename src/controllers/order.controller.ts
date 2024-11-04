@@ -510,6 +510,7 @@ export const updateStatus: RequestHandler = async (req, res, next) => {
   }
 };
 
+//TODO: Later
 // Hàm xử lý yêu cầu hoàn trả đơn hàng
 export const returnedOrder: RequestHandler = async (req, res, next) => {
   try {
@@ -562,6 +563,7 @@ export const returnedOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Maybe remove
 // Tính tiền vận chuyển
 export const serviceFree: RequestHandler = async (req, res, next) => {
   try {
@@ -609,6 +611,7 @@ export const serviceFree: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 // hàm xử lý yêu cầu thêm sản phẩm vào đơn hàng
 export const addOneProduct_order: RequestHandler = async (req, res, next) => {
   try {
@@ -677,6 +680,7 @@ export const addOneProduct_order: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 // hàm xử lý yêu cầu tìm đơn hàng theo sdt
 export const getOrderByPhoneNumber: RequestHandler = async (req, res, next) => {
   try {
@@ -754,6 +758,7 @@ export const getOrderByPhoneNumber: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 // hàm xử lý yêu cầu tìm đơn hàng theo user
 export const getOrderByUserId: RequestHandler = async (req, res, next) => {
   try {
@@ -830,6 +835,7 @@ export const getOrderByUserId: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Analyze
 // Lấy danh sách đơn hàng với các tùy chọn tìm kiếm, sắp xếp và phân trang.
 export const getAll: RequestHandler = async (req, res, next) => {
   const {
@@ -938,6 +944,7 @@ export const getAll: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 export const getOne: RequestHandler = async (req, res, next) => {
   // 1. Lấy id từ tham số request
   const { id } = req.params;
@@ -967,6 +974,7 @@ export const getOne: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 // cập nhật trạng thái thanh toán của một đơn hàng
 export const updatePaymentStatus: RequestHandler = async (req, res, next) => {
   try {
@@ -995,6 +1003,7 @@ export const updatePaymentStatus: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 // hàm xử lý yêu cầu xóa sản phẩm trong đơn hàng
 export const deleteOneProduct_order: RequestHandler = async (
   req,
@@ -1066,6 +1075,7 @@ export const deleteOneProduct_order: RequestHandler = async (
   }
 };
 
+// TODO: Later
 // Hàm xử lý lấy danh sách yêu cầu hoàn trả
 export const getReturnedOrder: RequestHandler = async (req, res, next) => {
   try {
@@ -1141,6 +1151,7 @@ export const getReturnedOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 // hàm xử lý yêu cầu xóa
 export const deleteProduct_order: RequestHandler = async (req, res, next) => {
   try {
@@ -1186,6 +1197,7 @@ export const deleteProduct_order: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: ????
 // Lấy tất cả đơn hàng
 export const getAllOrder: RequestHandler = async (req, res, next) => {
   try {
@@ -1245,6 +1257,7 @@ export const getAllOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 export const updateStatusDelivered: RequestHandler = async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -1283,6 +1296,7 @@ export const updateStatusDelivered: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 export const cancelOrder: RequestHandler = async (req, res, next) => {
   try {
     // 1. Lấy id từ tham số request
@@ -1369,6 +1383,7 @@ export const cancelOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 export const confirm_returnedOrder: RequestHandler = async (req, res, next) => {
   try {
     // 1. Lấy `id` từ tham số URL
@@ -1445,6 +1460,7 @@ export const confirm_returnedOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 export const update_info_customer: RequestHandler = async (req, res, next) => {
   try {
     // Lấy ID đơn hàng từ tham số của request
@@ -1523,6 +1539,7 @@ export const update_info_customer: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 export const getAllShipping: RequestHandler = async (req, res, next) => {
   try {
     // Lấy thông tin phân trang và sắp xếp từ query của request
@@ -1620,6 +1637,7 @@ export const getAllShipping: RequestHandler = async (req, res, next) => {
   }
 };
 
+// TODO: Later
 export const getTokenPrintBills: RequestHandler = async (req, res, next) => {
   try {
     // Lấy order_id từ body của request

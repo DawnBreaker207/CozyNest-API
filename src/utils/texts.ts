@@ -57,7 +57,7 @@ const sendOrder = (
   data: any,
   message: string,
   amountReduced?: number,
-  formattedTotalPayment?: string
+  formattedTotalPayment?: string,
 ): string => {
   const totalPayment =
     typeof data.totalPayment === 'number' ? data.totalPayment : 0;

@@ -41,6 +41,7 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
   }
 );
 
+// TODO: Update
 const shippingInfoSchema = new mongoose.Schema<ShippingInfoType>(
   {
     shipping_address: {
@@ -116,6 +117,7 @@ const orderSchema = new mongoose.Schema<OrderType>(
     status: {
       type: String,
       default: 'processing',
+      //TODO: Update
       enum: [
         'processing',
         'confirmed',
@@ -131,6 +133,7 @@ const orderSchema = new mongoose.Schema<OrderType>(
         status: {
           type: String,
           default: 'processing',
+          //TODO: Update
           enum: [
             'processing',
             'confirmed',
