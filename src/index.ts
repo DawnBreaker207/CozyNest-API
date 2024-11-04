@@ -1,4 +1,4 @@
-import swagger from '@/docs/swagger-output.json';
+import swagger from 'docs/swagger-output.json';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';

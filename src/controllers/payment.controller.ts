@@ -1,7 +1,5 @@
 import {
   MOMO_ACCESS_KEY,
-  MOMO_IPN_URL,
-  MOMO_REDIRECT_URL,
   MOMO_SECRET_KEY,
   VN_PAY_HASH_SECRET,
   VN_PAY_RETURN_URL,
@@ -16,7 +14,7 @@ import logger from '@/utils/logger';
 import { sortObject } from '@/utils/payments';
 import axios from 'axios';
 import * as crypto from 'crypto';
-import { Request, Response, NextFunction, RequestHandler } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import moment from 'moment';
 import qs from 'qs';
@@ -217,7 +215,6 @@ const vnPayStatus: RequestHandler = async (req, res, next) => {
 
 //* MoMo
 
-
 const createMomo = async (req: Request, res: Response, next: NextFunction) => {
   const accessKey: string = process.env.MOMO_ACCESS_KEY || '';
   const secretKey: string = process.env.MOMO_SECRET_KEY || '';
@@ -227,7 +224,8 @@ const createMomo = async (req: Request, res: Response, next: NextFunction) => {
   const requestType: string = 'payWithMethod';
   const amount: string = req.body.amount || '1000';
   const orderInfo: string = req.body.info || 'pay with MoMo';
-  const orderId: string = req.body.orderId || `${partnerCode}${new Date().getTime()}`;
+  const orderId: string =
+    req.body.orderId || `${partnerCode}${new Date().getTime()}`;
   const requestId: string = orderId;
   const extraData: string = '';
   const orderGroupId: string = '';
@@ -235,7 +233,10 @@ const createMomo = async (req: Request, res: Response, next: NextFunction) => {
   const lang: string = 'vi';
 
   const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
-  const signature = crypto.createHmac('sha256', secretKey).update(rawSignature).digest('hex');
+  const signature = crypto
+    .createHmac('sha256', secretKey)
+    .update(rawSignature)
+    .digest('hex');
 
   const requestBody = {
     partnerCode,
@@ -256,11 +257,15 @@ const createMomo = async (req: Request, res: Response, next: NextFunction) => {
   };
 
   try {
-    const result = await axios.post('https://test-payment.momo.vn/v2/gateway/api/create', requestBody, {
-      headers: {
-        'Content-Type': 'application/json',
+    const result = await axios.post(
+      'https://test-payment.momo.vn/v2/gateway/api/create',
+      requestBody,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
-    });
+    );
 
     // In phản hồi để kiểm tra cấu trúc dữ liệu
     console.log('MoMo API Response:', result.data);
@@ -269,17 +274,19 @@ const createMomo = async (req: Request, res: Response, next: NextFunction) => {
       // Trả về `payUrl` nếu phản hồi thành công
       res.status(StatusCodes.OK).json({ res: result.data });
     } else {
-      throw new Error(`Invalid response from MoMo API: ${result.data.message || 'Unknown error'}`);
+      throw new Error(
+        `Invalid response from MoMo API: ${result.data.message || 'Unknown error'}`,
+      );
     }
-  } catch (error:any) {
+  } catch (error: any) {
     logger.log('error', `Catch error in create momo: ${error}`);
-    console.error('Error while calling MoMo API:', error.response ? error.response.data : error.message);
-    next(error); 
+    console.error(
+      'Error while calling MoMo API:',
+      error.response ? error.response.data : error.message,
+    );
+    next(error);
   }
 };
-
-
-
 
 const momoCallback: RequestHandler = async (req, res) => {
   console.log('callback:');
@@ -381,7 +388,7 @@ const createZaloPay: RequestHandler = async (req, res, next) => {
     if (result && result.data && result.data.order_url) {
       return { payUrl: result.data.order_url }; // Trả về `order_url` nếu thành công
     } else {
-      throw new Error("Invalid response from ZaloPay API");
+      throw new Error('Invalid response from ZaloPay API');
     }
   } catch (error) {
     logger.log('error', `Catch error in create zalo pay: ${error}`);

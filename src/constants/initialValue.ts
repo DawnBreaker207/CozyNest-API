@@ -7,11 +7,16 @@ export const timeCounts = Object.freeze({
 });
 
 export const statusOrder: readonly string[] = [
+  'Processing', //Đang xử lý
   'Pending', //Chờ xác nhận
-  'Shipping', //Đang vận chuyển
+  'Confirmed', //Đã xác nhận
+  'Pending-Ship', //Đang chờ bên vận chuyển
+  'Delivering', //Đang vận chuyển
   'Delivered', //Giao hàng thành công
-  'Completed', //Đơn hàng hoàn thành
   'Canceled', //Đã hủy đơn hàng
+  'Completed', //Đơn hàng hoàn thành
+  'Returned', //Hoàn trả đơn hàng
+  'Refunded', //Hoàn trả đơn hàng và hoàn tiền
 ];
 export const paymentMethod: readonly string[] = [
   'COD', // Thanh toán khi nhận hàng

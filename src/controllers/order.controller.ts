@@ -16,9 +16,109 @@ import moment from 'moment';
 import mongoose from 'mongoose';
 import { createMomo, createVnPay, createZaloPay } from './payment.controller';
 import { AppError } from '@/utils/errorHandle';
+import logger from '@/utils/logger';
+import { statusOrder } from '@/constants/initialValue';
 
-///// Client
+// Utils functions
+export const buildPaymentMethod = (method: string) => {
+  switch (method) {
+    case 'cash':
+      // Trả về cấu trúc cho phương thức thanh toán bằng tiền mặt khi nhận hàng
+      return {
+        // Mô tả phương thức thanh toán
+        method: 'Thanh toán khi nhận hàng',
+        // Trạng thái thanh toán ban đầu là chưa thanh toán
+        status: 'unpaid',
+        // Thông tin thêm về loại thanh toán
+        orderInfo: 'Thanh toán trực tiếp',
+        // Định dạng loại đơn hàng là tiền mặt
+        orderType: 'cash',
+        // Mã của phương thức thanh toán tiền mặt
+        partnerCode: 'TIENMAT',
+      };
 
+    case 'momo':
+      // Trả về cấu trúc cho phương thức thanh toán qua ví điện tử MOMO
+      return {
+        // Mô tả phương thức thanh toán
+        method: 'Thanh toán qua ví MOMO',
+        // Trạng thái thanh toán ban đầu là chưa thanh toán
+        status: 'unpaid',
+        // Thông tin thêm về loại thanh toán
+        orderInfo: 'Thanh toán qua MOMO',
+        // Định dạng loại đơn hàng là chuyển khoản
+        orderType: 'bank_transfer',
+        // Mã của phương thức thanh toán MOMO
+        partnerCode: 'BANKTRANSFER',
+      };
+
+    case 'vnpay':
+      // Trả về cấu trúc cho phương thức thanh toán qua VNPAY
+      return {
+        // Mô tả phương thức thanh toán
+        method: 'Thanh toán qua VNPAY',
+        // Trạng thái thanh toán ban đầu là chưa thanh toán
+        status: 'unpaid',
+        // Thông tin thêm về loại thanh toán
+        orderInfo: 'Thanh toán qua VNPAY',
+        // Định dạng loại đơn hàng là VNPAY
+        orderType: 'vnpay',
+        // Mã của phương thức thanh toán VNPAY
+        partnerCode: 'VNPAY',
+      };
+
+    case 'zalopay':
+      // Trả về cấu trúc cho phương thức thanh toán qua ZALOPAY
+      return {
+        // Mô tả phương thức thanh toán
+        method: 'Thanh toán qua ZALOPAY',
+        // Trạng thái thanh toán ban đầu là chưa thanh toán
+        status: 'unpaid',
+        // Thông tin thêm về loại thanh toán
+        orderInfo: 'Thanh toán qua ZALOPAY',
+        // Định dạng loại đơn hàng là ZALOPAY
+        orderType: 'zalopay',
+        // Mã của phương thức thanh toán ZALOPAY
+        partnerCode: 'ZALOPAY',
+      };
+
+    default:
+      // Nếu `method` không hợp lệ, ném ra một lỗi
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'Phương thức thanh toán không hợp lệ',
+      );
+  }
+};
+
+export const createShippingInfo = async (
+  // Đối tượng đơn hàng mà chúng ta muốn cập nhật thông tin giao hàng
+  order: any,
+  // Địa chỉ khách hàng đã cung cấp
+  address: string,
+  // Địa chỉ cụ thể cho việc giao hàng (ví dụ: quận, thành phố, ...)
+  shipping_address: string,
+  // Phí vận chuyển cần tính thêm vào tổng giá trị đơn hàng
+  transportation_fee: number,
+) => {
+  // Gộp `address` và `shipping_address` để tạo ra địa chỉ đầy đủ
+  const detail_address = `${address},${shipping_address}`;
+
+  // Tạo bản ghi trong bảng Shipping với địa chỉ giao hàng và phí vận chuyển
+  const shippingInfo = await Shipping.create({
+    shipping_address: detail_address,
+    transportation_fee,
+  });
+
+  // Cập nhật thông tin giao hàng cho đơn hàng bằng cách lưu `shippingInfo._id` vào trường `shipping_info` của order
+  order.shipping_info = shippingInfo._id;
+
+  // Lưu thay đổi vào cơ sở dữ liệu
+  await order.save();
+};
+
+//TODO: Analyze this, check payurl
+// Controllers
 export const CreateOrder: RequestHandler = async (req, res, next) => {
   try {
     // Trích xuất các thông tin cần thiết từ `req.body` để tạo đơn hàng
@@ -28,17 +128,19 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
       payment_method,
       total_amount,
       transportation_fee = 3000,
-      guestId,
+      // guestId,
       cart_id,
-      ...body // Các dữ liệu khác sẽ được gán vào `body`
+      ...body
     } = req.body;
 
+    //* Find cart exists
     // Tìm giỏ hàng dựa trên `cart_id`, nếu không tồn tại trả về lỗi
     const cart = await Cart.findOne({ _id: cart_id });
     if (!cart) {
-      throw new AppError(StatusCodes.NOT_FOUND, 'Giỏ hàng không tìm thấy');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Not found cart');
     }
 
+    //* Check payment method valid
     // Kiểm tra phương thức thanh toán có hợp lệ và gán vào `paymentMethod`
     let paymentMethod;
     try {
@@ -49,6 +151,8 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
         .json({ message: error.message });
     }
 
+    //* Call payment method and save method
+    // TODO: Update create payment controller to services
     // Tùy theo phương thức thanh toán (`momo`, `zalopay`, `vnpay`), gọi hàm tạo liên kết thanh toán và lưu liên kết vào `payUrl`
     let payUrl: string | undefined;
     try {
@@ -69,19 +173,27 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
           break;
 
         default:
-          throw new Error('Phương thức thanh toán không hợp lệ'); // Nếu phương thức thanh toán không hợp lệ, trả về lỗi
+          throw new AppError(
+            StatusCodes.BAD_REQUEST,
+            'Phương thức thanh toán không hợp lệ',
+          ); // Nếu phương thức thanh toán không hợp lệ, trả về lỗi
       }
 
       // Kiểm tra nếu `payUrl` không tồn tại, trả về lỗi
       if (!payUrl) {
-        throw new Error('Không thể lấy liên kết thanh toán từ phản hồi.');
+        throw new AppError(
+          StatusCodes.BAD_REQUEST,
+          'Không thể lấy liên kết thanh toán từ phản hồi.',
+        );
       }
     } catch (error: any) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: error.message });
+      if (error instanceof AppError) {
+        logger.log('error', `Catch error in check payUrl ${error.message}`);
+        next(error);
+      }
     }
 
+    //* Create order with infomation and total from cart and shipping fee
     // Tạo đơn hàng với thông tin và tổng tiền từ giỏ hàng và phí vận chuyển
     const order = await Order.create({
       ...body,
@@ -90,6 +202,7 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
       payment_url: payUrl, // Đính kèm liên kết thanh toán
     });
 
+    //* Create detail product in order
     // Hàm tạo chi tiết sản phẩm trong đơn hàng
     const add_product_item = async (product: any) => {
       const new_item = await Order_Detail.create({
@@ -104,12 +217,17 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
       return new_item;
     };
 
+    //* Take SKU info from database
     // Hàm lấy thông tin SKU dựa vào `sku_id` từ cơ sở dữ liệu
     const get_sku = async (sku_id: string) => {
-      const new_item = await Sku.findById(sku_id);
-      return new_item;
+      const skuInfo = await Sku.findById(sku_id);
+      if (!skuInfo) {
+        throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
+      }
+      return skuInfo;
     };
 
+    //* Create detail product for order from cart
     // Tạo các chi tiết sản phẩm cho đơn hàng từ các sản phẩm trong giỏ hàng
     const order_details = await Promise.all(
       cart!.products.map((item) => {
@@ -117,6 +235,7 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
       }),
     );
 
+    //* Take detail SKU info for each product in cart
     // Lấy thông tin chi tiết SKU cho từng sản phẩm trong đơn hàng
     const new_order_details = await Promise.all(
       order_details.map(async (item) => {
@@ -134,7 +253,7 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
         };
       }),
     );
-
+    //* If order have shipping methods, update
     if (order.shipping_method === 'Shipping') {
       await createShippingInfo(
         order,
@@ -144,6 +263,7 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
       );
     }
 
+    //* Clear product in cart when create order success
     // Cập nhật giỏ hàng sau khi đã tạo đơn hàng thành công (xóa sản phẩm trong giỏ)
     await Cart.findOneAndUpdate(
       { cart_id },
@@ -163,78 +283,231 @@ export const CreateOrder: RequestHandler = async (req, res, next) => {
   } catch (error) {
     // Xử lý lỗi nếu có xảy ra trong quá trình tạo đơn hàng
     console.error('Lỗi khi tạo đơn hàng:', error);
+    logger.log('error', `Catch error in create order: ${error}`);
     next(error);
   }
 };
+//TODO: Analyze this
+// cập nhật trạng thái của một đơn hàng
+export const updateStatus: RequestHandler = async (req, res, next) => {
+  // Lấy ID của đơn hàng từ tham số đường dẫn (URL)
+  const { id } = req.params;
 
-export const buildPaymentMethod = (method: string) => {
-  switch (method) {
-    case 'cash':
-      // Trả về cấu trúc cho phương thức thanh toán bằng tiền mặt khi nhận hàng
-      return {
-        method: 'Thanh toán khi nhận hàng', // Mô tả phương thức thanh toán
-        status: 'unpaid', // Trạng thái thanh toán ban đầu là chưa thanh toán
-        orderInfo: 'Thanh toán trực tiếp', // Thông tin thêm về loại thanh toán
-        orderType: 'cash', // Định dạng loại đơn hàng là tiền mặt
-        partnerCode: 'TIENMAT', // Mã của phương thức thanh toán tiền mặt
+  // Lấy trạng thái mới từ yêu cầu (request body)
+  const { status } = req.body;
+  try {
+    // Danh sách các trạng thái hợp lệ
+
+    // Kiểm tra xem trạng thái mới có nằm trong danh sách trạng thái hợp lệ hay không
+    if (!statusOrder.includes(status)) {
+      // Nếu không, ném lỗi 400
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái không hợp lệ');
+    }
+
+    // Tìm kiếm đơn hàng trong cơ sở dữ liệu bằng ID
+    const ordered = await Order.findById(id);
+
+    // Kiểm tra xem đơn hàng có tồn tại không
+    if (!ordered) {
+      // Nếu không, ném lỗi 404
+      throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
+    }
+
+    // Tìm kiếm chi tiết đơn hàng dựa trên ID của đơn hàng
+    const order_details = await Order_Detail.find({ order_id: id });
+
+    // Kiểm tra trạng thái hiện tại của đơn hàng
+    const check_status = ordered.status_detail?.find(
+      // Tìm trạng thái mới trong chi tiết trạng thái của đơn hàng
+      (item) => item.status === status,
+    );
+    if (check_status) {
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái đã tồn tại');
+    }
+    if (ordered?.status === status) {
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái không thay đổi');
+    }
+
+    // TODO: Update
+    // Kiểm tra các điều kiện không cho phép cập nhật trạng thái
+    const statusCondition: { [key: string]: () => void } = {
+      cancelled: () => {
+        if (ordered?.status === 'cancelled') {
+          throw new AppError(StatusCodes.BAD_REQUEST, 'Đơn hàng đã được hủy');
+        }
+      },
+      delivered: () => {
+        if (ordered.status === 'delivered') {
+          throw new AppError(
+            StatusCodes.BAD_REQUEST,
+            'Đơn hàng đã được hoàn thành',
+          );
+        }
+        if (ordered.status !== 'confirmed') {
+          throw new AppError(
+            StatusCodes.BAD_REQUEST,
+            'Đợi xác nhận từ khách hàng để hoàn thành đơn',
+          );
+        }
+      },
+      returned: () => {
+        if (ordered?.status === 'delivered') {
+          throw new AppError(
+            StatusCodes.BAD_REQUEST,
+            'Không thể huỷ đơn hàng đã hoàn',
+          );
+        }
+      },
+    };
+
+    statusCondition[status]?.();
+
+    // Nếu trạng thái mới là "confirmed" và phương thức vận chuyển là "shipped"
+    if (status === 'confirmed' && ordered.shipping_method === 'Shipping') {
+      // Tìm thông tin giao hàng dựa trên thông tin shipping_info của đơn hàng
+      const shipping = await Shipping.findOne({ _id: ordered.shipping_info });
+
+      // Kiểm tra xem thông tin giao hàng có tồn tại không
+      if (!shipping) {
+        throw createError.NotFound(
+          'Không tìm thấy thông tin giao hàng cho đơn hàng này',
+        );
+      }
+
+      // Hàm lấy thông tin SKU dựa trên ID
+      const get_sku = async (sku_id: string) => {
+        const new_item = await Sku.findById(sku_id);
+        if (!new_item) {
+          throw createError.NotFound(`SKU with ID ${sku_id} not found`);
+        }
+        return new_item;
+      };
+      // Lấy thông tin chi tiết đơn hàng mới bằng cách tìm thông tin SKU cho từng mục
+      const new_order_details = await Promise.all(
+        order_details.map(async (item) => {
+          const data_sku = await get_sku(item.sku_id.toString());
+          // Kiểm tra nếu không tìm thấy SKU
+          if (!data_sku) {
+            throw new AppError(
+              StatusCodes.BAD_REQUEST,
+              `SKU with ID ${item.sku_id} not found`,
+            );
+          }
+          return {
+            _id: item._id,
+            sku_id: data_sku._id,
+            name: data_sku.name,
+            price: data_sku.price,
+            price_before_discount: data_sku.price_before_discount,
+            price_discount_percent: data_sku.price_discount_percent,
+            image: data_sku.image,
+            quantity: item.quantity,
+            total_money: item.total_money,
+          };
+        }),
+      );
+
+      // Tách địa chỉ giao hàng thành các phần
+      const address_detail = shipping.shipping_address.split(',');
+      const addressString = address_detail.join(',');
+      console.log('Địa chỉ:', addressString);
+      const address = address_detail.shift();
+      // Lấy phần địa chỉ chính
+      const code_ward_district = await getAddressLocation(
+        address_detail.join(','), // Gọi hàm lấy mã phường/xã và quận/huyện từ địa chỉ
+      );
+      // Kiểm tra xem có lấy được thông tin mã phường/xã và quận/huyện không
+      if (!code_ward_district) {
+        throw createError.NotFound(
+          'Không thể lấy mã phường/xã và quận/huyện từ địa chỉ', // Nếu không lấy được
+        );
+      }
+
+      // Dữ liệu để gửi đi cho API tạo đơn hàng mới
+      const data_shipping = {
+        to_name: ordered.customer_name,
+        to_phone: ordered.phone_number,
+        to_address: shipping.shipping_address,
+        to_ward_code: code_ward_district.ward_code,
+        // Lấy DistrictID từ district
+        to_district_id: code_ward_district.district.DistrictID,
+        content: ordered.content,
+        // Ví dụ: trọng lượng của một chiếc tủ
+        weight: 10,
+        // Chiều dài 100 cm
+        length: 100,
+        // Chiều rộng 60 cm
+        width: 90,
+        // Chiều cao 75 cm
+        height: 75,
+        service_type_id: 2,
+        service_id: 53319,
+        payment_type_id: 1,
+        required_note: 'CHOXEMHANGKHONGTHU',
+        Items: new_order_details,
+        name: 'Đồ nội thất',
+        quantity: new_order_details.length,
       };
 
-    case 'momo':
-      // Trả về cấu trúc cho phương thức thanh toán qua ví điện tử MOMO
-      return {
-        method: 'Thanh toán qua ví MOMO', // Mô tả phương thức thanh toán
-        status: 'unpaid', // Trạng thái thanh toán ban đầu là chưa thanh toán
-        orderInfo: 'Thanh toán qua MOMO', // Thông tin thêm về loại thanh toán
-        orderType: 'bank_transfer', // Định dạng loại đơn hàng là chuyển khoản
-        partnerCode: 'BANKTRANSFER', // Mã của phương thức thanh toán MOMO
-      };
+      // Gọi API tạo đơn hàng mới
+      const orderCode = await axios.post(
+        'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create',
+        data_shipping,
+        {
+          headers: {
+            Token: process.env.GHN_SHOP_TOKEN, // Thêm token vào headers
+            ShopId: process.env.GHN_SHOP_ID,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
 
-    case 'vnpay':
-      // Trả về cấu trúc cho phương thức thanh toán qua VNPAY
-      return {
-        method: 'Thanh toán qua VNPAY', // Mô tả phương thức thanh toán
-        status: 'unpaid', // Trạng thái thanh toán ban đầu là chưa thanh toán
-        orderInfo: 'Thanh toán qua VNPAY', // Thông tin thêm về loại thanh toán
-        orderType: 'vnpay', // Định dạng loại đơn hàng là VNPAY
-        partnerCode: 'VNPAY', // Mã của phương thức thanh toán VNPAY
-      };
+      // Nếu tạo đơn hàng thành công
+      if (orderCode.data.code === 200) {
+        // Cập nhật thông tin giao hàng với mã đơn hàng mới và thời gian giao hàng ước tính
+        await Shipping.findByIdAndUpdate(
+          { _id: ordered.shipping_info },
+          {
+            $set: {
+              order_code: orderCode.data.data.order_code,
+              estimated_delivery_date:
+                orderCode.data.data.expected_delivery_time,
+            },
+          },
+        );
+      }
+    }
 
-    case 'zalopay':
-      // Trả về cấu trúc cho phương thức thanh toán qua ZALOPAY
-      return {
-        method: 'Thanh toán qua ZALOPAY', // Mô tả phương thức thanh toán
-        status: 'unpaid', // Trạng thái thanh toán ban đầu là chưa thanh toán
-        orderInfo: 'Thanh toán qua ZALOPAY', // Thông tin thêm về loại thanh toán
-        orderType: 'zalopay', // Định dạng loại đơn hàng là ZALOPAY
-        partnerCode: 'ZALOPAY', // Mã của phương thức thanh toán ZALOPAY
-      };
+    // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
+    const order = await Order.findByIdAndUpdate(
+      id,
+      {
+        // Cập nhật trạng thái
+        $set: { status: status },
+        $push: {
+          status_detail: {
+            // Thêm trạng thái mới vào lịch sử trạng thái
+            status: status,
+          },
+        },
+      },
+      // Trả về bản ghi đã được cập nhật
+      { new: true },
+    ).populate([
+      // Populate để lấy thông tin chi tiết từ trường shipping_info
+      {
+        path: 'shipping_info',
+      },
+    ]);
 
-    default:
-      // Nếu `method` không hợp lệ, ném ra một lỗi
-      throw new Error('Phương thức thanh toán không hợp lệ');
+    return res.status(StatusCodes.CREATED).json({
+      message: 'Order update successfully',
+      res: order,
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in get update status ${error}`);
+    next(error);
   }
-};
-
-export const createShippingInfo = async (
-  order: any, // Đối tượng đơn hàng mà chúng ta muốn cập nhật thông tin giao hàng
-  address: string, // Địa chỉ khách hàng đã cung cấp
-  shipping_address: string, // Địa chỉ cụ thể cho việc giao hàng (ví dụ: quận, thành phố, ...)
-  transportation_fee: number, // Phí vận chuyển cần tính thêm vào tổng giá trị đơn hàng
-) => {
-  // Gộp `address` và `shipping_address` để tạo ra địa chỉ đầy đủ
-  const detail_address = `${address},${shipping_address}`;
-
-  // Tạo bản ghi trong bảng Shipping với địa chỉ giao hàng và phí vận chuyển
-  const shippingInfo = await Shipping.create({
-    shipping_address: detail_address,
-    transportation_fee,
-  });
-
-  // Cập nhật thông tin giao hàng cho đơn hàng bằng cách lưu `shippingInfo._id` vào trường `shipping_info` của order
-  order.shipping_info = shippingInfo._id;
-
-  // Lưu thay đổi vào cơ sở dữ liệu
-  await order.save();
 };
 
 // Hàm xử lý yêu cầu hoàn trả đơn hàng
@@ -691,207 +964,6 @@ export const getOne: RequestHandler = async (req, res, next) => {
     });
   } catch (error) {
     next(error); // Nếu có lỗi, chuyển đến middleware xử lý lỗi
-  }
-};
-
-// cập nhật trạng thái của một đơn hàng
-export const updateStatus: RequestHandler = async (req, res, next) => {
-  try {
-    // Lấy ID của đơn hàng từ tham số đường dẫn (URL)
-    const id = req.params.id;
-
-    // Lấy trạng thái mới từ yêu cầu (request body)
-    const { status } = req.body;
-
-    // Danh sách các trạng thái hợp lệ
-    const array_status = [
-      'processing',
-      'confirmed',
-      'delivering',
-      'pendingComplete',
-      'cancelled',
-      'delivered',
-      'returned',
-    ];
-
-    // Kiểm tra xem trạng thái mới có nằm trong danh sách trạng thái hợp lệ hay không
-    if (!array_status.includes(status)) {
-      throw createError.BadRequest('Trạng thái không hợp lệ'); // Nếu không, ném lỗi 400
-    }
-
-    // Tìm kiếm đơn hàng trong cơ sở dữ liệu bằng ID
-    const ordered = await Order.findById(id);
-
-    // Kiểm tra xem đơn hàng có tồn tại không
-    if (!ordered) {
-      throw createError.NotFound('Không tìm thấy đơn hàng'); // Nếu không, ném lỗi 404
-    }
-
-    // Tìm kiếm chi tiết đơn hàng dựa trên ID của đơn hàng
-    const order_details = await Order_Detail.find({ order_id: id });
-
-    // Kiểm tra trạng thái hiện tại của đơn hàng
-    const check_status = ordered.status_detail?.find(
-      (item) => item.status === status, // Tìm trạng thái mới trong chi tiết trạng thái của đơn hàng
-    );
-
-    // Kiểm tra các điều kiện không cho phép cập nhật trạng thái
-    if (ordered.status === 'cancelled') {
-      throw createError.BadRequest('Đơn hàng đã được huỷ');
-    }
-    if (ordered.status === 'delivered') {
-      throw createError.BadRequest('Đơn hàng đã được hoàn thành');
-    }
-    if (check_status) {
-      throw createError.BadRequest('Trạng thái đã tồn tại');
-    }
-    if (ordered.status === status) {
-      throw createError.BadRequest('Trạng thái không thay đổi');
-    }
-    if (status === 'returned') {
-      throw createError.BadRequest('Không thể huỷ đơn hàng đã hoàn');
-    }
-    if (status === 'delivered') {
-      throw createError.BadRequest(
-        'Đợi xác nhận từ khách hàng để hoàn thành đơn',
-      );
-    }
-
-    // Nếu trạng thái mới là "confirmed" và phương thức vận chuyển là "shipped"
-    if (status === 'confirmed' && ordered.shipping_method === 'Shipping') {
-      // Tìm thông tin giao hàng dựa trên thông tin shipping_info của đơn hàng
-      const shipping = await Shipping.findOne({ _id: ordered.shipping_info });
-
-      // Kiểm tra xem thông tin giao hàng có tồn tại không
-      if (!shipping) {
-        throw createError.NotFound(
-          'Không tìm thấy thông tin giao hàng cho đơn hàng này',
-        );
-      }
-
-      // Hàm lấy thông tin SKU dựa trên ID
-      const get_sku = async (sku_id: string) => {
-        const new_item = await Sku.findById(sku_id);
-        if (!new_item) {
-          throw createError.NotFound(`SKU with ID ${sku_id} not found`);
-        }
-        return new_item;
-      };
-      // Lấy thông tin chi tiết đơn hàng mới bằng cách tìm thông tin SKU cho từng mục
-      const new_order_details = await Promise.all(
-        order_details.map(async (item) => {
-          const data_sku = await get_sku(item.sku_id.toString());
-          // Kiểm tra nếu không tìm thấy SKU
-          if (!data_sku) {
-            throw new Error(`SKU with ID ${item.sku_id} not found`); // Ném lỗi nếu không tìm thấy
-          }
-          return {
-            _id: item._id,
-            sku_id: data_sku._id,
-            name: data_sku.name,
-            price: data_sku.price,
-            price_before_discount: data_sku.price_before_discount,
-            price_discount_percent: data_sku.price_discount_percent,
-            image: data_sku.image,
-            quantity: item.quantity,
-            total_money: item.total_money,
-          };
-        }),
-      );
-
-      // Tách địa chỉ giao hàng thành các phần
-      const address_detail = shipping.shipping_address.split(',');
-      const addressString = address_detail.join(',');
-      console.log('Địa chỉ:', addressString);
-      const address = address_detail.shift();
-      // Lấy phần địa chỉ chính
-      const code_ward_district = await getAddressLocation(
-        address_detail.join(','), // Gọi hàm lấy mã phường/xã và quận/huyện từ địa chỉ
-      );
-      // Kiểm tra xem có lấy được thông tin mã phường/xã và quận/huyện không
-      if (!code_ward_district) {
-        throw createError.NotFound(
-          'Không thể lấy mã phường/xã và quận/huyện từ địa chỉ', // Nếu không lấy được
-        );
-      }
-
-      // Dữ liệu để gửi đi cho API tạo đơn hàng mới
-      const data_shipping = {
-        to_name: ordered.customer_name,
-        to_phone: ordered.phone_number,
-        to_address: shipping.shipping_address,
-        to_ward_code: code_ward_district.ward_code,
-        to_district_id: code_ward_district.district.DistrictID, // Lấy DistrictID từ district
-        content: ordered.content,
-        weight: 10, // Ví dụ: trọng lượng của một chiếc tủ
-        length: 100, // Chiều dài 100 cm
-        width: 90, // Chiều rộng 60 cm
-        height: 75, // Chiều cao 75 cm
-        service_type_id: 2,
-        service_id: 53319,
-        payment_type_id: 1,
-        required_note: 'CHOXEMHANGKHONGTHU',
-        Items: new_order_details,
-        name: 'Đồ nội thất',
-        quantity: new_order_details.length,
-      };
-
-      // Gọi API tạo đơn hàng mới
-      const orderCode = await axios.post(
-        'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create',
-        data_shipping,
-        {
-          headers: {
-            Token: process.env.GHN_SHOP_TOKEN, // Thêm token vào headers
-            ShopId: process.env.GHN_SHOP_ID,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      // Nếu tạo đơn hàng thành công
-      if (orderCode.data.code === 200) {
-        // Cập nhật thông tin giao hàng với mã đơn hàng mới và thời gian giao hàng ước tính
-        await Shipping.findByIdAndUpdate(
-          { _id: ordered.shipping_info },
-          {
-            $set: {
-              order_code: orderCode.data.data.order_code,
-              estimated_delivery_date:
-                orderCode.data.data.expected_delivery_time,
-            },
-          },
-        );
-      }
-    }
-
-    // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
-    const order = await Order.findByIdAndUpdate(
-      id,
-      {
-        $set: { status: status }, // Cập nhật trạng thái
-        $push: {
-          status_detail: {
-            status: status, // Thêm trạng thái mới vào lịch sử trạng thái
-          },
-        },
-      },
-      { new: true }, // Trả về bản ghi đã được cập nhật
-    ).populate([
-      // Populate để lấy thông tin chi tiết từ trường shipping_info
-      {
-        path: 'shipping_info',
-      },
-    ]);
-
-    // Trả về phản hồi cho người dùng
-    return res.json({
-      status: 200,
-      message: 'Cập nhật trạng thái thành công', // Thông báo thành công
-      data: order, // Dữ liệu đơn hàng đã được cập nhật
-    });
-  } catch (error) {
-    next(error); // Chuyển lỗi cho middleware xử lý lỗi
   }
 };
 
