@@ -13,6 +13,7 @@ import routeVariant from './variant.router';
 import routeOption from './option.router';
 import routeOptionalValue from './optionalValue.route';
 import routeCoupon from './coupon.route';
+import routeArticle from './article.route';
 
 const router = Router();
 
@@ -57,4 +58,7 @@ router.use('/variants', routeVariant);
 
 //* Coupon
 router.use('/coupon', routeCoupon);
+
+//* Articles
+router.use('/articles', routeArticle);  
 export default router;
