@@ -1,10 +1,10 @@
 import {
-  Create_Category,
-  Delete_Category,
-  Get_All_Category,
-  Get_One_Category,
-  Hide_Category,
-  Update_Category,
+  createCategory,
+  getAllCategories,
+  getOneCategory,
+  hardDeleteCategory,
+  softDeleteCategory,
+  updateCategory,
 } from '@/controllers/category.controller';
 import { checkAuth } from '@/middlewares/checkAuth';
 import { checkPermission } from '@/middlewares/checkPermission';
@@ -18,17 +18,17 @@ const routeCategory = Router();
 routeCategory.get(
   '/',
   // #swagger.tags = ['Category']
-  Get_All_Category,
+  getAllCategories,
 );
 //* Get one category
 routeCategory.get(
   '/:id',
   // #swagger.tags = ['Category']
-  Get_One_Category,
+  getOneCategory,
 );
 
 // Check auth and permission
-// routeCategory.use(checkAuth, checkPermission);
+// RouteCategory.use(checkAuth, checkPermission);
 
 //* Create new category
 routeCategory.post(
@@ -37,7 +37,7 @@ routeCategory.post(
   checkPermission,
   validBodyRequest(categorySchema),
   // #swagger.tags = ['Category']
-  Create_Category,
+  createCategory,
 );
 
 //* Update category
@@ -47,7 +47,7 @@ routeCategory.put(
   checkPermission,
   validBodyRequest(categorySchema),
   // #swagger.tags = ['Category']
-  Update_Category,
+  updateCategory,
 );
 
 //* Soft delete category
@@ -56,7 +56,7 @@ routeCategory.patch(
   checkAuth,
   checkPermission,
   // #swagger.tags = ['Category']
-  Hide_Category,
+  softDeleteCategory,
 );
 //* Hard delete category
 routeCategory.delete(
@@ -64,7 +64,7 @@ routeCategory.delete(
   checkAuth,
   checkPermission,
   // #swagger.tags = ['Category']
-  Delete_Category,
+  hardDeleteCategory,
 );
 
 export default routeCategory;

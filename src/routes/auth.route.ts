@@ -1,8 +1,8 @@
 import {
-  checkRefreshToken,
-  clearToken,
   Login,
   Register,
+  checkRefreshToken,
+  clearToken,
 } from '@/controllers/auth.controller';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { loginSchema, registerSchema } from '@/validations/auth.validation';

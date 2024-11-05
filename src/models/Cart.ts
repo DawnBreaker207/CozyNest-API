@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { CartType } from '../interfaces/Cart';
 
 const cartSchema = new mongoose.Schema<CartType>(
-  { 
+  {
     cart_id: {
       type: String,
       required: true,
@@ -40,7 +40,7 @@ const cartSchema = new mongoose.Schema<CartType>(
     },
     delete: { type: Boolean, default: false },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 export default mongoose.model<CartType>('Cart', cartSchema);

@@ -1,50 +1,50 @@
 import {
-  addOneProduct_order,
+  CreateNewOrder,
   cancelOrder,
-  confirm_returnedOrder,
-  CreateOrder,
-  deleteOneProduct_order,
-  deleteProduct_order,
-  getAll,
-  getAllOrder,
+  confirmReturnedOrder,
+  decreaseProductFromOrder,
+  getAllOrders,
   getAllShipping,
-  getOne,
+  getAllUserOrders,
+  getOneOrder,
   getOrderByPhoneNumber,
   getOrderByUserId,
   getReturnedOrder,
+  increaseProductFromOrder,
+  removeProductFromOrder,
   returnedOrder,
-  serviceFree,
-  update_info_customer,
+  serviceCalFee,
+  updateInfoCustomer,
   updatePaymentStatus,
-  updateStatus,
   updateStatusDelivered,
+  updateStatusOrder,
 } from '@/controllers/order.controller';
 import { Router } from 'express';
 
 const routeOrder = Router();
-routeOrder.put('/decrement', deleteOneProduct_order);
-routeOrder.put('/increment', addOneProduct_order);
-routeOrder.put('/decrement-product-order', deleteProduct_order);
+routeOrder.put('/decrement', decreaseProductFromOrder);
+routeOrder.put('/increment', increaseProductFromOrder);
+routeOrder.put('/decrement-product-order', removeProductFromOrder);
 routeOrder.post('/payment-status', updatePaymentStatus);
-routeOrder.post('/calculateFee', serviceFree);
+routeOrder.post('/calculateFee', serviceCalFee);
 routeOrder.put('/orderByPhoneNumber', getOrderByPhoneNumber);
 //* Get order by user id
 routeOrder.get('/orderByUserId', getOrderByUserId);
 routeOrder.post('/return', returnedOrder);
 routeOrder.get('/return', getReturnedOrder);
-routeOrder.put('/return/:id', confirm_returnedOrder);
+routeOrder.put('/return/:id', confirmReturnedOrder);
 routeOrder.put('/confirm-completed/:id', updateStatusDelivered);
 //* Create new order
-routeOrder.post('/', CreateOrder);
-routeOrder.get('/', getAll);
+routeOrder.post('/', CreateNewOrder);
+routeOrder.get('/', getAllOrders);
 //* Get all orders exist
-routeOrder.get('/statistical', getAllOrder);
+routeOrder.get('/statistical', getAllUserOrders);
 routeOrder.get('/shipping', getAllShipping);
 //* Get order by order id
-routeOrder.get('/:id', getOne);
+routeOrder.get('/:id', getOneOrder);
 routeOrder.delete('/cancel/:id', cancelOrder);
 //* Update order status
-routeOrder.put('/updateStatus/:id', updateStatus);
-routeOrder.put('/updateInfoCustomer/:id', update_info_customer);
+routeOrder.put('/updateStatus/:id', updateStatusOrder);
+routeOrder.put('/updateInfoCustomer/:id', updateInfoCustomer);
 
 export default routeOrder;

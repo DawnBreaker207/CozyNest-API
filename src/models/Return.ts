@@ -1,13 +1,13 @@
-import { ReturnedType } from "@/interfaces/Return";
-import mongoose, { PaginateModel, Schema } from "mongoose";
-import mongoosePaginate from "mongoose-paginate-v2";
+import { ReturnedType } from '@/interfaces/Return';
+import mongoose, { PaginateModel, Schema } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 // Create the schema
 const returnedSchema = new Schema<ReturnedType>(
   {
     order_id: {
       type: Schema.Types.ObjectId,
-      ref: "Order",
+      ref: 'Order',
     },
     reason: {
       type: String,
@@ -29,16 +29,16 @@ const returnedSchema = new Schema<ReturnedType>(
     },
   },
   {
-    collection: "returned",
+    collection: 'returned',
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 returnedSchema.plugin(mongoosePaginate);
 
 const Returned = mongoose.model<ReturnedType, PaginateModel<ReturnedType>>(
-  "Returned",
-  returnedSchema
+  'Returned',
+  returnedSchema,
 );
 export { Returned };

@@ -23,8 +23,8 @@ const {
   // Momo configs
   MOMO_ACCESS_KEY,
   MOMO_SECRET_KEY,
-  MOMO_REDIRECT_URL='http://localhost:8888/api/v1/payment/momo-callback',
-  MOMO_IPN_URL='http://localhost:8888/api/v1/payment/transaction-status',
+  MOMO_REDIRECT_URL = 'http://localhost:8888/api/v1/payment/momo-callback',
+  MOMO_IPN_URL = 'http://localhost:8888/api/v1/payment/transaction-status',
   // VNPay configs
   VN_PAY_TMN_CODE,
   VN_PAY_HASH_SECRET = '',
@@ -38,7 +38,7 @@ const {
   // GHN configs
   TOKEN_SHIPMENT,
   SHIPMENT_SHOP,
-  DISTRICT_ID ='1915',
+  DISTRICT_ID = '1915',
   WARD_CODE = '1B2128',
 } = process.env;
 export {

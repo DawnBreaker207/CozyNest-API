@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface SkuType extends Document {
   _id: Types.ObjectId;

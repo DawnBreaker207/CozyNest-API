@@ -1,10 +1,10 @@
 import {
   AddToCart,
-  decreaseQuantity,
-  GetById,
-  increaseQuantity,
+  GetCartById,
   RemoveCart,
   RemoveFromCart,
+  decreaseQuantity,
+  increaseQuantity,
 } from '@/controllers/cart.controller';
 import { checkAuth } from '@/middlewares/checkAuth';
 import { Router } from 'express';
@@ -16,7 +16,7 @@ routeCart.get(
   '/:userId',
   checkAuth,
   // #swagger.tags = ['Cart']
-  GetById,
+  GetCartById,
 );
 
 //* Add product item to cart

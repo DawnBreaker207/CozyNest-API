@@ -1,7 +1,7 @@
-import swagger from 'docs/swagger-output.json';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import swagger from 'docs/swagger-output.json';
 import express from 'express';
 import helmet from 'helmet';
 import { createServer } from 'http';
@@ -14,14 +14,14 @@ import { PORT } from './utils/env';
 import { errorHandle, errorHandleNotFound } from './utils/errorHandle';
 import logger from './utils/logger';
 import { realTime } from './utils/socket';
-const app = express();
-//* Create server real time
-const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-  },
-});
+const app = express(),
+  //* Create server real time
+  server = createServer(app),
+  io = new Server(server, {
+    cors: {
+      origin: '*',
+    },
+  });
 
 //* Init Middleware
 app.use(cors());

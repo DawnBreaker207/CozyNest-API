@@ -24,11 +24,11 @@ const userSchema = new mongoose.Schema<UserType>(
     address_shipping: { type: String },
     status: { type: Boolean, default: true },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 userSchema.plugin(mongoosePaginate);
 
 export default mongoose.model<UserType, PaginateModel<UserType>>(
   'User',
-  userSchema
+  userSchema,
 );

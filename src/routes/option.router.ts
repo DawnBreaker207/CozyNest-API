@@ -1,7 +1,7 @@
 import {
   createOption,
   deleteOption,
-  getAllOption,
+  getAllOptions,
   getOneOption,
   updateOption,
 } from '@/controllers/variants.controller';
@@ -13,13 +13,13 @@ import { Router } from 'express';
 
 const routeOption = Router();
 
-// api option
+// Api option
 
 //* Get all option value in product
 routeOption.get(
   '/:product_id',
   // #swagger.tags = ['Option']
-  getAllOption,
+  getAllOptions,
 );
 
 //* Get one option value in product

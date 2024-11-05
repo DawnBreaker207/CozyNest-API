@@ -13,7 +13,7 @@ const skuSchema = new mongoose.Schema<SkuType>(
       ref: 'Product',
       required: true,
     },
-  
+
     SKU: { type: String },
     name: { type: String },
     slug: {
@@ -36,12 +36,12 @@ const skuSchema = new mongoose.Schema<SkuType>(
       },
     ],
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 skuSchema.plugin(mongoosePaginate);
 
 export const Sku = mongoose.model<SkuType, PaginateModel<SkuType>>(
   'Sku',
-  skuSchema
+  skuSchema,
 );

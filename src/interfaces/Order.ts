@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 type PaymentStatusType = 'Paid' | 'Unpaid';
 type ShippingMethodType = 'Shipping' | 'In-store';
 
@@ -42,7 +42,7 @@ export interface ShipmentType {
   coupon?: string | null;
   pickup_time?: number;
   pick_shift?: number[];
-  // items: ProductItem[];
+  // Items: ProductItem[];
 }
 
 export interface OrderItemType extends Document {
