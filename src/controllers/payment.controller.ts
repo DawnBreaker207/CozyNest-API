@@ -489,5 +489,5 @@ export {
   vnPayCallback,
   vnPayStatus,
   zaloPayCallback,
-  zaloPayStatus,
+  zaloPayStatus
 };

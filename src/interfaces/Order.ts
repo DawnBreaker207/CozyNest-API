@@ -72,7 +72,7 @@ export interface OrderType extends Document {
   coupon_id?: Types.ObjectId;
   email?: string;
   shop_address?: string;
-  phone_number: number;
+  phone_number: string;
   payment_status?: PaymentStatusType;
   payment_method?: object;
   status?: string;
