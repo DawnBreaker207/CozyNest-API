@@ -1,6 +1,6 @@
 import { handleUpload } from '@/configs/cloudinaryConfig';
 import { messagesError } from '@/constants/messages';
-import { StatusCodes } from '@/http-status-codes/build/cjs';
+import { StatusCodes } from 'http-status-codes';
 import { AppError } from '@/utils/errorHandle';
 import logger from '@/utils/logger';
 

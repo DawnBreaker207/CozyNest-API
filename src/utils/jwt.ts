@@ -1,4 +1,4 @@
-import { StatusCodes } from '@/http-status-codes/build/cjs';
+import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import { JWT, SECRET_ACCESS_TOKEN, SECRET_REFRESH_TOKEN } from './env';
 import { AppError } from './errorHandle';

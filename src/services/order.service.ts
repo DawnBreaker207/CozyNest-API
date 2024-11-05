@@ -1,4 +1,4 @@
-import { StatusCodes } from '@/http-status-codes/build/cjs';
+import { StatusCodes } from 'http-status-codes';
 import { AppError } from '@/utils/errorHandle';
 import logger from '@/utils/logger';
 import { createMomoService, createVnPayService } from './payment.service';

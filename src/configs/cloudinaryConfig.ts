@@ -1,4 +1,4 @@
-import { StatusCodes } from '@/http-status-codes/build/cjs';
+import { StatusCodes } from 'http-status-codes';
 import { API_KEY, API_SECRET, CLOUD_NAME, FOLDER_NAME } from '@/utils/env';
 import { AppError } from '@/utils/errorHandle';
 import logger from '@/utils/logger';

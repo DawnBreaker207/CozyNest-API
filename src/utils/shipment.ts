@@ -2,7 +2,7 @@ import axios from 'axios';
 import { DISTRICT_ID, SHIPMENT_SHOP, TOKEN_SHIPMENT, WARD_CODE } from './env';
 import logger from './logger';
 import { AppError } from './errorHandle';
-import { StatusCodes } from '@/http-status-codes/build/cjs';
+import { StatusCodes } from 'http-status-codes';
 
 // Khai báo kiểu cho phản hồi từ API của GHN
 interface Province {

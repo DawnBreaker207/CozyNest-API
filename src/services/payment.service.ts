@@ -1,4 +1,4 @@
-import { StatusCodes } from '@/http-status-codes/build/cjs';
+import { StatusCodes } from 'http-status-codes';
 import {
   ZALO_PAY_APP_ID,
   ZALO_PAY_ENDPOINT,

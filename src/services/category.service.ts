@@ -1,4 +1,4 @@
-import { StatusCodes } from '@/http-status-codes/build/cjs';
+import { StatusCodes } from 'http-status-codes';
 import { CategoryType } from '@/interfaces/Category';
 import Category from '@/models/Category';
 import { Product } from '@/models/Product';

@@ -1,4 +1,4 @@
-import { StatusCodes } from '@/http-status-codes/build/cjs';
+import { StatusCodes } from 'http-status-codes';
 import { CartType, ProductCart } from '@/interfaces/Cart';
 import { OptionalValueType } from '@/interfaces/Variant';
 import Cart from '@/models/Cart';

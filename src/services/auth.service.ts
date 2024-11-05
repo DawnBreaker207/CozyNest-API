@@ -1,5 +1,5 @@
 import { messagesError } from '@/constants/messages';
-import { StatusCodes } from '@/http-status-codes/build/cjs';
+import { StatusCodes } from 'http-status-codes';
 import { UserType } from '@/interfaces/User';
 import User from '@/models/User';
 import { SECRET_REFRESH_TOKEN } from '@/utils/env';

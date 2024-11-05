@@ -1,5 +1,5 @@
 import { messagesError } from '@/constants/messages';
-import { StatusCodes } from '@/http-status-codes/build/cjs';
+import { StatusCodes } from 'http-status-codes';
 import { SkuType } from '@/interfaces/Sku';
 import {
   OptionType,
