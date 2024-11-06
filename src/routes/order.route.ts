@@ -1,5 +1,5 @@
 import {
-  CreateNewOrder,
+  createNewOrder,
   cancelOrder,
   confirmReturnedOrder,
   decreaseProductFromOrder,
@@ -35,7 +35,7 @@ routeOrder.get('/return', getReturnedOrder);
 routeOrder.put('/return/:id', confirmReturnedOrder);
 routeOrder.put('/confirm-completed/:id', updateStatusDelivered);
 //* Create new order
-routeOrder.post('/', CreateNewOrder);
+routeOrder.post('/', createNewOrder);
 routeOrder.get('/', getAllOrders);
 //* Get all orders exist
 routeOrder.get('/statistical', getAllUserOrders);

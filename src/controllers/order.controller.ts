@@ -24,7 +24,7 @@ import { statusOrder } from './../constants/initialValue';
 
 //TODO: Analyze this, check payurl
 // Controllers
-export const CreateNewOrder: RequestHandler = async (req, res, next) => {
+export const createNewOrder: RequestHandler = async (req, res, next) => {
   // Trích xuất các thông tin cần thiết từ `req.body` để tạo đơn hàng
   const {
     address,
@@ -353,7 +353,7 @@ export const updateStatusOrder: RequestHandler = async (req, res, next) => {
     }
 
     // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
-    const upateOrder = await Order.findByIdAndUpdate(
+    const updateOrder = await Order.findByIdAndUpdate(
       id,
       {
         // Cập nhật trạng thái
@@ -373,14 +373,14 @@ export const updateStatusOrder: RequestHandler = async (req, res, next) => {
         path: 'shipping_info',
       },
     ]);
-    if (!upateOrder) {
+    if (!updateOrder) {
       logger.log('error', 'Order update error in update status');
       throw new AppError(StatusCodes.BAD_REQUEST, 'Update status order error');
     }
 
     res.status(StatusCodes.CREATED).json({
       message: 'Order update successfully',
-      res: upateOrder,
+      res: updateOrder,
     });
   } catch (error) {
     logger.log('error', `Catch error in get update status ${error}`);
@@ -947,11 +947,16 @@ export const getAllUserOrders: RequestHandler = async (req, res, next) => {
     return res.status(StatusCodes.OK).json({
       message: 'Lấy toàn bộ đơn hàng thành công',
       res: {
-        total_order, // Tổng số đơn hàng
-        total_user, // Tổng số khách hàng duy nhất
-        total_order_money, // Tổng số tiền
-        total_order_product, // Tổng số sản phẩm
-        new_docs, // Danh sách đơn hàng đã lấy
+        // Tổng số đơn hàng
+        total_order,
+        // Tổng số khách hàng duy nhất
+        total_user,
+        // Tổng số tiền
+        total_order_money,
+        // Tổng số sản phẩm
+        total_order_product,
+        // Danh sách đơn hàng đã lấy
+        new_docs,
       },
     });
   } catch (error) {
@@ -1170,13 +1175,20 @@ export const removeProductFromOrder: RequestHandler = async (
 export const getReturnedOrder: RequestHandler = async (req, res, next) => {
   // Lấy các tham số tìm kiếm từ query string
   const {
-    _page = 1, // Trang hiện tại (mặc định là 1)
-    _sort = 'created_at', // Trường để sắp xếp (mặc định là created_at)
-    _order = 'desc', // Thứ tự sắp xếp (mặc định là giảm dần)
-    _limit = 10, // Số lượng yêu cầu trả về trên một trang (mặc định là 10)
-    search, // Tìm kiếm theo tên khách hàng
-    is_confirm, // Tình trạng xác nhận
-    date, // Ngày để tìm kiếm
+    // Trang hiện tại (mặc định là 1)
+    _page = 1,
+    // Trường để sắp xếp (mặc định là created_at)
+    _sort = 'created_at',
+    // Thứ tự sắp xếp (mặc định là giảm dần)
+    _order = 'desc',
+    // Số lượng yêu cầu trả về trên một trang (mặc định là 10)
+    _limit = 10,
+    // Tìm kiếm theo tên khách hàng
+    search,
+    // Tình trạng xác nhận
+    is_confirm,
+    // Ngày để tìm kiếm
+    date,
   } = req.query as {
     _page?: number | string; // Trang hiện tại
     _sort?: string; // Trường sắp xếp
@@ -1481,18 +1493,29 @@ export const updateInfoCustomer: RequestHandler = async (req, res, next) => {
   const { id } = req.params,
     // Lấy thông tin cần cập nhật từ body của request
     {
-      customer_name, // Tên khách hàng
-      phone_number, // Số điện thoại khách hàng
-      content, // Nội dung đơn hàng
-      shippingAddress, // Địa chỉ giao hàng
-      transportation_fee, // Phí vận chuyển
+      // Tên khách hàng
+      customer_name,
+      // Số điện thoại khách hàng
+      phone_number,
+      // Nội dung đơn hàng
+      content,
+      // Địa chỉ giao hàng
+      shippingAddress,
+      // Phí vận chuyển
+      transportation_fee,
     }: {
-      customer_name: string; // Kiểu dữ liệu của tên khách hàng
-      phone_number: string; // Kiểu dữ liệu của số điện thoại
-      content: string; // Kiểu dữ liệu của nội dung
-      shippingAddress: string; // Kiểu dữ liệu của địa chỉ giao hàng
-      transportation_fee: number; // Kiểu dữ liệu của phí vận chuyển
-    } = req.body; // Lấy thông tin từ body của request
+      // Kiểu dữ liệu của tên khách hàng
+      customer_name: string;
+      // Kiểu dữ liệu của số điện thoại
+      phone_number: string;
+      // Kiểu dữ liệu của nội dung
+      content: string;
+      // Kiểu dữ liệu của địa chỉ giao hàng
+      shippingAddress: string;
+      // Kiểu dữ liệu của phí vận chuyển
+      transportation_fee: number;
+      // Lấy thông tin từ body của request
+    } = req.body;
   try {
     // Tìm kiếm đơn hàng bằng ID và lấy thông tin vận chuyển
     const order = await Order.findById(id).populate({

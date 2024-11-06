@@ -24,7 +24,12 @@ const app = express(),
   });
 
 //* Init Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -32,9 +37,14 @@ app.use(
     extended: true,
   }),
 );
+const Stream = {
+  write: (text: string) => {
+    logger.log('info', text.replace(/\n$/, ''));
+  },
+};
 app.use(helmet());
 app.use(compression());
-app.use(morgan('dev'));
+app.use(morgan('dev', { stream: Stream }));
 app.use(redirectPath);
 
 //* Init Database
