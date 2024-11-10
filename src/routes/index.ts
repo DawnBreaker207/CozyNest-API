@@ -22,7 +22,7 @@ router.use('/products', routeProduct);
 //* Categories
 router.use('/categories', routeCategory);
 
-//* AuthenticationO
+//* Authentication
 router.use('/auth', routeAuth);
 
 //* Upload images
