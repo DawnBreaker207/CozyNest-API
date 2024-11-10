@@ -42,7 +42,7 @@ routeCategory.post(
 
 //* Update category
 routeCategory.put(
-  '/:id ',
+  '/:id',
   checkAuth,
   checkPermission,
   validBodyRequest(categorySchema),

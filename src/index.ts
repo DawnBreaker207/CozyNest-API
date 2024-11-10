@@ -61,7 +61,3 @@ app.use(errorHandleNotFound, errorHandle);
 app.listen(PORT, () => {
   logger.log('info', `Listen on port ${PORT}`);
 });
-
-// TODO: Update logging in every throw error
-// TODO: Spilt logic in payment and shipment into service
-// TODO: Fix logic in order and split into service

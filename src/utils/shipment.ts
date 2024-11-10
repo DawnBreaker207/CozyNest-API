@@ -32,7 +32,6 @@ interface AddressLocation {
  * @returns
  */
 
-// TODO: Check bugs
 const getAddressLocation = async (
     location: string,
   ): Promise<AddressLocation | undefined> => {

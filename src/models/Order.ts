@@ -100,8 +100,8 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
       },
       payment_status: {
         type: String,
-        enum: ['paid', 'unpaid'],
-        default: 'unpaid',
+        enum: ['Paid', 'Unpaid'],
+        default: 'Unpaid',
       },
       payment_method: [
         {
@@ -114,31 +114,58 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
       ],
       status: {
         type: String,
-        default: 'processing',
+        default: 'Processing',
         //TODO: Update
         enum: [
-          'processing',
-          'confirmed',
-          'delivering',
-          'cancelled',
-          'pendingComplete',
-          'delivered',
-          'returned',
+          //Đang xử lý
+          'Processing',
+          //Chờ xác nhận
+          'Pending',
+          //Đã xác nhận
+          'Confirmed',
+          //Đang chờ bên vận chuyển
+          'Pending-Ship',
+          //Đang vận chuyển
+          'Delivering',
+          //Giao hàng thành công
+          'Delivered',
+          //Đã hủy đơn hàng
+          'Canceled',
+          //Đơn hàng hoàn thành
+          'Completed',
+          //Hoàn trả đơn hàng
+          'Returned',
+          //Hoàn trả đơn hàng và hoàn tiền
+          'Refunded',
         ],
       },
       status_detail: [
         {
           status: {
             type: String,
-            default: 'processing',
+            default: 'Processing',
             //TODO: Update
             enum: [
-              'processing',
-              'confirmed',
-              'delivering',
-              'cancelled',
-              'delivered',
-              'returned',
+              //Đang xử lý
+              'Processing',
+              //Chờ xác nhận
+              'Pending',
+              //Đã xác nhận
+              'Confirmed',
+              //Đang chờ bên vận chuyển
+              'Pending-Ship',
+              //Đang vận chuyển
+              'Delivering',
+              //Giao hàng thành công
+              'Delivered',
+              //Đã hủy đơn hàng
+              'Canceled',
+              //Đơn hàng hoàn thành
+              'Completed',
+              //Hoàn trả đơn hàng
+              'Returned',
+              //Hoàn trả đơn hàng và hoàn tiền
+              'Refunded',
             ],
           },
           created_at: {
@@ -156,8 +183,8 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
       },
       shipping_method: {
         type: String,
-        enum: ['shipped', 'at_store'],
-        default: 'shipped',
+        enum: ['Shipping', 'In-store'],
+        default: 'Shipping',
       },
       shipping_info: {
         type: mongoose.Schema.Types.ObjectId,

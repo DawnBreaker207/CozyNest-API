@@ -30,7 +30,7 @@ export const createCart: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-// TODO: check duplicated features
+
 // Get cart by user id
 export const GetCart: RequestHandler = async (req, res, next) => {
   /**

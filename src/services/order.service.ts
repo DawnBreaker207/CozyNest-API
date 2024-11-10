@@ -1,4 +1,5 @@
 import { statusOrder } from '@/constants/initialValue';
+import { OrderType } from '@/interfaces/Order';
 import Cart from '@/models/Cart';
 import { Order, Order_Detail, Shipping } from '@/models/Order';
 import { Returned } from '@/models/Return';
@@ -12,8 +13,10 @@ import {
   getTokenPrintBill,
 } from '@/utils/shipment';
 import { StatusCodes } from 'http-status-codes';
+import { PaginateOptions } from 'mongoose';
 import { createMomoService, createVnPayService } from './payment.service';
 import { createDeliveryOrderService } from './shipment.service';
+import { ProductCart } from '@/interfaces/Cart';
 
 // Utils functions
 export const buildPaymentMethod = (method: string) => {
@@ -123,7 +126,6 @@ export const checkPaymentMethod = async (
   paymentMethod: any,
   inputData: any,
 ) => {
-  // TODO: Update create payment controller to services
   // Tùy theo phương thức thanh toán (`momo`, `zalopay`, `vnpay`), gọi hàm tạo liên kết thanh toán và lưu liên kết vào `payUrl`
   let payUrl: string | undefined;
   try {
@@ -162,7 +164,7 @@ export const checkPaymentMethod = async (
         'Không thể lấy liên kết thanh toán từ phản hồi.',
       );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof AppError) {
       logger.log('error', `Catch error in check payUrl ${error.message}`);
       throw new AppError(StatusCodes.BAD_REQUEST, 'Pay URL wrong');
@@ -171,19 +173,18 @@ export const checkPaymentMethod = async (
 };
 
 // Services
-// TODO: Check
+
 export const createNewOrderService = async (
-  address: any,
-  shipping_address: any,
-  payment_method: any,
-  total_amount: any,
-  transportation_fee: any = 3000,
+  cart_id: string,
+  address: string,
+  shipping_address: string,
+  payment_method: string,
+  total_amount: number,
+  transportation_fee: number = 3000,
   // GuestId:any,
-  cart_id: any,
-  input: any,
+  input: OrderType,
 ) => {
   //* Find cart exists
-  // Tìm giỏ hàng dựa trên `cart_id`, nếu không tồn tại trả về lỗi
   const cart = await Cart.findOne({ _id: cart_id });
   if (!cart) {
     logger.log('error', 'Cart not found in create order');
@@ -191,29 +192,25 @@ export const createNewOrderService = async (
   }
 
   //* Check payment method valid
-  // Kiểm tra phương thức thanh toán có hợp lệ và gán vào `paymentMethod`
-  const paymentMethod = buildPaymentMethod(payment_method), // Hàm để build phương thức thanh toán
-    //* Call payment method and save method
-    // TODO: Update create payment controller to services
-    // Tùy theo phương thức thanh toán (`momo`, `zalopay`, `vnpay`), gọi hàm tạo liên kết thanh toán và lưu liên kết vào `payUrl`
-    payUrl = await checkPaymentMethod(paymentMethod, input),
-    //* Create order with infomation and total from cart and shipping fee
-    // Tạo đơn hàng với thông tin và tổng tiền từ giỏ hàng và phí vận chuyển
-    order = await Order.create({
-      input,
-      // Tổng tiền bao gồm phí vận chuyển
-      total_amount: Number(total_amount) + transportation_fee,
-      payment_method: paymentMethod,
-      // Đính kèm liên kết thanh toán
-      payment_url: payUrl,
-    });
+  const paymentMethod = buildPaymentMethod(payment_method);
+
+  //* Call payment method and save method
+  const payUrl = await checkPaymentMethod(paymentMethod, input);
+
+  //* Create order with infomation and total from cart and shipping fee
+  const order = await Order.create({
+    input,
+    total_amount: Number(total_amount) + transportation_fee,
+    payment_method: paymentMethod,
+    payment_url: payUrl,
+  });
   if (!order) {
     logger.log('error', 'Order create error in create order');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Create order error');
   }
+
   //* Create detail product in order
-  // Hàm tạo chi tiết sản phẩm trong đơn hàng
-  const addProductItem = async (product: any) => {
+  const addProductItem = async (product: ProductCart) => {
       const new_item = await Order_Detail.create({
         order_id: order._id,
         sku_id: product.sku_id,
@@ -226,7 +223,6 @@ export const createNewOrderService = async (
       return new_item;
     },
     //* Take SKU info from database
-    // Hàm lấy thông tin SKU dựa vào `sku_id` từ cơ sở dữ liệu
     get_sku = async (sku_id: string) => {
       const skuInfo = await Sku.findById(sku_id);
       if (!skuInfo) {
@@ -236,12 +232,10 @@ export const createNewOrderService = async (
       return skuInfo;
     },
     //* Create detail product for order from cart
-    // Tạo các chi tiết sản phẩm cho đơn hàng từ các sản phẩm trong giỏ hàng
     order_details = await Promise.all(
       cart!.products.map((item) => addProductItem(item)),
     ),
     //* Take detail SKU info for each product in cart
-    // Lấy thông tin chi tiết SKU cho từng sản phẩm trong đơn hàng
     new_order_details = await Promise.all(
       order_details.map(async (item) => {
         const data_sku = await get_sku(item.sku_id.toString());
@@ -258,6 +252,7 @@ export const createNewOrderService = async (
         };
       }),
     );
+
   //* If order have shipping methods, update
   if (order.shipping_method === 'Shipping') {
     await createShippingInfo(
@@ -269,7 +264,6 @@ export const createNewOrderService = async (
   }
 
   //* Clear product in cart when create order success
-  // Cập nhật giỏ hàng sau khi đã tạo đơn hàng thành công (xóa sản phẩm trong giỏ)
   await Cart.findOneAndUpdate(
     { cart_id },
     { $set: { products: [], total_money: 0 } },
@@ -277,26 +271,19 @@ export const createNewOrderService = async (
 
   return { new_order_details, order };
 };
-// TODO: Check
-export const updateStatusOrderService = async (id: string, status: string) => {
-  // Danh sách các trạng thái hợp lệ
 
-  // Kiểm tra xem trạng thái mới có nằm trong danh sách trạng thái hợp lệ hay không
+export const updateStatusOrderService = async (id: string, status: string) => {
   if (!statusOrder.includes(status)) {
-    // Nếu không, ném lỗi 400
     logger.log('error', 'Status not valid in update status order');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái không hợp lệ');
   }
 
-  // Tìm kiếm đơn hàng trong cơ sở dữ liệu bằng ID
   const ordered = await Order.findById(id);
   if (!ordered) {
-    // Nếu không, ném lỗi 404
     logger.log('error', 'Not find order in update status order');
     throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
   }
 
-  // Tìm kiếm chi tiết đơn hàng dựa trên ID của đơn hàng
   const orderDetails = await Order_Detail.find({ order_id: id });
   if (!orderDetails) {
     logger.log('error', 'Not find order details in update status order');
@@ -305,9 +292,8 @@ export const updateStatusOrderService = async (id: string, status: string) => {
       'Không tìm thấy chi tiết đơn hàng',
     );
   }
-  // Kiểm tra trạng thái hiện tại của đơn hàng
+
   const check_status = ordered.status_detail?.find(
-    // Tìm trạng thái mới trong chi tiết trạng thái của đơn hàng
     (item) => item.status === status,
   );
   if (check_status) {
@@ -319,8 +305,6 @@ export const updateStatusOrderService = async (id: string, status: string) => {
     throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái không thay đổi');
   }
 
-  // TODO: Update
-  // Kiểm tra các điều kiện không cho phép cập nhật trạng thái
   const statusCondition: { [key: string]: () => void } = {
     cancelled: () => {
       if (ordered?.status === 'cancelled') {
@@ -363,9 +347,7 @@ export const updateStatusOrderService = async (id: string, status: string) => {
 
   statusCondition[status]?.();
 
-  // Nếu trạng thái mới là "confirmed" và phương thức vận chuyển là "shipped"
   if (status === 'confirmed' && ordered.shipping_method === 'Shipping') {
-    // Tìm thông tin giao hàng dựa trên thông tin shipping_info của đơn hàng
     const shipping = await Shipping.findOne({ _id: ordered.shipping_info });
     if (!shipping) {
       logger.log(
@@ -379,45 +361,43 @@ export const updateStatusOrderService = async (id: string, status: string) => {
     }
 
     //* Find SKU info
-    // Hàm lấy thông tin SKU dựa trên ID
     const getSKU = async (sku_id: string) => {
-        const new_item = await Sku.findById(sku_id);
-        if (!new_item) {
-          logger.log('error', 'SKU ID not found in update status order');
-          throw new AppError(
-            StatusCodes.NOT_FOUND,
-            `SKU with ID ${sku_id} not found`,
-          );
-        }
-        return new_item;
-      },
-      //* Take info details
-      // Lấy thông tin chi tiết đơn hàng mới bằng cách tìm thông tin SKU cho từng mục
-      new_order_details = await Promise.all(
-        orderDetails.map(async (item) => {
-          const data_sku = await getSKU(item.sku_id.toString());
-          return {
-            _id: item._id,
-            sku_id: data_sku._id,
-            name: data_sku.name,
-            price: data_sku.price,
-            price_before_discount: data_sku.price_before_discount,
-            price_discount_percent: data_sku.price_discount_percent,
-            image: data_sku.image,
-            quantity: item.quantity,
-            total_money: item.total_money,
-          };
-        }),
-      ),
-      // Tách địa chỉ giao hàng thành các phần
-      address_detail = shipping.shipping_address.split(','),
-      // Const addressString = address_detail.join(',');
-      // Const address = address_detail.shift();
-      // Lấy phần địa chỉ chính
-      code_ward_district = await getAddressLocation(
-        // Gọi hàm lấy mã phường/xã và quận/huyện từ địa chỉ
-        address_detail.join(','),
-      );
+      const new_item = await Sku.findById(sku_id);
+      if (!new_item) {
+        logger.log('error', 'SKU ID not found in update status order');
+        throw new AppError(
+          StatusCodes.NOT_FOUND,
+          `SKU with ID ${sku_id} not found`,
+        );
+      }
+      return new_item;
+    };
+    //* Take info details
+    const new_order_details = await Promise.all(
+      orderDetails.map(async (item) => {
+        const data_sku = await getSKU(item.sku_id.toString());
+        return {
+          _id: item._id,
+          sku_id: data_sku._id,
+          name: data_sku.name,
+          price: data_sku.price,
+          price_before_discount: data_sku.price_before_discount,
+          price_discount_percent: data_sku.price_discount_percent,
+          image: data_sku.image,
+          quantity: item.quantity,
+          total_money: item.total_money,
+        };
+      }),
+    );
+    // Tách địa chỉ giao hàng thành các phần
+    const address_detail = shipping.shipping_address.split(',');
+    // Const addressString = address_detail.join(',');
+    // Const address = address_detail.shift();
+    // Lấy phần địa chỉ chính
+    const code_ward_district = await getAddressLocation(
+      // Gọi hàm lấy mã phường/xã và quận/huyện từ địa chỉ
+      address_detail.join(','),
+    );
     // Kiểm tra xem có lấy được thông tin mã phường/xã và quận/huyện không
     if (!code_ward_district) {
       logger.log(
@@ -432,32 +412,32 @@ export const updateStatusOrderService = async (id: string, status: string) => {
 
     // Dữ liệu để gửi đi cho API tạo đơn hàng mới
     const data_shipping = {
-        to_name: ordered.customer_name,
-        to_phone: ordered.phone_number,
-        to_address: shipping.shipping_address,
-        to_ward_code: code_ward_district.ward_code,
-        // Lấy DistrictID từ district
-        to_district_id: code_ward_district.district.DistrictID,
-        content: ordered.content,
-        // Ví dụ: trọng lượng của một chiếc tủ
-        weight: 10,
-        // Chiều dài 100 cm
-        length: 100,
-        // Chiều rộng 60 cm
-        width: 90,
-        // Chiều cao 75 cm
-        height: 75,
-        service_type_id: 2,
-        service_id: 53319,
-        payment_type_id: 1,
-        required_note: 'CHOXEMHANGKHONGTHU',
-        Items: new_order_details,
-        name: 'Đồ nội thất',
-        quantity: new_order_details.length,
-      },
-      //* Create new shipment order
-      // Gọi API tạo đơn hàng mới
-      orderCode = await createDeliveryOrderService(data_shipping);
+      to_name: ordered.customer_name,
+      to_phone: ordered.phone_number,
+      to_address: shipping.shipping_address,
+      to_ward_code: code_ward_district.ward_code,
+      // Lấy DistrictID từ district
+      to_district_id: code_ward_district.district.DistrictID,
+      content: ordered.content,
+      // Ví dụ: trọng lượng của một chiếc tủ
+      weight: 10,
+      // Chiều dài 100 cm
+      length: 100,
+      // Chiều rộng 60 cm
+      width: 90,
+      // Chiều cao 75 cm
+      height: 75,
+      service_type_id: 2,
+      service_id: 53319,
+      payment_type_id: 1,
+      required_note: 'CHOXEMHANGKHONGTHU',
+      Items: new_order_details,
+      name: 'Đồ nội thất',
+      quantity: new_order_details.length,
+    };
+
+    //* Create new shipment order
+    const orderCode = await createDeliveryOrderService(data_shipping);
 
     // Nếu tạo đơn hàng thành công
     if (orderCode.data.code === StatusCodes.OK) {
@@ -478,19 +458,15 @@ export const updateStatusOrderService = async (id: string, status: string) => {
   const updateOrder = await Order.findByIdAndUpdate(
     id,
     {
-      // Cập nhật trạng thái
       $set: { status },
       $push: {
         status_detail: {
-          // Thêm trạng thái mới vào lịch sử trạng thái
           status,
         },
       },
     },
-    // Trả về bản ghi đã được cập nhật
     { new: true },
   ).populate([
-    // Populate để lấy thông tin chi tiết từ trường shipping_info
     {
       path: 'shipping_info',
     },
@@ -502,13 +478,13 @@ export const updateStatusOrderService = async (id: string, status: string) => {
 
   return updateOrder;
 };
-// TODO: Check
-export const returnedOrder = async (
-  order_id: any,
-  reason: any,
-  customer_name: any,
-  phone_number: any,
-  images: any,
+
+export const returnedOrderService = async (
+  order_id: string,
+  reason: string,
+  customer_name: string,
+  phone_number: string,
+  images: string[],
 ) => {
   // Kiểm tra xem đã có yêu cầu hoàn trả cho đơn hàng này chưa
   const return_order = await Returned.findOne({ order_id });
@@ -549,10 +525,10 @@ export const returnedOrder = async (
   }
   return returned;
 };
-// TODO: Check
+
 export const serviceCalFeeService = async (location: string) => {
-  const code_location = await getAddressLocation(location); // Lấy thông tin địa điểm
-  // Kiểm tra xem code_location có tồn tại không
+  // Lấy thông tin địa điểm
+  const code_location = await getAddressLocation(location);
   if (!code_location) {
     throw new AppError(
       StatusCodes.BAD_REQUEST,
@@ -588,10 +564,10 @@ export const serviceCalFeeService = async (location: string) => {
   }
   return total_money;
 };
-// TODO: Check
+
 export const increaseProductFromOrderService = async (
-  order_id: any,
-  sku_id: any,
+  order_id: string,
+  sku_id: string,
 ) => {
   // Tìm chi tiết đơn hàng tương ứng với order_id và sku_id
   const orderDetail = await Order_Detail.findOne({
@@ -650,9 +626,11 @@ export const increaseProductFromOrderService = async (
     newOrder = await Order.findByIdAndUpdate(
       order_id,
       {
-        $set: { total_amount }, // Cập nhật tổng tiền
+        // Cập nhật tổng tiền
+        $set: { total_amount },
       },
-      { new: true }, // Trả về tài liệu đã cập nhật
+      // Trả về tài liệu đã cập nhật
+      { new: true },
     );
   if (!newOrder) {
     logger.log(
@@ -666,8 +644,11 @@ export const increaseProductFromOrderService = async (
   }
   return newOrder;
 };
-// TODO: Check
-export const decreaseProductFromOrder = async (order_id: any, sku_id: any) => {
+
+export const decreaseProductFromOrderService = async (
+  order_id: string,
+  sku_id: string,
+) => {
   // Tìm chi tiết đơn hàng tương ứng với order_id và sku_id
   const orderDetail = await Order_Detail.findOne({
     $and: [{ order_id }, { sku_id }],
@@ -716,7 +697,6 @@ export const decreaseProductFromOrder = async (order_id: any, sku_id: any) => {
       'Không tìm thấy chi tiết sản phẩm',
     );
   }
-  // TODO: create this into reuseable function
   // Tính tổng tiền của đơn hàng
   const total_amount = orderDetails.reduce(
       (total, amount) => total + (amount.total_money ?? 0),
@@ -726,9 +706,11 @@ export const decreaseProductFromOrder = async (order_id: any, sku_id: any) => {
     newUpdateOrder = await Order.findByIdAndUpdate(
       order_id,
       {
-        $set: { total_amount }, // Cập nhật tổng tiền
+        // Cập nhật tổng tiền
+        $set: { total_amount },
       },
-      { new: true }, // Trả về tài liệu đã cập nhật
+      // Trả về tài liệu đã cập nhật
+      { new: true },
     );
   if (!newUpdateOrder) {
     logger.log('error', 'Order update failed in delete product order');
@@ -736,18 +718,21 @@ export const decreaseProductFromOrder = async (order_id: any, sku_id: any) => {
   }
   return newUpdateOrder;
 };
-// TODO: CHeck
-export const getOrderByPhoneNumber = async (conditions: any, options: any) => {
-  // 5. Tìm kiếm và phân trang dữ liệu
+
+export const getOrderByPhoneNumberService = async (
+  conditions: object,
+  options: object,
+) => {
+  // Tìm kiếm và phân trang dữ liệu
   const orders = await Order.paginate(conditions, options);
 
-  // 6. Xử lý khi không tìm thấy đơn hàng
+  // Xử lý khi không tìm thấy đơn hàng
   if (!orders.length) {
     logger.log('error', 'Order not found in get one by phone number order');
     throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
   }
 
-  // 7. Lấy chi tiết từng đơn hàng trong danh sách kết quả
+  // Lấy chi tiết từng đơn hàng trong danh sách kết quả
   const orderDetailsPromises = orders.docs.map(async (result) => {
       const orderDetails = await Order_Detail.find({ order_id: result._id }); // Lấy chi tiết đơn hàng
       if (!orderDetails) {
@@ -780,17 +765,20 @@ export const getOrderByPhoneNumber = async (conditions: any, options: any) => {
         orders: newOrder,
       };
     }),
-    // 8. Hoàn thành xử lý chi tiết từng đơn hàng
+    // Hoàn thành xử lý chi tiết từng đơn hàng
     ordersWithDetails = await Promise.all(orderDetailsPromises);
   if (!ordersWithDetails) {
     logger.log('error', 'Order details error in get one by phone number order');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Error when search detail');
   }
-  // 9. Trả về phản hồi JSON với danh sách đơn hàng và thông tin phân trang
+  // Trả về phản hồi JSON với danh sách đơn hàng và thông tin phân trang
   return { ordersWithDetails, orders };
 };
-// TODO: Check
-export const getOrderByUserId = async (conditions: any, options: any) => {
+
+export const getOrderByUserIdService = async (
+  conditions: object,
+  options: object,
+) => {
   // Tìm kiếm đơn hàng
   const order = await Order.paginate(conditions, options);
   if (!order.length) {
@@ -836,8 +824,11 @@ export const getOrderByUserId = async (conditions: any, options: any) => {
 
   return { ordersWithDetails, order };
 };
-// TODO: Check
-export const getAllOrders = async (conditions: any, options: any) => {
+
+export const getAllOrdersService = async (
+  conditions: object,
+  options: object,
+) => {
   // Thực hiện truy vấn và phân trang
   const orders = await Order.paginate(conditions, options);
   if (!orders.length) {
@@ -847,7 +838,7 @@ export const getAllOrders = async (conditions: any, options: any) => {
 
   // Lấy chi tiết cho từng đơn hàng
   const new_docs = await Promise.all(
-    orders.docs.map(async (item: any) => {
+    orders.docs.map(async (item: OrderType) => {
       const order_details = await Order_Detail.find({ order_id: item._id }), // Lấy chi tiết sản phẩm của đơn hàng
         // Chuyển đổi đơn hàng sang đối tượng
         orders = item.toObject();
@@ -861,8 +852,8 @@ export const getAllOrders = async (conditions: any, options: any) => {
   );
   return { new_docs, orders };
 };
-// TODO: Check
-export const getAllUserOrders = async () => {
+
+export const getAllUserOrdersService = async () => {
   // Lấy tất cả đơn hàng từ cơ sở dữ liệu
   const orders = await Order.find();
   if (!orders) {
@@ -914,8 +905,8 @@ export const getAllUserOrders = async () => {
     new_docs,
   };
 };
-// TODO: Check
-export const getOneOrder = async (id: string) => {
+
+export const getOneOrderService = async (id: string) => {
   const order = await Order.findById(id).exec();
   if (!order) {
     logger.log('error', 'Order not found in get one status');
@@ -923,8 +914,11 @@ export const getOneOrder = async (id: string) => {
   }
   return order;
 };
-// TODO: Check
-export const updatePaymentStatus = async (_id: string, orderInfo: string) => {
+
+export const updatePaymentStatusService = async (
+  _id: string,
+  orderInfo: string,
+) => {
   // Cập nhật trạng thái thanh toán cho đơn hàng
   const order = await Order.findByIdAndUpdate(_id, {
     $set: {
@@ -940,13 +934,16 @@ export const updatePaymentStatus = async (_id: string, orderInfo: string) => {
   }
   return;
 };
-// TODO: Check
-export const removeProductFromOrder = async (order_id: any, sku_id: any) => {
+
+export const removeProductFromOrderService = async (
+  order_id: string,
+  sku_id: string,
+) => {
   // Tìm và xóa chi tiết đơn hàng theo order_id và sku_id
   const orderDetail = await Order_Detail.findOneAndDelete({
     $and: [{ order_id }, { sku_id }],
   });
-  // Kiểm tra xem orderDetail có tồn tại không
+
   if (!orderDetail) {
     logger.log('error', 'Order detail not found in delete product from order');
     throw new AppError(
@@ -987,34 +984,34 @@ export const removeProductFromOrder = async (order_id: any, sku_id: any) => {
   }
   return newUpdateOrder;
 };
-// TODO: Check
-export const getReturnedOrder = async (
+
+export const getReturnedOrderService = async (
   // Trang hiện tại (mặc định là 1)
-  _page: any = 1,
+  _page: number | string = 1,
   // Trường để sắp xếp (mặc định là created_at)
-  _sort: any = 'created_at',
+  _sort: string = 'created_at',
   // Thứ tự sắp xếp (mặc định là giảm dần)
-  _order: any = 'desc',
+  _order: string = 'desc',
   // Số lượng yêu cầu trả về trên một trang (mặc định là 10)
-  _limit: any = 10,
+  _limit: number | string = 10,
   // Tìm kiếm theo tên khách hàng
-  search: any,
+  search: string | undefined,
   // Tình trạng xác nhận
-  is_confirm: any,
+  is_confirm: boolean | undefined,
   // Ngày để tìm kiếm
-  date: any,
+  date: string | undefined,
 ) => {
-  // Khởi tạo đối tượng điều kiện tìm kiếm
   const conditions: Record<string, any> = {};
 
   // Thêm điều kiện tìm kiếm theo tên khách hàng
   if (search) {
-    conditions.customer_name = { $regex: new RegExp(search, 'i') }; // Tìm kiếm không phân biệt hoa thường
+    // Tìm kiếm không phân biệt hoa thường
+    conditions.customer_name = { $regex: new RegExp(search, 'i') };
   }
 
   // Thêm điều kiện xác nhận
   if (is_confirm) {
-    conditions.is_confirm = is_confirm; // Thêm điều kiện xác nhận nếu có
+    conditions.is_confirm = is_confirm;
   }
 
   // Thêm điều kiện theo ngày
@@ -1035,16 +1032,18 @@ export const getReturnedOrder = async (
       page: Number(_page) || 1,
       limit: Number(_limit) || 10,
       sort: {
-        [_sort]: _order === 'desc' ? -1 : 1, // Sắp xếp theo trường và thứ tự
+        // Sắp xếp theo trường và thứ tự
+        [_sort]: _order === 'desc' ? -1 : 1,
       },
-      select: ['-deleted', '-deleted_at'], // Chọn các trường để trả về
+      // Chọn các trường để trả về
+      select: ['-deleted', '-deleted_at'],
     },
     // Lấy danh sách yêu cầu hoàn trả từ cơ sở dữ liệu
     orders = await Returned.paginate(conditions, options);
   return { orders };
 };
-// TODO: Check
-export const updateStatusDelivered = async (id: string) => {
+
+export const updateStatusDeliveredService = async (id: string) => {
   const ordered = await Order.findById(id);
   if (!ordered) {
     logger.log('error', 'Order not found in update status deliveried');
@@ -1081,13 +1080,14 @@ export const updateStatusDelivered = async (id: string) => {
   }
   return updateOrder;
 };
-// TODO: Check
-export const cancelOrder = async (id: string) => {
+
+export const cancelOrderService = async (id: string) => {
   const ordered = await Order.findById(id);
   if (!ordered) {
     logger.log('error', 'Order not found in cancel order');
     throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
   }
+
   const checkStatus: { [key: string]: () => void } = {
     cancelled: () => {
       if (ordered?.status === 'cancelled') {
@@ -1178,8 +1178,8 @@ export const cancelOrder = async (id: string) => {
   );
   return updateOrder;
 };
-// TODO: Check
-export const confirmReturnedOrder = async (id: string) => {
+
+export const confirmReturnedOrderService = async (id: string) => {
   const returned = await Returned.findByIdAndUpdate(
     id,
     {
@@ -1249,23 +1249,23 @@ export const confirmReturnedOrder = async (id: string) => {
   );
   return;
 };
-// TODO: Check
-export const updateInfoCustomer = async (
+
+export const updateInfoCustomerService = async (
   id: string,
   // Tên khách hàng
-  customer_name: any,
+  customer_name: string,
   // Số điện thoại khách hàng
-  phone_number: any,
+  phone_number: string,
   // Nội dung đơn hàng
-  content: any,
+  content: string,
   // Địa chỉ giao hàng
-  shippingAddress: any,
+  shippingAddress: string,
   // Phí vận chuyển
-  transportation_fee: any,
+  transportation_fee: number,
 ) => {
   // Tìm kiếm đơn hàng bằng ID và lấy thông tin vận chuyển
   const order = await Order.findById(id).populate({
-    path: 'shipping_info', // Lấy thông tin từ bảng shipping_info
+    path: 'shipping_info',
   });
   if (!order) {
     logger.log('error', 'Order not found in update info customer');
@@ -1274,9 +1274,12 @@ export const updateInfoCustomer = async (
 
   // Kiểm tra trạng thái đơn hàng để xác định xem có thể sửa đổi không
   if (
-    order.status === 'cancelled' || // Nếu đơn hàng đã bị hủy
-    order.status === 'delivering' || // Nếu đơn hàng đang được giao
-    order.status === 'delivered' // Nếu đơn hàng đã được giao
+    // Nếu đơn hàng đã bị hủy
+    order.status === 'cancelled' ||
+    // Nếu đơn hàng đang được giao
+    order.status === 'delivering' ||
+    // Nếu đơn hàng đã được giao
+    order.status === 'delivered'
   ) {
     logger.log('error', 'Order can not fix in update info customer');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Không thể sửa đơn hàng');
@@ -1285,14 +1288,17 @@ export const updateInfoCustomer = async (
   // Cập nhật thông tin vận chuyển nếu đơn hàng đã được giao ("shipped")
   if (order.shipping_method === 'Shipping' && order.shipping_info?._id) {
     await Shipping.findByIdAndUpdate(
-      order.shipping_info._id, // ID thông tin vận chuyển
+      // ID thông tin vận chuyển
+      order.shipping_info._id,
       {
         $set: {
-          shipping_address: shippingAddress, // Cập nhật địa chỉ giao hàng
-          transportation_fee, // Cập nhật phí vận chuyển
+          // Cập nhật địa chỉ giao hàng
+          shipping_address: shippingAddress,
+          // Cập nhật phí vận chuyển
+          transportation_fee,
         },
       },
-      { new: true }, // Trả về tài liệu đã cập nhật
+      { new: true },
     );
   }
 
@@ -1301,12 +1307,15 @@ export const updateInfoCustomer = async (
     id,
     {
       $set: {
-        customer_name, // Cập nhật tên khách hàng
-        phone_number, // Cập nhật số điện thoại
-        content, // Cập nhật nội dung
+        // Cập nhật tên khách hàng
+        customer_name,
+        // Cập nhật số điện thoại
+        phone_number,
+        // Cập nhật nội dung
+        content,
       },
     },
-    { new: true }, // Trả về tài liệu đã cập nhật
+    { new: true },
   );
   if (updatedOrder) {
     logger.log('error', 'Order update failed in update info customer');
@@ -1314,104 +1323,59 @@ export const updateInfoCustomer = async (
   }
   return updatedOrder;
 };
-// TODO: Check
-// export const getAllShipping = async (
-//   // Trang hiện tại, mặc định là 1
-//   _page: any = 1,
-//   // Trường để sắp xếp, mặc định là createdAt
-//   _sort: any = 'createdAt',
-//   // Thứ tự sắp xếp, mặc định là tăng dần
-//   _order: any = 'asc',
-//   // Số lượng bản ghi mỗi trang, mặc định là 10
-//   _limit: any = 10,
-//   customer_name: any,
-// ) => {
-//   const options = {
-//     // Trang hiện tại
-//     page: _page,
-//     // Số lượng bản ghi mỗi trang
-//     limit: _limit,
-//     sort: {
-//       // Sắp xếp theo thứ tự giảm dần hoặc tăng dần
-//       [_sort]: _order === 'desc' ? -1 : 1,
-//     },
-//   };
-//   // Nếu có tên khách hàng được chỉ định trong query
-//   if (customer_name) {
-//     // Thực hiện phân trang và tìm kiếm theo tên khách hàng
-//     const orders = await Order.paginate(
-//       {
-//         // Chỉ lấy đơn hàng đã được giao
-//         shipping_method: 'shipped',
-//         // Tìm kiếm tên khách hàng không phân biệt hoa thường
-//         customer_name: { $regex: customer_name, $options: 'i' },
-//       },
-//       // Áp dụng các tùy chọn phân trang
-//       options,
-//     );
-//     if (!orders.length) {
-//       logger.log('error', 'Can not find order in get all shipping');
-//       throw new AppError(StatusCodes.NOT_FOUND, 'Can not find order');
-//     }
-//     // Lấy chi tiết đơn hàng cho từng đơn hàng đã tìm thấy
-//     const newDocs = await Promise.all(
-//       orders.docs.map(async (item) => {
-//         const order_details = await Order_Detail.find({ order_id: item._id }), // Tìm chi tiết đơn hàng
-//           // Chuyển đổi tài liệu thành đối tượng JS
-//           orders = item.toObject();
-//         return {
-//           // Giữ nguyên thông tin đơn hàng
-//           ...orders,
-//           // Thêm danh sách sản phẩm vào đơn hàng
-//           products: order_details,
-//         };
-//       }),
-//     );
 
-//     // Trả về phản hồi với dữ liệu đã lấy và thông tin phân trang
-//     return res.status(StatusCodes.OK).json({
-//       // Thông điệp phản hồi
-//       message: 'Lấy toàn bộ đơn hàng thành công',
-//       data: {
-//         // Danh sách đơn hàng đã tìm thấy
-//         items: newDocs,
-//         // Thông tin phân trang
-//         paginate: orders,
-//       },
-//     });
-//   }
-//   // Nếu không có tên khách hàng trong query
-//   // Thực hiện phân trang để lấy tất cả đơn hàng đã giao
-//   const orders = await Order.paginate(
-//     {
-//       shipping_method: 'shipped', // Chỉ lấy đơn hàng đã được giao
-//     },
-//     // Áp dụng các tùy chọn phân trang
-//     options,
-//   );
-//   if (!orders.length) {
-//     logger.log('error', 'Can not find order in get all shipping');
-//     throw new AppError(StatusCodes.NOT_FOUND, 'Can not find order');
-//   }
-//   // Lấy chi tiết đơn hàng cho từng đơn hàng đã tìm thấy
-//   const newDocs = await Promise.all(
-//     orders.docs.map(async (item) => {
-//       // Tìm chi tiết đơn hàng
-//       const order_details = await Order_Detail.find({ order_id: item._id }),
-//         // Chuyển đổi tài liệu thành đối tượng JS
-//         orders = item.toObject();
-//       return {
-//         // Giữ nguyên thông tin đơn hàng
-//         ...orders,
-//         // Thêm danh sách sản phẩm vào đơn hàng
-//         products: order_details,
-//       };
-//     }),
-//   );
-//   return { newDocs, orders };
-// };
-// TODO: CHeck
-export const getTokenPrintBills = async (order_id: string) => {
+export const getAllShippingService = async (
+  // Trang hiện tại, mặc định là 1
+  _page: number = 1,
+  // Trường để sắp xếp, mặc định là createdAt
+  _sort: string = 'createdAt',
+  // Thứ tự sắp xếp, mặc định là tăng dần
+  _order: string = 'asc',
+  // Số lượng bản ghi mỗi trang, mặc định là 10
+  _limit: number = 10,
+  customer_name?: string,
+) => {
+  const options: PaginateOptions = {
+    // Trang hiện tại
+    page: _page,
+    // Số lượng bản ghi mỗi trang
+    limit: _limit,
+    sort: {
+      // Sắp xếp theo thứ tự giảm dần hoặc tăng dần
+      [_sort]: _order === 'desc' ? -1 : 1,
+    },
+  };
+  const query = {
+    shipping_method: 'shipped',
+    ...(customer_name && {
+      customer_name: { $regex: customer_name, $options: 'i' },
+    }),
+  };
+
+  const orders = await Order.paginate(query, options);
+  if (!orders.length) {
+    logger.log('error', 'Can not find order in get all shipping');
+    throw new AppError(StatusCodes.NOT_FOUND, 'Can not find order');
+  }
+  // Lấy chi tiết đơn hàng cho từng đơn hàng đã tìm thấy
+  const newDocs = await Promise.all(
+    orders.docs.map(async (item) => {
+      // Tìm chi tiết đơn hàng
+      const order_details = await Order_Detail.find({ order_id: item._id }),
+        // Chuyển đổi tài liệu thành đối tượng JS
+        orders = item.toObject();
+      return {
+        // Giữ nguyên thông tin đơn hàng
+        ...orders,
+        // Thêm danh sách sản phẩm vào đơn hàng
+        products: order_details,
+      };
+    }),
+  );
+  return { newDocs, orders };
+};
+
+export const getTokenPrintBillsService = async (order_id: string) => {
   // Tìm đơn hàng theo order_id và lấy thông tin shipping_info
   const order = await Order.findById(order_id).populate('shipping_info');
   if (!order) {
@@ -1420,9 +1384,7 @@ export const getTokenPrintBills = async (order_id: string) => {
     throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
   }
 
-  // Kiểm tra nếu phương thức giao hàng là 'at_store'
   if (order.shipping_method === 'In-store') {
-    // Nếu đơn hàng này là mua tại cửa hàng, ném lỗi BadRequest
     logger.log('error', 'Order was buy in store in get token print bills');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
@@ -1435,7 +1397,6 @@ export const getTokenPrintBills = async (order_id: string) => {
     // Tìm thông tin giao hàng tương ứng với đơn hàng
     const shipping = await Shipping.findById(order.shipping_info?._id);
     if (!shipping) {
-      // Nếu không tìm thấy thông tin giao hàng, ném lỗi NotFound
       logger.log('error', 'Shipping info not found in get token print bills');
       throw new AppError(
         StatusCodes.NOT_FOUND,
@@ -1447,10 +1408,8 @@ export const getTokenPrintBills = async (order_id: string) => {
     const order_details = await Order_Detail.find({ order_id }),
       new_order_details = await Promise.all(
         order_details.map(async (item) => {
-          // Tìm thông tin SKU cho từng item trong đơn hàng
           const data_sku = await Sku.findById(item.sku_id);
           if (!data_sku) {
-            // Nếu không tìm thấy SKU, ném lỗi NotFound
             logger.log('error', 'SKU not found in get token print bills');
             throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy SKU');
           }
@@ -1482,17 +1441,28 @@ export const getTokenPrintBills = async (order_id: string) => {
         to_ward_code: code_ward_district?.ward_code,
         to_district_id: code_ward_district?.district.DistrictID,
         content: order.content,
-        weight: 1000, // Trọng lượng (gram)
-        length: 15, // Chiều dài (cm)
-        width: 15, // Chiều rộng (cm)
-        height: 15, // Chiều cao (cm)
-        service_type_id: 2, // Loại dịch vụ
-        service_id: 53319, // ID dịch vụ
-        payment_type_id: 1, // Loại hình thanh toán
-        required_note: 'CHOXEMHANGKHONGTHU', // Ghi chú yêu cầu
-        Items: new_order_details, // Danh sách sản phẩm
-        name: 'Đồ điện tử', // Tên sản phẩm chung
-        quantity: new_order_details.length, // Số lượng sản phẩm
+        // Trọng lượng (gram)
+        weight: 1000,
+        // Chiều dài (cm)
+        length: 15,
+        // Chiều rộng (cm)
+        width: 15,
+        // Chiều cao (cm)
+        height: 15,
+        // Loại dịch vụ
+        service_type_id: 2,
+        // ID dịch vụ
+        service_id: 53319,
+        // Loại hình thanh toán
+        payment_type_id: 1,
+        // Ghi chú yêu cầu
+        required_note: 'CHOXEMHANGKHONGTHU',
+        // Danh sách sản phẩm
+        Items: new_order_details,
+        // Tên sản phẩm chung
+        name: 'Đồ điện tử',
+        // Số lượng sản phẩm
+        quantity: new_order_details.length,
       },
       // Gửi yêu cầu tạo mã vận đơn đến API GHN
       orderCode = await createDeliveryOrderService(data_shipping);
@@ -1507,7 +1477,6 @@ export const getTokenPrintBills = async (order_id: string) => {
         },
       });
     } else {
-      // Nếu không thể tạo mã vận đơn, ném lỗi BadRequest
       logger.log('error', 'Order code can not create in get token print bills');
       throw new AppError(StatusCodes.BAD_REQUEST, 'Không thể tạo mã vận đơn');
     }
@@ -1526,7 +1495,6 @@ export const getTokenPrintBills = async (order_id: string) => {
   }
   // Kiểm tra mã phản hồi từ việc lấy token hóa đơn
   if (token_bill.code !== StatusCodes.OK) {
-    // Nếu không tìm thấy token, ném lỗi BadRequest
     logger.log('error', 'Token print bill not found in get token print bills');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Không tìm thấy token hoá đơn');
   }
