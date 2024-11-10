@@ -8,7 +8,7 @@ import { StatusCodes } from 'http-status-codes';
 const GHN_API_BASE_URL =
   'https://dev-online-gateway.ghn.vn/shiip/public-api/v2';
 // Gọi API tạo đơn hàng và xử lý request/response từ client
-const createDeliveryOrder: RequestHandler = async (req, res, next) => {
+export const createDeliveryOrder: RequestHandler = async (req, res, next) => {
   /**
    * @product_name : Optional value id
    * @to_name : Optional value id
@@ -32,7 +32,7 @@ const createDeliveryOrder: RequestHandler = async (req, res, next) => {
     });
   }
 
-  // const URL = `${GHN_API_BASE_URL}/shipping-order/create`;
+  // Const URL = `${GHN_API_BASE_URL}/shipping-order/create`;
   const URL =
     'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create';
   try {
@@ -51,10 +51,9 @@ const createDeliveryOrder: RequestHandler = async (req, res, next) => {
 };
 
 // Gọi API tính phí vận chuyển và xử lý request/response từ client
-const calShippingFee: RequestHandler = async (req, res, next) => {
-  const shippingData = req.body;
-
-  const URL = `${GHN_API_BASE_URL}/shipping-order/fee`;
+export const calShippingFee: RequestHandler = async (req, res, next) => {
+  const shippingData = req.body,
+    URL = `${GHN_API_BASE_URL}/shipping-order/fee`;
 
   try {
     const response = await axios.post(URL, shippingData, {
@@ -78,9 +77,9 @@ const calShippingFee: RequestHandler = async (req, res, next) => {
 };
 
 // Gọi API theo dõi đơn hàng và xử lý request/response từ client
-const trackOrder: RequestHandler = async (req, res, next) => {
-  const { orderCode } = req.params;
-  const URL = `${GHN_API_BASE_URL}/shipping-order/detail`;
+export const trackOrder: RequestHandler = async (req, res, next) => {
+  const { orderCode } = req.params,
+    URL = `${GHN_API_BASE_URL}/shipping-order/detail`;
 
   try {
     const response = await axios.post(
@@ -106,5 +105,3 @@ const trackOrder: RequestHandler = async (req, res, next) => {
     }
   }
 };
-
-export { calShippingFee, createDeliveryOrder, trackOrder };

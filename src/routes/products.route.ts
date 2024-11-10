@@ -1,11 +1,11 @@
 import {
-  Create_Product,
-  Delete_Product,
-  Get_All_Product,
-  Get_One_Product,
+  createProduct,
+  getAllProducts,
+  getOneProduct,
   getRelatedProducts,
-  Hide_Product,
-  Update_Product,
+  hardDeleteProduct,
+  softDeleteProduct,
+  updateProduct,
 } from '@/controllers/product.controller';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { productSchema } from '@/validations/product.validation';
@@ -19,14 +19,14 @@ const routeProduct = Router();
 routeProduct.get(
   '/',
   // #swagger.tags = ['Product']
-  Get_All_Product,
+  getAllProducts,
 );
 
 //* Get one product
 routeProduct.get(
   '/:id',
   // #swagger.tags = ['Product']
-  Get_One_Product,
+  getOneProduct,
 );
 
 //* Get relate product by category id
@@ -36,7 +36,7 @@ routeProduct.get(
   getRelatedProducts,
 );
 
-// routeProduct.use(checkAuth, checkPermission);
+// RouteProduct.use(checkAuth, checkPermission);
 
 //* Create new product
 routeProduct.post(
@@ -45,7 +45,7 @@ routeProduct.post(
   checkPermission,
   validBodyRequest(productSchema),
   // #swagger.tags = ['Product']
-  Create_Product,
+  createProduct,
 );
 
 //* Update product
@@ -55,7 +55,7 @@ routeProduct.put(
   checkPermission,
   validBodyRequest(productSchema),
   // #swagger.tags = ['Product']
-  Update_Product,
+  updateProduct,
 );
 
 //* Soft delete product
@@ -64,7 +64,7 @@ routeProduct.patch(
   checkAuth,
   checkPermission,
   // #swagger.tags = ['Product']
-  Hide_Product,
+  softDeleteProduct,
 );
 
 //* Hard delete product
@@ -73,7 +73,7 @@ routeProduct.delete(
   checkAuth,
   checkPermission,
   // #swagger.tags = ['Product']
-  Delete_Product,
+  hardDeleteProduct,
 );
 
 export default routeProduct;

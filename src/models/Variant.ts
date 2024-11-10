@@ -8,65 +8,63 @@ import mongoosePaginate from 'mongoose-paginate-v2';
 
 // Option Schema
 const optionSchema = new mongoose.Schema<OptionType>(
-  {
-    product_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true,
+    {
+      product_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true,
+      },
+      label: { type: String, required: true },
+      name: { type: String, unique: true, required: true },
+      position: { type: Number },
     },
-    label: { type: String, required: true },
-    name: { type: String, unique: true, required: true },
-    position: { type: Number },
-  },
-  { timestamps: true, versionKey: false },
-);
-
-// OptionalValue Schema
-const optionalValueSchema = new mongoose.Schema<OptionalValueType>(
-  {
-    product_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true,
-    },
-    option_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Option',
-      required: true,
-    },
-    label: { type: String, required: true },
-    value: { type: String, required: true },
-  },
-  { timestamps: true, versionKey: false },
-);
-
-const variantSchema = new mongoose.Schema<VariantType>(
-  {
-    sku_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Sku',
-      required: true,
-    },
-    option_id: [
-      {
+    { timestamps: true, versionKey: false },
+  ),
+  // OptionalValue Schema
+  optionalValueSchema = new mongoose.Schema<OptionalValueType>(
+    {
+      product_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true,
+      },
+      option_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Option',
         required: true,
       },
-    ],
-    option_value_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'OptionalValue',
-      required: true,
+      label: { type: String, required: true },
+      value: { type: String, required: true },
     },
-    product_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true,
+    { timestamps: true, versionKey: false },
+  ),
+  variantSchema = new mongoose.Schema<VariantType>(
+    {
+      sku_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Sku',
+        required: true,
+      },
+      option_id: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Option',
+          required: true,
+        },
+      ],
+      option_value_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'OptionalValue',
+        required: true,
+      },
+      product_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true,
+      },
     },
-  },
-  { timestamps: true, versionKey: false },
-);
+    { timestamps: true, versionKey: false },
+  );
 
 // Paginate
 optionSchema.plugin(mongoosePaginate);

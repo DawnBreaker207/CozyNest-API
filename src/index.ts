@@ -1,7 +1,7 @@
-import swagger from '@/docs/swagger-output.json';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import swagger from 'docs/swagger-output.json';
 import express from 'express';
 import helmet from 'helmet';
 import { createServer } from 'http';
@@ -22,9 +22,19 @@ const io = new Server(server, {
     origin: '*',
   },
 });
-
+//* Create custom logging
+const Stream = {
+  write: (text: string) => {
+    logger.log('info', text.replace(/\n$/, ''));
+  },
+};
 //* Init Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ['http://localhost:5173', 'http://localhost:4200'],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -32,9 +42,10 @@ app.use(
     extended: true,
   }),
 );
+
 app.use(helmet());
 app.use(compression());
-app.use(morgan('dev'));
+app.use(morgan('dev', { stream: Stream }));
 app.use(redirectPath);
 
 //* Init Database
@@ -44,6 +55,7 @@ import '@/db/init.mongo';
 realTime(io);
 //* Init Route
 app.use('/api/v1', router);
+//* API Docs
 app.use('/api/docs', swaggerUI.serve, swaggerUI.setup(swagger));
 //* Error Handling
 app.use(errorHandleNotFound, errorHandle);
@@ -51,5 +63,3 @@ app.use(errorHandleNotFound, errorHandle);
 app.listen(PORT, () => {
   logger.log('info', `Listen on port ${PORT}`);
 });
-
-// TODO: Update logging in every throw error

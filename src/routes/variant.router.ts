@@ -1,8 +1,8 @@
 import {
+  createVariant,
   deleteVariant,
-  getAllVariant,
+  getAllVariants,
   getOneVariant,
-  saveVariant,
   updateVariant,
 } from '@/controllers/variants.controller';
 import { checkAuth } from '@/middlewares/checkAuth';
@@ -18,7 +18,7 @@ const routeVariant = Router();
 routeVariant.get(
   '/:product_id',
   // #swagger.tags = ['Variant']
-  getAllVariant,
+  getAllVariants,
 );
 
 //* Get one variant
@@ -35,7 +35,7 @@ routeVariant.post(
   checkPermission,
   validBodyRequest(variantSchema),
   // #swagger.tags = ['Variant']
-  saveVariant,
+  createVariant,
 );
 
 //* Update variant

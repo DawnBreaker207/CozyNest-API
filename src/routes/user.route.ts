@@ -1,6 +1,6 @@
 import {
   changePassword,
-  forgotPass,
+  forgotPassword,
   generateVerifyToken,
   getAllUser,
   getOneUser,
@@ -55,7 +55,7 @@ routeUser.post(
 routeUser.post(
   '/forgotPassword',
   // #swagger.tags = ['User']
-  forgotPass,
+  forgotPassword,
 );
 
 //* Change password

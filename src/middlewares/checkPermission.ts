@@ -9,6 +9,7 @@ import { StatusCodes } from 'http-status-codes';
 const checkPermission: RequestHandler = async (req, res, next) => {
   try {
     const token = req.cookies.refreshToken;
+    logger.log('info', token);
     // Check token exist in request
     if (!token) {
       logger.log('error', 'Check permission error: Token not exist');

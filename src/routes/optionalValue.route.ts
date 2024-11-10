@@ -1,7 +1,7 @@
 import {
   createOptionalValue,
   deleteOptionalValue,
-  getAllOptionalValue,
+  getAllOptionalValues,
   getSingleOptionalValue,
   updateOptionalValue,
 } from '@/controllers/variants.controller';
@@ -13,12 +13,12 @@ import { Router } from 'express';
 
 const routeOptionalValue = Router();
 
-// api option values
+// Api option values
 //* Get all optional value in product
 routeOptionalValue.get(
   '/:product_id/:option_id',
   // #swagger.tags = ['OptionalValue']
-  getAllOptionalValue,
+  getAllOptionalValues,
 );
 
 //* Get one optional value in product

@@ -3,6 +3,10 @@ import { CartType } from '../interfaces/Cart';
 
 const cartSchema = new mongoose.Schema<CartType>(
   {
+    cart_id: {
+      type: String,
+      required: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -36,7 +40,7 @@ const cartSchema = new mongoose.Schema<CartType>(
     },
     delete: { type: Boolean, default: false },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 export default mongoose.model<CartType>('Cart', cartSchema);

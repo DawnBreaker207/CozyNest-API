@@ -32,11 +32,11 @@ const productSchema = new mongoose.Schema<ProductType>(
     variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }],
     isHidden: { type: Boolean, default: false },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 productSchema.plugin(mongoosePaginate);
 
 export const Product = mongoose.model<ProductType, PaginateModel<ProductType>>(
   'Product',
-  productSchema
+  productSchema,
 );
