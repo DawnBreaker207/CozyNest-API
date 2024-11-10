@@ -1,4 +1,7 @@
-import { statusOrder } from '@/constants/initialValue';
+import { configSendMail } from '@/configs/configMail';
+import { statusOrder, timeCounts } from '@/constants/initialValue';
+import { messagesSuccess } from '@/constants/messages';
+import { ProductCart } from '@/interfaces/Cart';
 import { OrderType } from '@/interfaces/Order';
 import Cart from '@/models/Cart';
 import { Order, Order_Detail, Shipping } from '@/models/Order';
@@ -12,13 +15,112 @@ import {
   getAddressLocation,
   getTokenPrintBill,
 } from '@/utils/shipment';
+import { sendOrder } from '@/utils/texts';
 import { StatusCodes } from 'http-status-codes';
 import { PaginateOptions } from 'mongoose';
 import { createMomoService, createVnPayService } from './payment.service';
 import { createDeliveryOrderService } from './shipment.service';
-import { ProductCart } from '@/interfaces/Cart';
 
 // Utils functions
+/**
+ *
+ * @param dateTime
+ * @returns
+ */
+export const formatDateTime = (date: Date): string =>
+  moment(date).format('DD/MM/YYYY HH:mm:ss');
+/**
+ *
+ * @param data
+ * @param day
+ * @param res
+ * @param from
+ * @param to
+ * @returns
+ */
+// TODO: Check this feature and fix
+export const filterOrderDay = async (
+  data: any,
+  day: number,
+  from?: string,
+  to?: string,
+) => {
+  const today = new Date(),
+    filterData: OrderType[] = [];
+
+  if (day) {
+    const dayOfPast =
+      today.getTime() - day * (timeCounts.hours_24 || 24 * 60 * 60 * 1000);
+    for (const item of data) {
+      const itemDate = new Date(item.createdAt || Date.now());
+      if (itemDate.getTime() >= dayOfPast && itemDate <= today) {
+        filterData.push(item);
+      }
+    }
+  }
+  if (from && to) {
+    const fromDate = new Date(from),
+      toDate = new Date(to);
+
+    toDate.setHours(23, 59, 59, 999);
+    for (const item of data) {
+      const itemDate = new Date(item.createdAt || Date.now());
+      if (itemDate >= fromDate && itemDate <= toDate) {
+        filterData.push(item);
+      }
+    }
+  }
+
+  if (filterData.length === 0) {
+    logger.log('error', 'Data not found in filter order day');
+    throw new AppError(StatusCodes.NOT_FOUND, 'Data not found');
+  }
+  return {
+    filterData,
+    data,
+  };
+};
+
+/**
+ *
+ * @param email
+ * @param data
+ * @param amountReduced
+ */
+// TODO: Check this feature and fix
+export const sendOrderMail = async (
+  email?: string,
+  data?: any,
+  totalPrice?: number,
+) => {
+  let message: string | null = null,
+    subject: string | null = null;
+  if (data.status === messagesSuccess.PENDING) {
+    subject = messagesSuccess.ORDER_CREATE_SUBJECT;
+    message = messagesSuccess.ORDER_CREATE_MESSAGE;
+  } else if (data.status === messagesSuccess.ORDER_DONE) {
+    subject = messagesSuccess.ORDER_UPDATE_SUBJECT;
+    message = messagesSuccess.ORDER_UPDATE_MESSAGE;
+  } else {
+    subject = messagesSuccess.ORDER_UPDATE_SUBJECT;
+    message = messagesSuccess.ORDER_UPDATE_MESSAGE;
+  }
+
+  // Const code = null;
+
+  const totalPayment = data.totalPayment != null ? data.totalPayment : 0;
+  const formattedTotalPayment =
+    typeof totalPayment === 'number'
+      ? `${totalPayment.toLocaleString('vi-VN')} VND`
+      : '0 VND';
+
+  await configSendMail({
+    email: email as string,
+    subject,
+    text: sendOrder(subject, data, message, totalPrice, formattedTotalPayment),
+  });
+};
+
 export const buildPaymentMethod = (method: string) => {
   try {
     switch (method) {
@@ -475,7 +577,7 @@ export const updateStatusOrderService = async (id: string, status: string) => {
     logger.log('error', 'Order update error in update status');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Update status order error');
   }
-
+  await sendOrderMail(updateOrder.email, updateOrder, ordered.total_amount);
   return updateOrder;
 };
 

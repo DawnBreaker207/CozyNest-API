@@ -14,19 +14,24 @@ import { PORT } from './utils/env';
 import { errorHandle, errorHandleNotFound } from './utils/errorHandle';
 import logger from './utils/logger';
 import { realTime } from './utils/socket';
-const app = express(),
-  //* Create server real time
-  server = createServer(app),
-  io = new Server(server, {
-    cors: {
-      origin: '*',
-    },
-  });
-
+const app = express();
+//* Create server real time
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+  },
+});
+//* Create custom logging
+const Stream = {
+  write: (text: string) => {
+    logger.log('info', text.replace(/\n$/, ''));
+  },
+};
 //* Init Middleware
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://localhost:4200'],
     credentials: true,
   }),
 );
@@ -37,11 +42,7 @@ app.use(
     extended: true,
   }),
 );
-const Stream = {
-  write: (text: string) => {
-    logger.log('info', text.replace(/\n$/, ''));
-  },
-};
+
 app.use(helmet());
 app.use(compression());
 app.use(morgan('dev', { stream: Stream }));
@@ -54,6 +55,7 @@ import '@/db/init.mongo';
 realTime(io);
 //* Init Route
 app.use('/api/v1', router);
+//* API Docs
 app.use('/api/docs', swaggerUI.serve, swaggerUI.setup(swagger));
 //* Error Handling
 app.use(errorHandleNotFound, errorHandle);

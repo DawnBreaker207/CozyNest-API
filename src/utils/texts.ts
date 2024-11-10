@@ -1,6 +1,7 @@
 import path from 'path';
 import pug from 'pug';
-import { formatDateTime } from './order';
+import { formatDateTime } from '../services/order.service';
+
 /**
  *
  * @param subject
@@ -46,6 +47,7 @@ const sendExportMail = (subject: string, content: string): string => {
    * @param formattedTotalPayment
    * @returns
    */
+  // TODO: Check this feature and fix
   sendOrder = (
     subject: string,
     data: any,

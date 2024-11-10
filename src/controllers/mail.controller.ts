@@ -13,34 +13,6 @@ export const sendMailRequest: RequestHandler = async (req, res, next) => {
    */
   const { email, subject, content } = req.body;
   try {
-    // TODO: Fix this shit code later, move it into a service in controller update order
-    // Const { email, orderId, orderDate, customerName, customerPhone, customerAddress, products, totalAmount, paymentMethod, paymentStatus } = req.body;
-
-    // // Render email từ template pug với dữ liệu đơn hàng
-    // Const emailContent = pug.renderFile('path/to/invoiceTemplate.pug', {
-    //   CustomerName,
-    //   OrderDate,
-    //   OrderId,
-    //   CustomerPhone,
-    //   CustomerAddress,
-    //   Products,
-    //   TotalAmount,
-    //   PaymentMethod,
-    //   PaymentStatus,
-    // });
-
-    // // Thiết lập thông tin email
-    // Const emailOption = {
-    //   Email: email as string,  // Ensure email is a string
-    //   Subject: `Hóa đơn cho đơn hàng ${orderId}`,
-    //   Text: emailContent,  // Rename html to text
-    // };
-
-    // // Gửi email
-    // Await configSendMail(emailOption);
-
-    // // Phản hồi thành công
-
     await configSendMail({
       email,
       subject: email,

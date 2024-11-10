@@ -1,4 +1,3 @@
-import { StatusCodes } from 'http-status-codes';
 import { CartType, ProductCart } from '@/interfaces/Cart';
 import { OptionalValueType } from '@/interfaces/Variant';
 import Cart from '@/models/Cart';
@@ -7,6 +6,7 @@ import { Sku } from '@/models/Sku';
 import { Variant } from '@/models/Variant';
 import { AppError } from '@/utils/errorHandle';
 import logger from '@/utils/logger';
+import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 
 //* Cart
@@ -258,5 +258,5 @@ export {
   increaseQuantityService,
   RemoveCartService,
   removeFromCart,
-  RemoveFromCartService,
+  RemoveFromCartService
 };
