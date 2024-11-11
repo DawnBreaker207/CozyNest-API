@@ -147,6 +147,11 @@ export const messagesSuccess = Object.freeze({
   CHANGE_PASSWORD_SUCCESS: 'Change password successfully!',
   CHECK_TOKEN_SUCCESS: 'Token is valid and not expired !',
 
+  // Review
+  GET_REVIEW_SUCCESS: 'Get review successfully!',
+  CREATE_REVIEW_SUCCESS: 'Create review successfully!',
+  DELETE_REVIEW_SUCCESS: 'Delete review successfully!',
+
   // Email
   SEND_EMAIL_SUCCESS: 'Send email successfully!',
 });
