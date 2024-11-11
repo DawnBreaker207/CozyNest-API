@@ -4,7 +4,6 @@ import cors from 'cors';
 import swagger from 'docs/swagger-output.json';
 import express from 'express';
 import helmet from 'helmet';
-import { createServer } from 'http';
 import morgan from 'morgan';
 import { Server } from 'socket.io';
 import swaggerUI from 'swagger-ui-express';
@@ -15,6 +14,7 @@ import { errorHandle, errorHandleNotFound } from './utils/errorHandle';
 import logger from './utils/logger';
 import { realTime } from './utils/socket';
 const app = express();
+
 //* Create server real time
 const server = createServer(app);
 const io = new Server(server, {
@@ -23,11 +23,13 @@ const io = new Server(server, {
   },
 });
 //* Create custom logging
+
 const Stream = {
-  write: (text: string) => {
+  write: (text: string):void => {
     logger.log('info', text.replace(/\n$/, ''));
   },
 };
+
 //* Init Middleware
 app.use(
   cors({
@@ -46,8 +48,10 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan('dev', { stream: Stream }));
 
+
 //* Init Database
 import '@/db/init.mongo';
+import { createServer } from 'http';
 
 //* API Docs
 app.use('/api/docs', swaggerUI.serve, swaggerUI.setup(swagger));
