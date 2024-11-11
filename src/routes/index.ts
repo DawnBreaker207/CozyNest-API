@@ -1,15 +1,18 @@
-import { Router } from "express";
-import routeProduct from "./products.route";
-import routeCategory from "./categories.route";
-import routeAuth from "./auth.route";
-import routeUpload from "./upload.route";
-import routeCart from "./cart.route";
-import routeShipment from "./shipment.route";
-import routePayment from "./payment.route";
-import routeOption from "./option.route";
-import routeOptionalValue from "./optionalValue.route";
-import routeVariant from "./variant.route";
-import routeCoupon from "./coupon.route";
+import { Router } from 'express';
+import routeAuth from './auth.route';
+import routeCart from './cart.route';
+import routeCategory from './categories.route';
+import routeCoupon from './coupon.route';
+import routeMail from './mail.route';
+import routeOption from './option.route';
+import routeOptionalValue from './optionalValue.route';
+import routeOrder from './order.route';
+import routePayment from './payment.route';
+import routeProduct from './products.route';
+import routeShipment from './shipment.route';
+import routeUpload from './upload.route';
+import routeUser from './user.route';
+import routeVariant from './variant.route';
 
 const router = Router();
 
