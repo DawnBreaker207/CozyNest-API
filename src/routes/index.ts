@@ -4,7 +4,7 @@ import routeCart from './cart.route';
 import routeCategory from './categories.route';
 import routeCoupon from './coupon.route';
 import routeMail from './mail.route';
-import routeOption from './option.router';
+import routeOption from './option.route';
 import routeOptionalValue from './optionalValue.route';
 import routeOrder from './order.route';
 import routePayment from './payment.route';
@@ -12,7 +12,7 @@ import routeProduct from './products.route';
 import routeShipment from './shipment.route';
 import routeUpload from './upload.route';
 import routeUser from './user.route';
-import routeVariant from './variant.router';
+import routeVariant from './variant.route';
 
 const router = Router();
 
@@ -29,13 +29,13 @@ router.use('/auth', routeAuth);
 router.use('/upload', routeUpload);
 
 //* Send mail
-router.use('/mail', routeMail);
+// router.use('/mail', routeMail);
 
 //* Users
-router.use('/users', routeUser);
+// router.use('/users', routeUser);
 
 //* Orders
-router.use('/orders', routeOrder);
+// router.use('/orders', routeOrder);
 
 //* Cart
 router.use('/cart', routeCart);

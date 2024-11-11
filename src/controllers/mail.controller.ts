@@ -19,7 +19,7 @@ export const sendMailRequest: RequestHandler = async (req, res, next) => {
       text: sendExportMail(subject, content),
     });
 
-    return res.status(StatusCodes.OK).json({
+    res.status(StatusCodes.OK).json({
       message: messagesSuccess.SEND_EMAIL_SUCCESS,
     });
   } catch (error) {
