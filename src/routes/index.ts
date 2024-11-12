@@ -29,13 +29,13 @@ router.use('/auth', routeAuth);
 router.use('/upload', routeUpload);
 
 //* Send mail
-// router.use('/mail', routeMail);
+router.use('/mail', routeMail);
 
 //* Users
-// router.use('/users', routeUser);
+router.use('/users', routeUser);
 
 //* Orders
-// router.use('/orders', routeOrder);
+router.use('/orders', routeOrder);
 
 //* Cart
 router.use('/cart', routeCart);

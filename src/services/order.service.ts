@@ -7,7 +7,6 @@ import Cart from '@/models/Cart';
 import { Order, Order_Detail, Shipping } from '@/models/Order';
 import { Returned } from '@/models/Return';
 import { Sku } from '@/models/Sku';
-import moment from '@/moment/ts3.1-typings/moment';
 import { AppError } from '@/utils/errorHandle';
 import logger from '@/utils/logger';
 import {
@@ -20,6 +19,7 @@ import { StatusCodes } from 'http-status-codes';
 import { PaginateOptions } from 'mongoose';
 import { createMomoService, createVnPayService } from './payment.service';
 import { createDeliveryOrderService } from './shipment.service';
+import moment from 'moment';
 
 // Utils functions
 /**
