@@ -15,7 +15,7 @@ export const sendMailRequest: RequestHandler = async (req, res, next) => {
   try {
     await configSendMail({
       email,
-      subject: email,
+      subject: subject,
       text: sendExportMail(subject, content),
     });
 

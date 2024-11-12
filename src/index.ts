@@ -52,19 +52,15 @@ app.use(morgan('dev', { stream: Stream }));
 
 //* Init Database
 import '@/db/init.mongo';
-import routeMail from './routes/mail.route';
-import routeUser from './routes/user.route';
-import routeOrder from './routes/order.route';
 
 //* API Docs
 app.use('/api/docs', swaggerUI.serve, swaggerUI.setup(swagger));
 //* Init Route
 app.use('/api/v1', router);
-app.use('/api/v1/mail', routeMail);
-app.use('/api/v1/users', routeUser);
-app.use('/api/v1/orders', routeOrder);
+
 //* Init chat real time
 realTime(io);
+
 //* Error Handling
 app.use(redirectPath);
 app.use(errorHandleNotFound, errorHandle);

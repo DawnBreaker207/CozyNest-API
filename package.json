@@ -2,7 +2,7 @@
   "name": "cozynest",
   "version": "1.0.0",
   "description": "CozyNest Restful api services ",
-  "main": "index.js",
+  "main": "index.ts",
   "nodemonConfig": {
     "verbose": true,
     "ignore": [
@@ -19,7 +19,7 @@
   },
   "scripts": {
     "test": "jest",
-    "demo": "tsc && node dist/index.js",
+    "demo": "tsc  && tsc-alias -p tsconfig.build.json && node dist/src/index.js",
     "dev": "nodemon",
     "build": "tsc && tsc-alias -p tsconfig.build.json",
     "start": "node dist/src/index.js",
