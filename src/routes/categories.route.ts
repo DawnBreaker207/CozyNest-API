@@ -58,6 +58,7 @@ routeCategory.patch(
   // #swagger.tags = ['Category']
   softDeleteCategory,
 );
+
 //* Hard delete category
 routeCategory.delete(
   '/:id',

@@ -1,4 +1,4 @@
-import { Server, Socket } from '@/socket.io/dist';
+import { Server, Socket } from 'socket.io';
 import logger from './logger';
 export interface userRooms {
   roomName: string;

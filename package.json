@@ -2,8 +2,9 @@
   "name": "cozynest",
   "version": "1.0.0",
   "description": "CozyNest Restful api services ",
-  "main": "index.js",
+  "main": "index.ts",
   "nodemonConfig": {
+    "verbose": true,
     "ignore": [
       "**/*.test.ts",
       "**/*.spec.ts",
@@ -13,12 +14,12 @@
     "watch": [
       "src"
     ],
-    "exec": "node -r tsconfig-paths/register -r ts-node/register ./src/index.ts",
-    "ext": "ts,js"
+    "exec": "ts-node -r tsconfig-paths/register ./src/index.ts",
+    "ext": "js,ts,json"
   },
   "scripts": {
     "test": "jest",
-    "demo": "tsc && node dist/index.js",
+    "demo": "tsc  && tsc-alias -p tsconfig.build.json && node dist/src/index.js",
     "dev": "nodemon",
     "build": "tsc && tsc-alias -p tsconfig.build.json",
     "start": "node dist/src/index.js",
@@ -63,10 +64,8 @@
     "@eslint/js": "^9.13.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.7.5",
-    "@types/config": "^3.3.5",
     "@types/cookie-parser": "^1.4.7",
     "@types/cors": "^2.8.17",
-    "@types/crypto-js": "^4.2.2",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.13",
     "@types/jsonwebtoken": "^9.0.6",

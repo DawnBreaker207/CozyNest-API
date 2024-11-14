@@ -14,7 +14,9 @@ import { PORT } from './utils/env';
 import { errorHandle, errorHandleNotFound } from './utils/errorHandle';
 import logger from './utils/logger';
 import { realTime } from './utils/socket';
+
 const app = express();
+
 //* Create server real time
 const server = createServer(app);
 const io = new Server(server, {
@@ -23,11 +25,13 @@ const io = new Server(server, {
   },
 });
 //* Create custom logging
+
 const Stream = {
-  write: (text: string) => {
+  write: (text: string): void => {
     logger.log('info', text.replace(/\n$/, ''));
   },
 };
+
 //* Init Middleware
 app.use(
   cors({
@@ -42,24 +46,25 @@ app.use(
     extended: true,
   }),
 );
-
 app.use(helmet());
 app.use(compression());
 app.use(morgan('dev', { stream: Stream }));
-app.use(redirectPath);
 
 //* Init Database
 import '@/db/init.mongo';
 
-//* Init chat real time
-realTime(io);
-//* Init Route
-app.use('/api/v1', router);
 //* API Docs
 app.use('/api/docs', swaggerUI.serve, swaggerUI.setup(swagger));
+//* Init Route
+app.use('/api/v1', router);
+
+//* Init chat real time
+realTime(io);
+
 //* Error Handling
+app.use(redirectPath);
 app.use(errorHandleNotFound, errorHandle);
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   logger.log('info', `Listen on port ${PORT}`);
 });

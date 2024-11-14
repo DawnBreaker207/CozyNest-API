@@ -1,4 +1,4 @@
-import { StatusCodes } from '@/http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import { CouponType } from '@/interfaces/Coupon';
 import Coupon from '@/models/Coupon';
 import { AppError } from '@/utils/errorHandle';
