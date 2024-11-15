@@ -53,11 +53,12 @@ export const createArticle: RequestHandler = async (req, res, next) => {
 
 //PUT /articles/:id
 export const updateArticle: RequestHandler = async (req, res, next) => {
+    const {id} = req.params;
   try {
     const updateArticle = await Article.findByIdAndUpdate(
-      req.params.id,
+      id,
       req.body,
-      {new: true},
+      { new: true }
     );
     if (!updateArticle) {
       return res

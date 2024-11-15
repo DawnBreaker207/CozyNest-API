@@ -13,7 +13,6 @@ const ArticleSchema = new Schema({
       },
       paragraph: {
         type: String,
-        required: true
       },
       images: [
         {
