@@ -5,14 +5,21 @@ import { sendExportMail } from '@/utils/texts';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-const sendMailRequest: RequestHandler = async (req, res, next) => {
+export const sendMailRequest: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.body.email Param email input
+   * @param {string} req.body.subject Param subject input
+   * @param {string} req.body.content Param content input
+   */
+  const { email, subject, content } = req.body;
   try {
     await configSendMail({
-      email: req.body.email,
-      subject: req.body.subject,
-      text: sendExportMail(req.body.subject, req.body.content),
+      email,
+      subject: email,
+      text: sendExportMail(subject, content),
     });
-    return res.status(StatusCodes.OK).json({
+
+    res.status(StatusCodes.OK).json({
       message: messagesSuccess.SEND_EMAIL_SUCCESS,
     });
   } catch (error) {
@@ -20,5 +27,3 @@ const sendMailRequest: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
-export { sendMailRequest };

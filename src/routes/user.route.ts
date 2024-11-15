@@ -1,6 +1,6 @@
 import {
   changePassword,
-  forgotPass,
+  forgotPassword,
   generateVerifyToken,
   getAllUser,
   getOneUser,
@@ -13,24 +13,56 @@ import { Router } from 'express';
 
 const routeUser = Router();
 //* Get all users exist
-routeUser.get('/', checkAuth, checkPermission, getAllUser);
+routeUser.get(
+  '/',
+  checkAuth,
+  checkPermission,
+  // #swagger.tags = ['User']
+  getAllUser,
+);
 
 //* Get one user
-routeUser.get('/:id', getOneUser);
+routeUser.get(
+  '/:id',
+  // #swagger.tags = ['User']
+  getOneUser,
+);
 
 //* Update user
-routeUser.patch('/:id', checkAuth, checkPermission, updateUser);
+routeUser.patch(
+  '/:id',
+  checkAuth,
+  checkPermission,
+  // #swagger.tags = ['User']
+  updateUser,
+);
 
 //* Generate verify token form user
-routeUser.post('/generateVerificationToken', generateVerifyToken);
+routeUser.post(
+  '/generateVerificationToken',
+  // #swagger.tags = ['User']
+  generateVerifyToken,
+);
 
 //* Verify token from email sending
-routeUser.post('/verifyToken', verifyEmailToken);
+routeUser.post(
+  '/verifyToken',
+  // #swagger.tags = ['User']
+  verifyEmailToken,
+);
 
 //* Forgot password
-routeUser.post('/forgotPassword', forgotPass);
+routeUser.post(
+  '/forgotPassword',
+  // #swagger.tags = ['User']
+  forgotPassword,
+);
 
 //* Change password
-routeUser.post('/changePassword', changePassword);
+routeUser.post(
+  '/changePassword',
+  // #swagger.tags = ['User']
+  changePassword,
+);
 
 export default routeUser;

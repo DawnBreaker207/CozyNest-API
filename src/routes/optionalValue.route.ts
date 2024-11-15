@@ -1,8 +1,8 @@
 import {
   createOptionalValue,
   deleteOptionalValue,
-  getAllOptionalValue,
-  getOneOptionalValue,
+  getAllOptionalValues,
+  getSingleOptionalValue,
   updateOptionalValue,
 } from '@/controllers/variants.controller';
 import { checkAuth } from '@/middlewares/checkAuth';
@@ -13,14 +13,19 @@ import { Router } from 'express';
 
 const routeOptionalValue = Router();
 
-// api option values
+// Api option values
 //* Get all optional value in product
-routeOptionalValue.get('/:product_id/:option_id', getAllOptionalValue);
+routeOptionalValue.get(
+  '/:product_id/:option_id',
+  // #swagger.tags = ['OptionalValue']
+  getAllOptionalValues,
+);
 
 //* Get one optional value in product
 routeOptionalValue.get(
   '/:product_id/:option_id/:value_id',
-  getOneOptionalValue
+  // #swagger.tags = ['OptionalValue']
+  getSingleOptionalValue,
 );
 
 //* Create optional value depend option model
@@ -29,7 +34,8 @@ routeOptionalValue.post(
   checkAuth,
   checkPermission,
   validBodyRequest(optionalValuesSchema),
-  createOptionalValue
+  // #swagger.tags = ['OptionalValue']
+  createOptionalValue,
 );
 
 //* Update option value depend option model
@@ -38,7 +44,8 @@ routeOptionalValue.put(
   checkAuth,
   checkPermission,
   validBodyRequest(optionalValuesSchema),
-  updateOptionalValue
+  // #swagger.tags = ['OptionalValue']
+  updateOptionalValue,
 );
 
 //* Delete option value depend option model
@@ -46,7 +53,8 @@ routeOptionalValue.delete(
   '/:product_id/:option_id/:value_id',
   checkAuth,
   checkPermission,
-  deleteOptionalValue
+  // #swagger.tags = ['OptionalValue']
+  deleteOptionalValue,
 );
 
 export default routeOptionalValue;

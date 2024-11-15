@@ -13,20 +13,49 @@ import { Router } from 'express';
 const routeCoupon = Router();
 
 // Get all coupon
-routeCoupon.get('/', getAllCoupon);
+routeCoupon.get(
+  '/',
+  // #swagger.tags = ['Coupon']
+  getAllCoupon,
+);
 
 // Get one coupon
-routeCoupon.get('/:id', getOneCoupon);
+routeCoupon.get(
+  '/:id',
+  // #swagger.tags = ['Coupon']
+  getOneCoupon,
+);
 
 // Get value in coupon
-routeCoupon.get('/couponValue', checkAuth, getValueCoupon);
+routeCoupon.get(
+  '/couponValue',
+  checkAuth,
+  // #swagger.tags = ['Coupon']
+  getValueCoupon,
+);
 
 // Create new coupon
-routeCoupon.post('/', checkAuth, createCoupon);
+routeCoupon.post(
+  '/',
+  checkAuth,
+  // #swagger.tags = ['Coupon']
+  createCoupon,
+);
 
 // Update coupon
-routeCoupon.patch('/:id', checkAuth, updateCoupon);
+routeCoupon.patch(
+  '/:id',
+  checkAuth,
+  // #swagger.tags = ['Coupon']
+  updateCoupon,
+);
 
 // Soft delete coupon
-routeCoupon.delete('/:id', checkAuth, checkPermission, deleteCoupon);
+routeCoupon.delete(
+  '/:id',
+  checkAuth,
+  checkPermission,
+  // #swagger.tags = ['Coupon']
+  deleteCoupon,
+);
 export default routeCoupon;

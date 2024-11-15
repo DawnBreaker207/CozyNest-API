@@ -1,28 +1,51 @@
 import {
-  CreateOrder,
-  GetAllOrders,
-  GetOneOrder,
-  GetOrderByUserId,
-  UpdateOrder,
+  cancelOrder,
+  confirmReturnedOrder,
+  createNewOrder,
+  decreaseProductFromOrder,
+  getAllOrders,
+  getAllShipping,
+  getAllUserOrders,
+  getOneOrder,
+  getOrderByPhoneNumber,
+  getOrderByUserId,
+  getReturnedOrder,
+  increaseProductFromOrder,
+  removeProductFromOrder,
+  returnedOrder,
+  serviceCalFee,
+  updateInfoCustomer,
+  updatePaymentStatus,
+  updateStatusDelivered,
+  updateStatusOrder,
 } from '@/controllers/order.controller';
-import { checkAuth } from '@/middlewares/checkAuth';
-import { checkPermission } from '@/middlewares/checkPermission';
 import { Router } from 'express';
 
+
 const routeOrder = Router();
-//* Get all orders exist
-routeOrder.get('/', checkAuth, checkPermission, GetAllOrders);
-
-//* Get order by order id
-routeOrder.get('/orderByOrderId/:id', GetOneOrder);
-
+routeOrder.put('/decrement', decreaseProductFromOrder);
+routeOrder.put('/increment', increaseProductFromOrder);
+routeOrder.put('/decrement-product-order', removeProductFromOrder);
+routeOrder.post('/payment-status', updatePaymentStatus);
+routeOrder.post('/calculateFee', serviceCalFee);
+routeOrder.put('/orderByPhoneNumber', getOrderByPhoneNumber);
 //* Get order by user id
-routeOrder.get('/orderByUserId', GetOrderByUserId);
-
+routeOrder.get('/orderByUserId', getOrderByUserId);
+routeOrder.post('/return', returnedOrder);
+routeOrder.get('/return', getReturnedOrder);
+routeOrder.put('/return/:id', confirmReturnedOrder);
+routeOrder.put('/confirm-completed/:id', updateStatusDelivered);
 //* Create new order
-routeOrder.post('/', CreateOrder);
-
+routeOrder.post('/', createNewOrder);
+routeOrder.get('/', getAllOrders);
+//* Get all orders exist
+routeOrder.get('/statistical', getAllUserOrders);
+routeOrder.get('/shipping', getAllShipping);
+//* Get order by order id
+routeOrder.get('/:id', getOneOrder);
+routeOrder.delete('/cancel/:id', cancelOrder);
 //* Update order status
-routeOrder.patch('/updateOrder/:id', checkAuth, checkPermission, UpdateOrder);
+routeOrder.put('/updateStatus/:id', updateStatusOrder);
+routeOrder.put('/updateInfoCustomer/:id', updateInfoCustomer);
 
 export default routeOrder;

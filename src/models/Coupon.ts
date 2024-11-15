@@ -24,11 +24,11 @@ const couponSchema = new mongoose.Schema<CouponType>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 couponSchema.plugin(mongoosePaginate);
 
 export default mongoose.model<CouponType, PaginateModel<CouponType>>(
   'Coupon',
-  couponSchema
+  couponSchema,
 );

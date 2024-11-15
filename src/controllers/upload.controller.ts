@@ -1,82 +1,55 @@
-import { handleDelete, handleUpload } from '@/configs/cloudinaryConfig';
-import { messagesError, messagesSuccess } from '@/constants/messages';
+import { handleDelete } from '@/configs/cloudinaryConfig';
+import { messagesSuccess } from '@/constants/messages';
+import {
+  uploadMultipleService,
+  uploadSingleService,
+} from '@/services/upload.service';
 import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-const uploadImages: RequestHandler = async (req, res, next) => {
+export const uploadSingle: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string} req.file file input
+   */
+  const { file } = req;
   try {
-    /**
-     * @param {string} req.file file input
-     */
+    const upload = await uploadSingleService(file);
 
-    const file = req.file;
-    if (!file) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
-    const b64 = Buffer.from(file.buffer).toString('base64');
-    let dataURI = 'data:' + req.file?.mimetype + ';base64,' + b64;
-    const data = await handleUpload(dataURI);
-    if (!data) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: messagesError.UPLOAD_IMAGES_FAIL,
-      });
-    }
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_IMAGES_SUCCESS,
-      res: data,
+      res: upload,
     });
   } catch (error) {
-    logger.log('error', `Catch error in upload single images: ${error}`);
+    logger.log('error', `Catch error in upload single image: ${error}`);
     next(error);
   }
 };
 
-const uploadMultiple: RequestHandler = async (req, res, next) => {
+export const uploadMultiple: RequestHandler = async (req, res, next) => {
+  /**
+   * @param {string[]} req.files array of files
+   */
+  const files = req.files as Express.Multer.File[] | undefined;
   try {
-    /**
-     * @param {string[]} req.files array of files
-     */
-
-    const files = req.files;
-
-    if (!files || !Array.isArray(files) || files.length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: messagesError.BAD_REQUEST,
-      });
-    }
-
-    const uploadMultiple = files.map((file) => {
-      const b64 = Buffer.from(file.buffer).toString('base64');
-      let dataURI = 'data:' + file?.mimetype + ';base64,' + b64;
-      return handleUpload(dataURI);
-    });
-
-    const results = await Promise.all(uploadMultiple);
-
-    const uploadFiles = results.map((result) => ({
-      url: result?.url,
-      public_id: result?.public_id,
-    }));
+    const uploadFiles = await uploadMultipleService(files);
 
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_IMAGES_SUCCESS,
       res: uploadFiles,
     });
   } catch (error) {
-    logger.log('error', `Catch error in upload multiples images: ${error}`);
+    logger.log('error', `Catch error in upload multiple images: ${error}`);
     next(error);
   }
 };
 
-const deleteImage: RequestHandler = async (req, res, next) => {
+export const deleteImage: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.publicId publicId of a image
    */
 
-  const publicId = req.params.publicId;
+  const { publicId } = req.params;
   try {
     await handleDelete(publicId);
 
@@ -88,5 +61,3 @@ const deleteImage: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
-export { deleteImage, uploadImages, uploadMultiple };

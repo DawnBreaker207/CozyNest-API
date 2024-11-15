@@ -10,7 +10,9 @@ import { StatusCodes } from 'http-status-codes';
 export const checkAuth: RequestHandler = async (req, res, next) => {
   try {
     // Check token exist
-    const token = req.headers?.authorization?.split(' ')[1];
+// TODO: update feature
+    // const token = req.headers?.authorization?.split(' ')[1];
+    const token = req.cookies.refreshToken;
     if (!token) {
       logger.log('error', 'Check auth error: Token not exist');
       return res.status(StatusCodes.BAD_REQUEST).json({

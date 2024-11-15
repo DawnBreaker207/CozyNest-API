@@ -1,7 +1,7 @@
 import {
   deleteImage,
-  uploadImages,
   uploadMultiple,
+  uploadSingle,
 } from '@/controllers/upload.controller';
 import { upload } from '@/middlewares/uploadImages';
 import { Router } from 'express';
@@ -9,11 +9,25 @@ import { Router } from 'express';
 const routeUpload = Router();
 
 //* Upload single image
-routeUpload.post('/', upload.single('upload'), uploadImages);
+routeUpload.post(
+  '/',
+  upload.single('upload'),
+  // #swagger.tags = ['Upload']
+  uploadSingle,
+);
 
 //* Upload multiple image
-routeUpload.post('/multiple', upload.array('upload', 4), uploadMultiple);
+routeUpload.post(
+  '/multiple',
+  upload.array('upload', 4),
+  // #swagger.tags = ['Upload']
+  uploadMultiple,
+);
 
 //* Delete single image
-routeUpload.delete('/:publicId', deleteImage);
+routeUpload.delete(
+  '/:publicId',
+  // #swagger.tags = ['Upload']
+  deleteImage,
+);
 export default routeUpload;

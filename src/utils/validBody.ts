@@ -1,16 +1,16 @@
-import { ZodSchema } from 'zod';
+// Import { ZodSchema } from 'zod';
 
-/**
- *
- * @param data
- * @param isSchema
- * @returns
- */
-const validBody = (data: Request, isSchema: ZodSchema) => {
-  const { error } = isSchema.safeParse(data);
-  if (error) {
-    const errors = error.errors.map((item) => item.message);
-    return errors;
-  }
-  return;
-};
+// /**
+//  *
+//  * @param data
+//  * @param isSchema
+//  * @returns
+//  */
+// Const validBody = (data: Request, isSchema: ZodSchema) => {
+//   Const { error } = isSchema.safeParse(data);
+//   If (error) {
+//     Const errors = error.errors.map((item) => item.message);
+//     Return errors;
+//   }
+//   Return;
+// };

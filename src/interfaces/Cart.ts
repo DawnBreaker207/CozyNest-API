@@ -9,6 +9,7 @@ export interface ProductCart {
 }
 
 export interface CartType extends Document {
+  cart_id: string;
   userId: Types.ObjectId;
   guestId?: string;
   isGuest: boolean;

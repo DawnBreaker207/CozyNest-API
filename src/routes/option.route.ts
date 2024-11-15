@@ -1,7 +1,7 @@
 import {
   createOption,
   deleteOption,
-  getAllOption,
+  getAllOptions,
   getOneOption,
   updateOption,
 } from '@/controllers/variants.controller';
@@ -13,13 +13,21 @@ import { Router } from 'express';
 
 const routeOption = Router();
 
-// api option
+// Api option
 
 //* Get all option value in product
-routeOption.get('/:product_id', getAllOption);
+routeOption.get(
+  '/:product_id',
+  // #swagger.tags = ['Option']
+  getAllOptions,
+);
 
 //* Get one option value in product
-routeOption.get('/:product_id/:option_id', getOneOption);
+routeOption.get(
+  '/:product_id/:option_id',
+  // #swagger.tags = ['Option']
+  getOneOption,
+);
 
 //* Create option value in product
 routeOption.post(
@@ -27,7 +35,8 @@ routeOption.post(
   checkAuth,
   checkPermission,
   validBodyRequest(optionSchema),
-  createOption
+  // #swagger.tags = ['Option']
+  createOption,
 );
 
 //* Update option value in product
@@ -36,7 +45,8 @@ routeOption.put(
   checkAuth,
   checkPermission,
   validBodyRequest(optionSchema),
-  updateOption
+  // #swagger.tags = ['Option']
+  updateOption,
 );
 
 //* Delete option value in product
@@ -44,7 +54,8 @@ routeOption.delete(
   '/:product_id/:option_id',
   checkAuth,
   checkPermission,
-  deleteOption
+  // #swagger.tags = ['Option']
+  deleteOption,
 );
 
 export default routeOption;
