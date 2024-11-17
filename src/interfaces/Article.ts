@@ -7,4 +7,6 @@ export default interface ArticleType {
     content: string;
     images: string[];
     author: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
