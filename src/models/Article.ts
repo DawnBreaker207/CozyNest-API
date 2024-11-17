@@ -6,6 +6,9 @@ const ArticleSchema = new Schema({
     type: String,
     required: true
   },
+  thumbnail: {
+    type: String
+  },
   content: [
     {
       heading: {
