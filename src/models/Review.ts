@@ -4,9 +4,9 @@ import mongoosePaginate from 'mongoose-paginate-v2';
 
 const reviewSchema = new Schema<ReviewType>(
   {
-    sku_id: {
+    product_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Sku',
+      ref: 'Product',
       required: true,
     },
     user_id: {

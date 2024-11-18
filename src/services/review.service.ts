@@ -4,20 +4,12 @@ import { AppError } from '@/utils/errorHandle';
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 
-// Lấy tất cả các review theo SKU
-export const getAllReviewsService = async (sku_id: string) => {
-  if (!Types.ObjectId.isValid(sku_id)) {
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid SkuId');
+// Lấy tất cả các review
+export const getAllReviewsService = async (product_id: string) => {
+  if (!Types.ObjectId.isValid(product_id)) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid ProductId');
   }
-  return await Review.find({ sku_id }).populate('user_id', 'name');
-};
-
-// Lấy một review theo ID
-export const getReviewService = async (id: string) => {
-  if (!Types.ObjectId.isValid(id)) {
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid ReviewId');
-  }
-  return await Review.findById(id).populate('user_id', 'name');
+  return await Review.find({ product_id }).populate('user_id', 'name');
 };
 
 // Tạo review mới

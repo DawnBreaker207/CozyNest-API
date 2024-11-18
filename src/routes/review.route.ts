@@ -1,6 +1,5 @@
 import {
   getAllReviews,
-  getReview,
   createReview,
   deleteReview,
 } from '@/controllers/review.controller';
@@ -10,22 +9,13 @@ import { Router } from 'express';
 
 const routeReview = Router();
 
-//* Lấy tất cả các review cho SKU cụ thể
-routeReview.get('/:sku_id', getAllReviews);
-
-//* Lấy chi tiết một review
-routeReview.get('/detail/:id', getReview);
+//* Lấy tất cả các review
+routeReview.get('/:product_id', getAllReviews);
 
 //* Tạo review mới
-routeReview.post(
-  '/',
-  checkAuth,
-  checkPermission,
-
-  createReview,
-);
+routeReview.post('/', checkAuth, createReview);
 
 //* Xóa một review
-routeReview.delete('/:id', checkAuth, checkPermission, deleteReview);
+routeReview.delete('/:id', checkAuth, deleteReview);
 
 export default routeReview;
