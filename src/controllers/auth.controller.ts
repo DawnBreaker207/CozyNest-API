@@ -72,8 +72,7 @@ export const Login: RequestHandler = async (req, res, next) => {
 
     // Save access token in cookie
     res.cookie('accessToken', accessToken, {
-      expires: new Date(Date.now() + 10000),
-      // expires: new Date(Date.now() + (timeCounts.hours_1 || 60 * 60 * 1000)),
+      expires: new Date(Date.now() + (timeCounts.hours_1 || 60 * 60 * 1000)),
       httpOnly: true,
     });
 
