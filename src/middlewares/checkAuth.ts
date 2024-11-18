@@ -9,26 +9,18 @@ import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 export const checkAuth: RequestHandler = async (req, res, next) => {
+  //* Check access and refresh token exist
+  const { accessToken, refreshToken } = req.cookies;
   try {
     // TODO: update feature
     // const token = req.headers?.authorization?.split(' ')[1];
 
-    //* Check access and refresh token exist
-    const { accessToken, refreshToken } = req.cookies;
-    if (!accessToken || !refreshToken) {
-      logger.log('error', 'Check auth error: Token not exist');
-      //   return res.status(StatusCodes.BAD_REQUEST).json({
-      //     message: messagesError.TOKEN_INVALID,
-      // });
-    }
-
-    //* Check token expired
-    const decode = verifyToken(accessToken);
-    if (!decode) {
-      logger.log('error', 'Check auth error: Token invalid');
-      // return res.status(StatusCodes.BAD_REQUEST).json({
-      //   message: messagesError.TOKEN_INVALID,
-      // });
+    if (accessToken) {
+      //* Check access token expired
+      const decode = verifyToken(accessToken);
+      if (!decode) {
+        logger.log('error', 'Check auth error: Token invalid');
+      }
     }
 
     //* If access expired, check refresh token
