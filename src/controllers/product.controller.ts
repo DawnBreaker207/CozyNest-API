@@ -1,10 +1,10 @@
 import { messagesSuccess } from '@/constants/messages';
 import {
   createProductService,
-  findRelatedProductService,
-  getAllService,
-  getOneProductService,
   deleteProductService,
+  findRelatedProductService,
+  getAllProductsService,
+  getOneProductService,
   hideProductService,
   updateProductService,
 } from '@/services/product.service';
@@ -14,7 +14,7 @@ import { StatusCodes } from 'http-status-codes';
 
 //* Products
 
-const Get_All_Product: RequestHandler = async (req, res, next) => {
+export const getAllProducts: RequestHandler = async (req, res, next) => {
   /**
    * @param {number} req.query._page Param _page input
    * @param {string} req.query._order Param _order input
@@ -38,32 +38,30 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
   } = req.query;
 
   try {
-    const page = typeof _page === 'string' ? parseInt(_page, 10) : 1;
-    const limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 9999;
-    const sortField = typeof _sort === 'string' ? _sort : 'createAt';
-
-    const options = {
-      page: page,
-      limit: limit,
-      sort: {
-        [sortField]: _order === 'desc' ? -1 : 1,
-      },
-
-      populate: [
-        { path: 'categoryId', select: 'name' },
-        {
-          path: 'variants',
-          select: 'sku_id option_id option_value_id',
-          populate: [
-            { path: 'sku_id', select: 'SKU name price stock' },
-            { path: 'option_id', select: 'name' },
-            { path: 'option_value_id', select: 'value' },
-          ],
+    const page = typeof _page === 'string' ? parseInt(_page, 10) : 1,
+      limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 9999,
+      sortField = typeof _sort === 'string' ? _sort : 'createAt',
+      options = {
+        page,
+        limit,
+        sort: {
+          [sortField]: _order === 'desc' ? -1 : 1,
         },
-      ],
-    };
 
-    const query: any = {};
+        populate: [
+          { path: 'categoryId', select: 'name' },
+          {
+            path: 'variants',
+            select: 'sku_id option_id option_value_id',
+            populate: [
+              { path: 'sku_id', select: 'SKU name price stock' },
+              { path: 'option_id', select: 'name' },
+              { path: 'option_value_id', select: 'value' },
+            ],
+          },
+        ],
+      },
+      query: any = {};
 
     if (_q) {
       query.name = { $regex: _q, $options: 'i' };
@@ -82,7 +80,7 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
     if (_maxPrice && typeof _maxPrice === 'string') {
       query.price = { ...query.price, $lte: parseFloat(_maxPrice) };
     }
-    const products = await getAllService(query, options);
+    const products = await getAllProductsService(query, options);
 
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.GET_PRODUCT_SUCCESS,
@@ -101,7 +99,7 @@ const Get_All_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-const Get_One_Product: RequestHandler = async (req, res, next) => {
+export const getOneProduct: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id
    */
@@ -119,7 +117,7 @@ const Get_One_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-const Create_Product: RequestHandler = async (req, res, next) => {
+export const createProduct: RequestHandler = async (req, res, next) => {
   /**
    * @param {ProductType} req.body Param body input
    */
@@ -135,7 +133,7 @@ const Create_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-const Update_Product: RequestHandler = async (req, res, next) => {
+export const updateProduct: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id Param id input
    * @param {ProductType} req.body Param body input
@@ -154,7 +152,7 @@ const Update_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-const Hide_Product: RequestHandler = async (req, res, next) => {
+export const softDeleteProduct: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id Param id input
    */
@@ -172,7 +170,7 @@ const Hide_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-const Delete_Product: RequestHandler = async (req, res, next) => {
+export const hardDeleteProduct: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id Param id input
    */
@@ -186,7 +184,7 @@ const Delete_Product: RequestHandler = async (req, res, next) => {
   }
 };
 
-const getRelatedProducts: RequestHandler = async (req, res, next) => {
+export const getRelatedProducts: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} cate_id Param cate_id input
    * @param {string} product_id Param product_id input
@@ -204,14 +202,4 @@ const getRelatedProducts: RequestHandler = async (req, res, next) => {
     logger.log('error', `Catch error in get related products: ${error}`);
     next(error);
   }
-};
-
-export {
-  Create_Product,
-  Delete_Product,
-  Get_All_Product,
-  Get_One_Product,
-  getRelatedProducts,
-  Hide_Product,
-  Update_Product,
 };

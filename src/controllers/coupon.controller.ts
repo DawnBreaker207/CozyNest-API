@@ -12,7 +12,7 @@ import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-const createCoupon: RequestHandler = async (req, res, next) => {
+export const createCoupon: RequestHandler = async (req, res, next) => {
   /**
    * @param {object} req.body Param body input
    */
@@ -28,7 +28,7 @@ const createCoupon: RequestHandler = async (req, res, next) => {
   }
 };
 
-const getAllCoupon: RequestHandler = async (req, res, next) => {
+export const getAllCoupon: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.query._page Param _page input
    * @param {string} req.query._order Param _order input
@@ -46,28 +46,26 @@ const getAllCoupon: RequestHandler = async (req, res, next) => {
     _name = '',
   } = req.query;
   try {
-    const page = typeof _page === 'string' ? parseInt(_page, 10) : 1;
-    const limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 9999;
-
-    const sortField = typeof _sort === 'string' ? _sort : 'createAt';
-
-    const options = {
-      page: page,
-      limit: limit,
-      sort: {
-        [sortField]: _order === 'desc' ? -1 : 1,
+    const page = typeof _page === 'string' ? parseInt(_page, 10) : 1,
+      limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 9999,
+      sortField = typeof _sort === 'string' ? _sort : 'createAt',
+      options = {
+        page,
+        limit,
+        sort: {
+          [sortField]: _order === 'desc' ? -1 : 1,
+        },
+        selected: ['-deleted', '-deletedAt'],
       },
-      selected: ['-deleted', '-deletedAt'],
-    };
-    const docs = await getAllCouponService(
-      {
-        $and: [
-          _name ? { name: new RegExp(_name as string, 'i') } : {},
-          _status ? { status: JSON.parse(_status as string) } : {},
-        ],
-      },
-      options,
-    );
+      docs = await getAllCouponService(
+        {
+          $and: [
+            _name ? { name: new RegExp(_name as string, 'i') } : {},
+            _status ? { status: JSON.parse(_status as string) } : {},
+          ],
+        },
+        options,
+      );
     res.status(StatusCodes.OK).json({
       message: 'Get all coupon success',
       res: docs,
@@ -78,7 +76,7 @@ const getAllCoupon: RequestHandler = async (req, res, next) => {
   }
 };
 
-const getOneCoupon: RequestHandler = async (req, res, next) => {
+export const getOneCoupon: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id Param id input
    */
@@ -95,13 +93,13 @@ const getOneCoupon: RequestHandler = async (req, res, next) => {
   }
 };
 
-const updateCoupon: RequestHandler = async (req, res, next) => {
+export const updateCoupon: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id Param id input
    * @param {string} req.user._id Param _id input
    */
-  const { id } = req.params;
-  const { _id } = req.user;
+  const { id } = req.params,
+    { _id } = req.user;
   try {
     const updateCoupon = await updateCouponService(id, _id, req.body);
     res.status(StatusCodes.OK).json({
@@ -114,7 +112,7 @@ const updateCoupon: RequestHandler = async (req, res, next) => {
   }
 };
 
-const getValueCoupon: RequestHandler = async (req, res, next) => {
+export const getValueCoupon: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.coupon_code Param coupon_code input
    */
@@ -131,7 +129,7 @@ const getValueCoupon: RequestHandler = async (req, res, next) => {
   }
 };
 
-const deleteCoupon: RequestHandler = async (req, res, next) => {
+export const deleteCoupon: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id Param id input
    */
@@ -146,13 +144,3 @@ const deleteCoupon: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
-export {
-  createCoupon,
-  deleteCoupon,
-  getAllCoupon,
-  getOneCoupon,
-  getValueCoupon,
-  updateCoupon
-};
-

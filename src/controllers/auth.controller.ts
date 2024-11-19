@@ -11,23 +11,21 @@ import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-const Register: RequestHandler = async (req, res, next) => {
-
+export const Register: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.email Email user input
    * @param {string} req.body.password Password user input
    */
   const { email, password } = req.body;
   try {
-    const newUser = await registerService(email, password, req.body);
+    const newUser = await registerService(email, password, req.body),
+      accessToken = createToken(
+        { _id: newUser._id },
+        SECRET_ACCESS_TOKEN as string,
+        '1h',
+      );
 
-    const accessToken = createToken(
-      { _id: newUser._id },
-      SECRET_ACCESS_TOKEN as string,
-      '1h',
-    );
-
-    // save access token in cookie
+    // Save access token in cookie
     res.cookie('accessToken', accessToken, {
       expires: new Date(Date.now() + (timeCounts.hours_1 || 60 * 60 * 1000)),
       httpOnly: true,
@@ -57,21 +55,20 @@ const Register: RequestHandler = async (req, res, next) => {
   }
 };
 
-const Login: RequestHandler = async (req, res, next) => {
+export const Login: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.email Email user input
    * @param {string} req.body.password Password user input
    */
   const { email, password } = req.body;
   try {
-    const userExist = await loginService(email, password);
-
-    // Create access token
-    const accessToken = createToken(
-      { _id: userExist._id },
-      SECRET_ACCESS_TOKEN as string,
-      '1h',
-    );
+    const userExist = await loginService(email, password),
+      // Create access token
+      accessToken = createToken(
+        { _id: userExist._id },
+        SECRET_ACCESS_TOKEN as string,
+        '1h',
+      );
 
     // Save access token in cookie
     res.cookie('accessToken', accessToken, {
@@ -93,7 +90,7 @@ const Login: RequestHandler = async (req, res, next) => {
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.LOGIN_SUCCESS,
-      accessToken: accessToken,
+      accessToken,
       expires: timeCounts.hours_1 || 60 * 60 * 1000,
       res: userExist,
     });
@@ -103,7 +100,7 @@ const Login: RequestHandler = async (req, res, next) => {
   }
 };
 
-const checkRefreshToken: RequestHandler = async (req, res, next) => {
+export const checkRefreshToken: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.cookies.refreshToken Refresh token take from cookies
    */
@@ -116,14 +113,13 @@ const checkRefreshToken: RequestHandler = async (req, res, next) => {
         res: {},
       };
     }
-    const checkToken = await checkTokenService(refreshToken);
-
-    // If exist create new access token and refresh token
-    const accessToken = createToken(
-      { _id: checkToken._id },
-      SECRET_ACCESS_TOKEN as string,
-      '1h',
-    );
+    const checkToken = await checkTokenService(refreshToken),
+      // If exist create new access token and refresh token
+      accessToken = createToken(
+        { _id: checkToken._id },
+        SECRET_ACCESS_TOKEN as string,
+        '1h',
+      );
     res.cookie('accessToken', accessToken),
       {
         expires: new Date(Date.now() + (timeCounts.hours_1 || 60 * 60 * 1000)),
@@ -142,7 +138,7 @@ const checkRefreshToken: RequestHandler = async (req, res, next) => {
   }
 };
 
-const clearToken: RequestHandler = async (req, res, next) => {
+export const clearToken: RequestHandler = async (req, res, next) => {
   try {
     // Clear token in browser
     res.clearCookie('refreshToken');
@@ -156,5 +152,3 @@ const clearToken: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
-export { checkRefreshToken, clearToken, Login, Register };

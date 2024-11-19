@@ -1,20 +1,20 @@
 import {
   AddToCartService,
-  createCartService,
-  decreaseQuantityService,
   GetByIdService,
   GetCartService,
-  increaseQuantityService,
   RemoveCartService,
   RemoveFromCartService,
+  createCartService,
+  decreaseQuantityService,
+  increaseQuantityService,
 } from '@/services/cart.service';
+import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import logger from '@/utils/logger';
 import { messagesSuccess } from '../constants/messages';
 
 // Create cart
-const createCart: RequestHandler = async (req, res, next) => {
+export const createCart: RequestHandler = async (req, res, next) => {
   /**
    * @param {object} req.body Param cart input
    */
@@ -32,7 +32,7 @@ const createCart: RequestHandler = async (req, res, next) => {
 };
 
 // Get cart by user id
-const GetCart: RequestHandler = async (req, res, next) => {
+export const GetCart: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.userId Param userId input
    */
@@ -40,18 +40,18 @@ const GetCart: RequestHandler = async (req, res, next) => {
   try {
     const { SKUs, new_cart } = await GetCartService(userId);
 
-    // const cartData = {
-    //   cartId: cart?.id,
-    //   products: cart?.products.map((item) => ({
-    //     productId: item.productId,
-    //     quantity: item.quantity,
-    //     price: item.price,
+    // Const cartData = {
+    //   CartId: cart?.id,
+    //   Products: cart?.products.map((item) => ({
+    //     ProductId: item.productId,
+    //     Quantity: item.quantity,
+    //     Price: item.price,
     //   })),
     // };
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_CART_SUCCESS,
-      // res: cartData,
+      // Res: cartData,
       res: { ...new_cart, products: SKUs },
     });
   } catch (error) {
@@ -61,7 +61,7 @@ const GetCart: RequestHandler = async (req, res, next) => {
 };
 
 // Get cart by user id
-const GetById: RequestHandler = async (req, res, next) => {
+export const GetCartById: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.userId Param userId input
    */
@@ -80,7 +80,7 @@ const GetById: RequestHandler = async (req, res, next) => {
 };
 
 // Add product to cart = create cart
-const AddToCart: RequestHandler = async (req, res, next) => {
+export const AddToCart: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.userId Param userId input
    * @param {string} req.body.guestId Param guestId input
@@ -102,7 +102,7 @@ const AddToCart: RequestHandler = async (req, res, next) => {
 };
 
 // Remove product from cart = delete product
-const RemoveFromCart: RequestHandler = async (req, res, next) => {
+export const RemoveFromCart: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.userId Param userId input
    * @param {string} req.body.sku_id Param sku_id input
@@ -120,7 +120,7 @@ const RemoveFromCart: RequestHandler = async (req, res, next) => {
 };
 
 // Remove cart = delete cart
-const RemoveCart: RequestHandler = async (req, res, next) => {
+export const RemoveCart: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id Param id input
    */
@@ -138,7 +138,7 @@ const RemoveCart: RequestHandler = async (req, res, next) => {
 };
 
 // Increase quantity = add one product quantity
-const increaseQuantity: RequestHandler = async (req, res, next) => {
+export const increaseQuantity: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.userId Param userId input
    * @param {string} req.body.sku_id Param sku_id input
@@ -157,7 +157,7 @@ const increaseQuantity: RequestHandler = async (req, res, next) => {
 };
 
 // Decrease quantity = remove one product quantity
-const decreaseQuantity: RequestHandler = async (req, res, next) => {
+export const decreaseQuantity: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.userId Param userId input
    * @param {string} req.body.sku_id Param sku_id input
@@ -176,57 +176,45 @@ const decreaseQuantity: RequestHandler = async (req, res, next) => {
 };
 
 // Check out cart to orders
-// const checkoutOrder: RequestHandler = async (req, res, next) => {
-//   const { userId, cartId, shippingAddress, shippingMethod } = req.body;
-//   try {
+// Const checkoutOrder: RequestHandler = async (req, res, next) => {
+//   Const { userId, cartId, shippingAddress, shippingMethod } = req.body;
+//   Try {
 //     // 1. Find cart from user
-//     const cart = await Cart.findOne({ userId }).populate('products.sku_id');
-//     if (!cart || cart.products.length === 0) {
-//       throw new AppError(StatusCodes.NOT_FOUND, 'Cart not exist');
+//     Const cart = await Cart.findOne({ userId }).populate('products.sku_id');
+//     If (!cart || cart.products.length === 0) {
+//       Throw new AppError(StatusCodes.NOT_FOUND, 'Cart not exist');
 //     }
 
 //     // 2. Check inventory and counting total
-//     const subtotal = countTotal(cart.products);
+//     Const subtotal = countTotal(cart.products);
 
 //     // 3. Counting shipping fee
-//     let shippingInfo = null;
-//     const shippingFee = 50;
-//     const total = subtotal + shippingFee;
-//     if (shippingMethod === 'shipped') {
-//       shippingInfo = await createDeliveryOrder(req, res, next);
+//     Let shippingInfo = null;
+//     Const shippingFee = 50;
+//     Const total = subtotal + shippingFee;
+//     If (shippingMethod === 'shipped') {
+//       ShippingInfo = await createDeliveryOrder(req, res, next);
 //     }
 
 //     // 4. Payment
 
 //     // 5. Create order
-//     const order = await Order.create({});
+//     Const order = await Order.create({});
 
-//     if (!order) {
-//       return res
+//     If (!order) {
+//       Return res
 //         .status(StatusCodes.BAD_REQUEST)
 //         .json({ message: messagesError.BAD_REQUEST });
 //     }
 //     // 6. Delete cart when create order
-//     await Cart.findByIdAndDelete(userId);
+//     Await Cart.findByIdAndDelete(userId);
 
 //     // 7. Send verify email order
-//     res.status(StatusCodes.CREATED).json({
-//       message: messagesSuccess.CREATE_ORDER_SUCCESS,
-//       res: order,
+//     Res.status(StatusCodes.CREATED).json({
+//       Message: messagesSuccess.CREATE_ORDER_SUCCESS,
+//       Res: order,
 //     });
 //   } catch (error) {
-//     next(error);
+//     Next(error);
 //   }
 // };
-
-export {
-  AddToCart,
-  // checkoutOrder,
-  createCart,
-  decreaseQuantity,
-  GetById,
-  GetCart,
-  increaseQuantity,
-  RemoveCart,
-  RemoveFromCart,
-};

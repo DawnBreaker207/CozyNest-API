@@ -2,7 +2,7 @@ import { timeCounts } from '@/constants/initialValue';
 import { messagesError, messagesSuccess } from '@/constants/messages';
 import {
   changePasswordService,
-  forgotPassService,
+  forgotPasswordService,
   generateVerifyTokenService,
   getAllUserService,
   getOneUserService,
@@ -12,7 +12,7 @@ import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-const getAllUser: RequestHandler = async (req, res, next) => {
+export const getAllUser: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.query._sort Param _sort input
    * @param {string} req.query._order Param _order input
@@ -28,22 +28,19 @@ const getAllUser: RequestHandler = async (req, res, next) => {
     _q = '',
   } = req.query;
   try {
-    const limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 100000;
-    const page = typeof _page === 'string' ? parseInt(_page, 10) : 1;
-
-    const sortField = typeof _sort === 'string' ? _sort : 'createAt';
-    const options = {
-      page: page,
-      limit: limit,
-      sort: { [sortField]: _order === 'desc' ? -1 : 1 },
-      collation: { locale: 'vi', strength: 1 },
-    };
-
-    const optionSearch =
-      _q !== '' ? { $or: [{ userName: { $regex: _q, $options: 'i' } }] } : {};
-
-    // const users = await User.paginate(optionSearch, options);
-    const users = await getAllUserService(optionSearch, options);
+    const limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 100000,
+      page = typeof _page === 'string' ? parseInt(_page, 10) : 1,
+      sortField = typeof _sort === 'string' ? _sort : 'createAt',
+      options = {
+        page,
+        limit,
+        sort: { [sortField]: _order === 'desc' ? -1 : 1 },
+        collation: { locale: 'vi', strength: 1 },
+      },
+      optionSearch =
+        _q !== '' ? { $or: [{ userName: { $regex: _q, $options: 'i' } }] } : {},
+      // Const users = await User.paginate(optionSearch, options);
+      users = await getAllUserService(optionSearch, options);
 
     res.status(StatusCodes.OK).json({
       message: 'Get users success',
@@ -59,7 +56,7 @@ const getAllUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-const getOneUser: RequestHandler = async (req, res, next) => {
+export const getOneUser: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id Param id input
    */
@@ -75,15 +72,15 @@ const getOneUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-const updateUser: RequestHandler = async (req, res, next) => {
+export const updateUser: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.id Param id input
    * @param {string} req.body.email Param email input
    * @param {string} req.body.password Param password input
    * @param {object} req.body Param body input
    */
-  const { id } = req.params;
-  const { email, password } = req.body;
+  const { id } = req.params,
+    { email, password } = req.body;
   try {
     const newUser = await updateUserService(id, email, password, req.body);
     res.status(StatusCodes.OK).json({
@@ -96,7 +93,7 @@ const updateUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-const verifyEmailToken: RequestHandler = async (req, res, next) => {
+export const verifyEmailToken: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.verify Param verify input
    */
@@ -125,7 +122,7 @@ const verifyEmailToken: RequestHandler = async (req, res, next) => {
   }
 };
 
-const generateVerifyToken: RequestHandler = async (req, res, next) => {
+export const generateVerifyToken: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.email Param email input
    */
@@ -155,13 +152,13 @@ const generateVerifyToken: RequestHandler = async (req, res, next) => {
   }
 };
 
-const forgotPass: RequestHandler = async (req, res, next) => {
+export const forgotPassword: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.email Param email input
    */
   const { email } = req.body;
   try {
-    const user = await forgotPassService(email);
+    const user = await forgotPasswordService(email);
 
     res.clearCookie('email');
     res.clearCookie('verify');
@@ -177,7 +174,7 @@ const forgotPass: RequestHandler = async (req, res, next) => {
   }
 };
 
-const changePassword: RequestHandler = async (req, res, next) => {
+export const changePassword: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.email Param email input
    * @param {string} req.body.currentPassword Param currentPassword input
@@ -194,14 +191,4 @@ const changePassword: RequestHandler = async (req, res, next) => {
     logger.log('error', `Catch error in change password: ${error}`);
     next(error);
   }
-};
-
-export {
-  changePassword,
-  forgotPass,
-  generateVerifyToken,
-  getAllUser,
-  getOneUser,
-  updateUser,
-  verifyEmailToken,
 };

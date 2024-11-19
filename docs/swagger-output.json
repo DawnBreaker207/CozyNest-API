@@ -742,52 +742,37 @@
         }
       }
     },
-    "/api/v1/orders/": {
-      "get": {
+    "/api/v1/orders/decrement": {
+      "put": {
         "description": "",
-        "parameters": [
-          {
-            "name": "_page",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "_order",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "_limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "_sort",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "_status",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "_day",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "_invoiceId",
-            "in": "query",
-            "type": "string"
-          }
-        ],
         "responses": {
           "default": {
             "description": ""
           }
         }
-      },
+      }
+    },
+    "/api/v1/orders/increment": {
+      "put": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/decrement-product-order": {
+      "put": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/payment-status": {
       "post": {
         "description": "",
         "responses": {
@@ -797,17 +782,19 @@
         }
       }
     },
-    "/api/v1/orders/orderByOrderId/{id}": {
-      "get": {
+    "/api/v1/orders/calculateFee": {
+      "post": {
         "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
+        "responses": {
+          "default": {
+            "description": ""
           }
-        ],
+        }
+      }
+    },
+    "/api/v1/orders/orderByPhoneNumber": {
+      "put": {
+        "description": "",
         "responses": {
           "default": {
             "description": ""
@@ -818,35 +805,39 @@
     "/api/v1/orders/orderByUserId": {
       "get": {
         "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/return": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/return/{id}": {
+      "put": {
+        "description": "",
         "parameters": [
           {
-            "name": "_page",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "_sort",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "_order",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "_limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "userId",
-            "in": "query",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "type": "string"
           }
         ],
@@ -857,8 +848,66 @@
         }
       }
     },
-    "/api/v1/orders/updateOrder/{id}": {
-      "patch": {
+    "/api/v1/orders/confirm-completed/{id}": {
+      "put": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/statistical": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/shipping": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{id}": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/cancel/{id}": {
+      "delete": {
         "description": "",
         "parameters": [
           {
@@ -866,35 +915,28 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "status": {
-                  "example": "any"
-                },
-                "userId": {
-                  "example": "any"
-                },
-                "customerName": {
-                  "example": "any"
-                },
-                "phoneNumber": {
-                  "example": "any"
-                },
-                "email": {
-                  "example": "any"
-                },
-                "addressShipping": {
-                  "example": "any"
-                }
-              }
-            }
           }
         ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/updateStatus/{id}": {
+      "put": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/orders/updateInfoCustomer/{id}": {
+      "put": {
+        "description": "",
         "responses": {
           "default": {
             "description": ""
@@ -965,23 +1007,6 @@
           "Cart"
         ],
         "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userId": {
-                  "example": "any"
-                },
-                "sku_id": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
         "responses": {
           "default": {
             "description": ""
@@ -995,23 +1020,6 @@
           "Cart"
         ],
         "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userId": {
-                  "example": "any"
-                },
-                "sku_id": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
         "responses": {
           "default": {
             "description": ""
@@ -1206,10 +1214,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "info": {
+                "amount": {
                   "example": "any"
                 },
-                "amount": {
+                "info": {
                   "example": "any"
                 },
                 "orderId": {
@@ -1296,6 +1304,23 @@
           "Payment"
         ],
         "description": "",
+        "parameters": [
+          {
+            "name": "vnp_SecureHash",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "vnp_SecureHashType",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "vnp_ResponseCode",
+            "in": "query",
+            "type": "string"
+          }
+        ],
         "responses": {
           "default": {
             "description": ""
@@ -1309,6 +1334,23 @@
           "Payment"
         ],
         "description": "",
+        "parameters": [
+          {
+            "name": "vnp_SecureHash",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "vnp_ResponseCode",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "vnp_SecureHashType",
+            "in": "query",
+            "type": "string"
+          }
+        ],
         "responses": {
           "default": {
             "description": ""

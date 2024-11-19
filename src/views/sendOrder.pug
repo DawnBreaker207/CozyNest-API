@@ -2,40 +2,34 @@
 extends baseEmail
 
 block content
-  p(style="color: #2986cc;") Kính gửi Anh/chị: Nguyễn Văn A
+  p(style="color: #2986cc;") Kính gửi Anh/chị: #{customerName}
     p Xin cảm ơn quý khách đã mua hàng tại CozyNest.
-    p(style="font-weight: bold;") Hóa đơn được tạo lúc: 15/10/2024, 14:30
+    p(style="font-weight: bold;") Hóa đơn được tạo lúc: #{orderDate}
 
     .invoice-details(style="border: 1px solid #ccc; border-radius: 10px; padding: 10px 20px; margin-top: 20px;")
-      p Mã hóa đơn: HD123456
-      p Khách hàng: Nguyễn Văn A
-      p Điện thoại: 0901234567
-      p Địa chỉ nhận hàng: 123 Đường ABC, Quận XYZ, TP.HCM
+      p Mã hóa đơn: #{orderId}
+    p Khách hàng: #{customerName}
+    p Điện thoại: #{customerPhone}
+    p Địa chỉ nhận hàng: #{customerAddress}
 
       table(style="width: 100%; border-collapse: collapse; margin-top: 20px;")
-        thead
-          tr(style="background-color: #cfe2f3;")
-            th(style="padding: 10px; border: 1px solid black;") STT
-            th(style="padding: 10px; border: 1px solid black;") Sản phẩm
-            th(style="padding: 10px; border: 1px solid black;") Cân nặng
-            th(style="padding: 10px; border: 1px solid black;") Đơn giá
-        tbody
+      thead
+        tr(style="background-color: #cfe2f3;")
+          th(style="padding: 10px; border: 1px solid black;") STT
+          th(style="padding: 10px; border: 1px solid black;") Sản phẩm
+          th(style="padding: 10px; border: 1px solid black;") Cân nặng
+          th(style="padding: 10px; border: 1px solid black;") Đơn giá
+      tbody
+        each product, index in products
           tr(style="border-bottom: 1px solid #ccc;")
-            td(style="padding: 10px; border: 1px solid black; text-align: center;") 1
+            td(style="padding: 10px; border: 1px solid black; text-align: center;") #{index + 1}
             td(style="padding: 10px; border: 1px solid black; text-align: center;")
-              img(src="https://cdn.pixabay.com/photo/2013/07/12/17/20/leaf-152047_1280.png" alt="Táo đỏ" style="width: 80px; height: 80px; border-radius: 5px;")
-              p Táo đỏ
-            td(style="padding: 10px; border: 1px solid black; text-align: center;") 1 kg
-            td(style="padding: 10px; border: 1px solid black; text-align: center;") 200.000 VNĐ
-          tr(style="border-bottom: 1px solid #ccc;")
-            td(style="padding: 10px; border: 1px solid black; text-align: center;") 2
-            td(style="padding: 10px; border: 1px solid black; text-align: center;")
-              img(src="https://cdn.pixabay.com/photo/2013/07/12/17/20/leaf-152047_1280.png" alt="Chuối tiêu" style="width: 80px; height: 80px; border-radius: 5px;")
-              p Chuối tiêu
-            td(style="padding: 10px; border: 1px solid black; text-align: center;") 1 kg
-            td(style="padding: 10px; border: 1px solid black; text-align: center;") 50.000 VNĐ
+              img(src=product.image alt=product.name style="width: 80px; height: 80px; border-radius: 5px;")
+              p #{product.name}
+            td(style="padding: 10px; border: 1px solid black; text-align: center;") #{product.weight}
+            td(style="padding: 10px; border: 1px solid black; text-align: center;") #{product.price}
 
-      h4(style="margin: 20px 0;") Tổng cộng: 250.000 VNĐ
-      h3(style="color: red; font-weight: bold; margin-top: 20px;") Tổng tiền thanh toán: 250.000 VNĐ
-      p Thanh toán: Thanh toán khi nhận hàng
-      p Trạng thái đơn hàng: Đang xử lý
+    h4(style="margin: 20px 0;") Tổng cộng: #{totalAmount}
+    h3(style="color: red; font-weight: bold; margin-top: 20px;") Tổng tiền thanh toán: #{totalAmount}
+    p Thanh toán: #{paymentMethod}
+    p Trạng thái đơn hàng: #{paymentStatus}

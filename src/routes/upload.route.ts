@@ -1,7 +1,7 @@
 import {
   deleteImage,
-  uploadSingle,
   uploadMultiple,
+  uploadSingle,
 } from '@/controllers/upload.controller';
 import { upload } from '@/middlewares/uploadImages';
 import { Router } from 'express';

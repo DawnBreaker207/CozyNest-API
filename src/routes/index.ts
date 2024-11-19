@@ -2,7 +2,10 @@ import { Router } from 'express';
 import routeAuth from './auth.route';
 import routeCart from './cart.route';
 import routeCategory from './categories.route';
+import routeCoupon from './coupon.route';
 import routeMail from './mail.route';
+import routeOption from './option.route';
+import routeOptionalValue from './optionalValue.route';
 import routeOrder from './order.route';
 import routePayment from './payment.route';
 import routeProduct from './products.route';
@@ -15,6 +18,7 @@ import routeOptionalValue from './optionalValue.route';
 import routeCoupon from './coupon.route';
 import routeArticle from './article.route';
 
+
 const router = Router();
 
 //* Products
@@ -23,7 +27,7 @@ router.use('/products', routeProduct);
 //* Categories
 router.use('/categories', routeCategory);
 
-//* AuthenticationO
+//* Authentication
 router.use('/auth', routeAuth);
 
 //* Upload images

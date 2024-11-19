@@ -9,13 +9,14 @@ import { ZodType } from 'zod';
  * @param schema
  * @returns
  */
-const validBodyRequest = (schema: ZodType<any>) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+const validBodyRequest =
+  (schema: ZodType<any>) =>
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { error } = schema.safeParse(req.body);
       if (error) {
         const errors = error.errors.map((item) => ({
-          message: item.message + ' ' + item.path,
+          message: `${item.message} ${item.path}`,
         }));
         logger.error('error', `Valid body request error: ${errors}`);
         return res.status(StatusCodes.BAD_REQUEST).json({
@@ -29,6 +30,5 @@ const validBodyRequest = (schema: ZodType<any>) => {
       next(error);
     }
   };
-};
 
 export default validBodyRequest;

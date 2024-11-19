@@ -1,25 +1,23 @@
 import {
   createOption,
   deleteOption,
-  getAllOption,
+  getAllOptions,
   getOneOption,
   updateOption,
 } from '@/controllers/variants.controller';
-import { checkAuth } from '@/middlewares/checkAuth';
-import { checkPermission } from '@/middlewares/checkPermission';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { optionSchema } from '@/validations/variant.validation';
 import { Router } from 'express';
 
 const routeOption = Router();
 
-// api option
+// Api option
 
 //* Get all option value in product
 routeOption.get(
   '/:product_id',
   // #swagger.tags = ['Option']
-  getAllOption,
+  getAllOptions,
 );
 
 //* Get one option value in product
@@ -32,8 +30,8 @@ routeOption.get(
 //* Create option value in product
 routeOption.post(
   '/:product_id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   validBodyRequest(optionSchema),
   // #swagger.tags = ['Option']
   createOption,
@@ -42,8 +40,8 @@ routeOption.post(
 //* Update option value in product
 routeOption.put(
   '/:product_id/:option_id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   validBodyRequest(optionSchema),
   // #swagger.tags = ['Option']
   updateOption,
@@ -52,8 +50,8 @@ routeOption.put(
 //* Delete option value in product
 routeOption.delete(
   '/:product_id/:option_id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   // #swagger.tags = ['Option']
   deleteOption,
 );
