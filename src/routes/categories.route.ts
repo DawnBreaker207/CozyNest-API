@@ -6,8 +6,6 @@ import {
   softDeleteCategory,
   updateCategory,
 } from '@/controllers/category.controller';
-import { checkAuth } from '@/middlewares/checkAuth';
-import { checkPermission } from '@/middlewares/checkPermission';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { categorySchema } from '@/validations/product.validation';
 import { Router } from 'express';
@@ -33,8 +31,8 @@ routeCategory.get(
 //* Create new category
 routeCategory.post(
   '/',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   validBodyRequest(categorySchema),
   // #swagger.tags = ['Category']
   createCategory,
@@ -43,8 +41,8 @@ routeCategory.post(
 //* Update category
 routeCategory.put(
   '/:id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   validBodyRequest(categorySchema),
   // #swagger.tags = ['Category']
   updateCategory,
@@ -53,8 +51,8 @@ routeCategory.put(
 //* Soft delete category
 routeCategory.patch(
   '/:id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   // #swagger.tags = ['Category']
   softDeleteCategory,
 );
@@ -62,8 +60,8 @@ routeCategory.patch(
 //* Hard delete category
 routeCategory.delete(
   '/:id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   // #swagger.tags = ['Category']
   hardDeleteCategory,
 );
