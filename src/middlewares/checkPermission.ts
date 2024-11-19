@@ -8,17 +8,19 @@ import { StatusCodes } from 'http-status-codes';
 
 const checkPermission: RequestHandler = async (req, res, next) => {
   try {
-    const token = req.cookies.refreshToken;
-    logger.log('info', token);
+    const { refreshToken } = req.cookies;
+    logger.log('info', refreshToken);
     // Check token exist in request
-    if (!token) {
+    if (!refreshToken) {
       logger.log('error', 'Check permission error: Token not exist');
       return res.status(StatusCodes.FORBIDDEN).json({
         message: messagesError.FORBIDDEN,
       });
     }
     // Check token valid
-    const decode = verifyToken(token, SECRET_REFRESH_TOKEN) as { _id?: string };
+    const decode = verifyToken(refreshToken, SECRET_REFRESH_TOKEN) as {
+      _id?: string;
+    };
 
     if (!decode || !decode._id) {
       return res.status(StatusCodes.BAD_REQUEST).json({

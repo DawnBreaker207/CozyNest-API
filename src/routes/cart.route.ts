@@ -6,7 +6,6 @@ import {
   decreaseQuantity,
   increaseQuantity,
 } from '@/controllers/cart.controller';
-import { checkAuth } from '@/middlewares/checkAuth';
 import { Router } from 'express';
 
 const routeCart = Router();
@@ -14,7 +13,7 @@ const routeCart = Router();
 //* Get cart user
 routeCart.get(
   '/:userId',
-  checkAuth,
+  // checkAuth,
   // #swagger.tags = ['Cart']
   GetCartById,
 );
@@ -22,7 +21,7 @@ routeCart.get(
 //* Add product item to cart
 routeCart.post(
   '/add-to-cart',
-  checkAuth,
+  // checkAuth,
   // #swagger.tags = ['Cart']
   AddToCart,
 );
@@ -30,7 +29,7 @@ routeCart.post(
 //* Increase product quantity in cart
 routeCart.post(
   '/increase',
-  checkAuth,
+  // checkAuth,
   // #swagger.tags = ['Cart']
   increaseQuantity,
 );
@@ -38,7 +37,7 @@ routeCart.post(
 //* Decrease product quantity in cart
 routeCart.post(
   '/decrease',
-  checkAuth,
+  // checkAuth,
   // #swagger.tags = ['Cart']
   decreaseQuantity,
 );
@@ -46,7 +45,7 @@ routeCart.post(
 //* Remove product from cart
 routeCart.post(
   '/remove-from-cart',
-  checkAuth,
+  // checkAuth,
   // #swagger.tags = ['Cart']
   RemoveFromCart,
 );
