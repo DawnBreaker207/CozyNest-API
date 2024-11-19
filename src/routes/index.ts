@@ -12,11 +12,8 @@ import routeProduct from './products.route';
 import routeShipment from './shipment.route';
 import routeUpload from './upload.route';
 import routeUser from './user.route';
-import routeVariant from './variant.router';
-import routeOption from './option.router';
-import routeOptionalValue from './optionalValue.route';
-import routeCoupon from './coupon.route';
 import routeArticle from './article.route';
+import routeVariant from './variant.route';
 
 
 const router = Router();
