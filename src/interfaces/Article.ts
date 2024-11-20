@@ -1,13 +1,12 @@
-import { Types } from "mongoose";
+import { Types } from 'mongoose';
 
 export default interface ArticleType {
   _id: Types.ObjectId;
-    title: string;
-    thumbnail: string;
-    content: string;
-    images: string[];
-    author: string;
-    createdAt: Date;
-    updatedAt: Date;
+  title: string;
+  thumbnail: string;
+  content: string;
+  images: string[];
+  author: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
-
