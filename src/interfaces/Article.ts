@@ -10,3 +10,4 @@ export default interface ArticleType {
     createdAt: Date;
     updatedAt: Date;
 }
+

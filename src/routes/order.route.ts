@@ -21,7 +21,6 @@ import {
 } from '@/controllers/order.controller';
 import { Router } from 'express';
 
-
 const routeOrder = Router();
 routeOrder.put('/decrement', decreaseProductFromOrder);
 routeOrder.put('/increment', increaseProductFromOrder);

@@ -5,3 +5,4 @@ export const articleSchema = z.object({
     images  : z.string().optional(),
     content: z.string().min(1, { message: 'Required content article' }),
 });
+

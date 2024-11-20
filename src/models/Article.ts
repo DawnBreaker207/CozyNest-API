@@ -1,18 +1,18 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const ArticleSchema = new Schema({
   title: {
     type: String,
-    required: true
+    required: true,
   },
   thumbnail: {
-    type: String
+    type: String,
   },
   content: [
     {
       heading: {
-        type: String
+        type: String,
       },
       paragraph: {
         type: String,
@@ -20,24 +20,24 @@ const ArticleSchema = new Schema({
       images: [
         {
           url: String,
-          caption: String
-        }
-      ]
-    }
+          caption: String,
+        },
+      ],
+    },
   ],
   author: {
-    type: String
+    type: String,
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-const Article = mongoose.model("Article", ArticleSchema);
+const Article = mongoose.model('Article', ArticleSchema);
 
-export default Article
+export default Article;

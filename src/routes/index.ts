@@ -62,4 +62,5 @@ router.use('/coupon', routeCoupon);
 
 //* Articles
 router.use('/articles', routeArticle);  
+
 export default router;
