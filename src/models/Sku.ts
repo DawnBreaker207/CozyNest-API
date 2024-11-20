@@ -6,7 +6,6 @@ const skuSchema = new mongoose.Schema<SkuType>(
   {
     sku_id: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
     },
     product_id: {
       type: mongoose.Schema.Types.ObjectId,
