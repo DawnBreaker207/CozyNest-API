@@ -65,9 +65,7 @@
       "description": "Endpoints for coupons"
     }
   ],
-  "schemes": [
-    "http"
-  ],
+  "schemes": ["http"],
   "securityDefinitions": {
     "Bearer": {
       "type": "apiKey",
@@ -79,9 +77,7 @@
   "paths": {
     "/api/v1/products/": {
       "get": {
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "description": "",
         "parameters": [
           {
@@ -137,9 +133,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "description": "",
         "responses": {
           "200": {
@@ -150,9 +144,7 @@
     },
     "/api/v1/products/{id}": {
       "get": {
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "description": "",
         "parameters": [
           {
@@ -169,9 +161,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "description": "",
         "parameters": [
           {
@@ -188,9 +178,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "description": "",
         "parameters": [
           {
@@ -207,9 +195,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "description": "",
         "parameters": [
           {
@@ -228,9 +214,7 @@
     },
     "/api/v1/products/{cate_id}/{product_id}": {
       "get": {
-        "tags": [
-          "Product"
-        ],
+        "tags": ["Product"],
         "description": "",
         "parameters": [
           {
@@ -255,9 +239,7 @@
     },
     "/api/v1/categories/": {
       "get": {
-        "tags": [
-          "Category"
-        ],
+        "tags": ["Category"],
         "description": "",
         "responses": {
           "default": {
@@ -266,9 +248,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Category"
-        ],
+        "tags": ["Category"],
         "description": "",
         "parameters": [
           {
@@ -293,9 +273,7 @@
     },
     "/api/v1/categories/{id}": {
       "get": {
-        "tags": [
-          "Category"
-        ],
+        "tags": ["Category"],
         "description": "",
         "parameters": [
           {
@@ -312,9 +290,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Category"
-        ],
+        "tags": ["Category"],
         "description": "",
         "parameters": [
           {
@@ -331,9 +307,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "Category"
-        ],
+        "tags": ["Category"],
         "description": "",
         "parameters": [
           {
@@ -350,9 +324,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Category"
-        ],
+        "tags": ["Category"],
         "description": "",
         "parameters": [
           {
@@ -371,9 +343,7 @@
     },
     "/api/v1/auth/register": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "description": "",
         "parameters": [
           {
@@ -401,9 +371,7 @@
     },
     "/api/v1/auth/login": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "description": "",
         "parameters": [
           {
@@ -431,9 +399,7 @@
     },
     "/api/v1/auth/token": {
       "get": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "description": "",
         "responses": {
           "default": {
@@ -442,9 +408,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "description": "",
         "responses": {
           "default": {
@@ -455,9 +419,7 @@
     },
     "/api/v1/upload/": {
       "post": {
-        "tags": [
-          "Upload"
-        ],
+        "tags": ["Upload"],
         "description": "",
         "responses": {
           "default": {
@@ -468,9 +430,7 @@
     },
     "/api/v1/upload/multiple": {
       "post": {
-        "tags": [
-          "Upload"
-        ],
+        "tags": ["Upload"],
         "description": "",
         "responses": {
           "default": {
@@ -481,9 +441,7 @@
     },
     "/api/v1/upload/{publicId}": {
       "delete": {
-        "tags": [
-          "Upload"
-        ],
+        "tags": ["Upload"],
         "description": "",
         "parameters": [
           {
@@ -502,9 +460,7 @@
     },
     "/api/v1/mail/": {
       "post": {
-        "tags": [
-          "Mail"
-        ],
+        "tags": ["Mail"],
         "description": "",
         "parameters": [
           {
@@ -535,9 +491,7 @@
     },
     "/api/v1/users/": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -575,9 +529,7 @@
     },
     "/api/v1/users/{id}": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -594,9 +546,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -630,9 +580,7 @@
     },
     "/api/v1/users/generateVerificationToken": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -657,9 +605,7 @@
     },
     "/api/v1/users/verifyToken": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -684,9 +630,7 @@
     },
     "/api/v1/users/forgotPassword": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -711,9 +655,7 @@
     },
     "/api/v1/users/changePassword": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -946,9 +888,7 @@
     },
     "/api/v1/cart/{userId}": {
       "get": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "description": "",
         "parameters": [
           {
@@ -967,9 +907,7 @@
     },
     "/api/v1/cart/add-to-cart": {
       "post": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "description": "",
         "parameters": [
           {
@@ -1003,9 +941,7 @@
     },
     "/api/v1/cart/increase": {
       "post": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "description": "",
         "responses": {
           "default": {
@@ -1016,9 +952,7 @@
     },
     "/api/v1/cart/decrease": {
       "post": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "description": "",
         "responses": {
           "default": {
@@ -1029,9 +963,7 @@
     },
     "/api/v1/cart/remove-from-cart": {
       "post": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "description": "",
         "responses": {
           "default": {
@@ -1042,9 +974,7 @@
     },
     "/api/v1/cart/remove-cart/{id}": {
       "delete": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "description": "",
         "parameters": [
           {
@@ -1063,9 +993,7 @@
     },
     "/api/v1/shipment/create-order": {
       "post": {
-        "tags": [
-          "Shipment"
-        ],
+        "tags": ["Shipment"],
         "description": "",
         "parameters": [
           {
@@ -1105,9 +1033,7 @@
     },
     "/api/v1/shipment/calculate-fee": {
       "post": {
-        "tags": [
-          "Shipment"
-        ],
+        "tags": ["Shipment"],
         "description": "",
         "responses": {
           "default": {
@@ -1118,9 +1044,7 @@
     },
     "/api/v1/shipment/track-order/{orderCode}": {
       "get": {
-        "tags": [
-          "Shipment"
-        ],
+        "tags": ["Shipment"],
         "description": "",
         "parameters": [
           {
@@ -1139,9 +1063,7 @@
     },
     "/api/v1/payment/create-zalopay": {
       "post": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "parameters": [
           {
@@ -1169,9 +1091,7 @@
     },
     "/api/v1/payment/zalopay-callback": {
       "get": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "responses": {
           "default": {
@@ -1182,9 +1102,7 @@
     },
     "/api/v1/payment/zalopay-ipn/{id}": {
       "get": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "parameters": [
           {
@@ -1203,9 +1121,7 @@
     },
     "/api/v1/payment/create-momo": {
       "post": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "parameters": [
           {
@@ -1236,9 +1152,7 @@
     },
     "/api/v1/payment/momo-callback": {
       "get": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "responses": {
           "default": {
@@ -1249,9 +1163,7 @@
     },
     "/api/v1/payment/transaction-status": {
       "get": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "responses": {
           "default": {
@@ -1262,9 +1174,7 @@
     },
     "/api/v1/payment/create-vnpay": {
       "post": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "parameters": [
           {
@@ -1300,9 +1210,7 @@
     },
     "/api/v1/payment/vnpay-return": {
       "get": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "parameters": [
           {
@@ -1330,9 +1238,7 @@
     },
     "/api/v1/payment/vnpay-ipn": {
       "get": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "parameters": [
           {
@@ -1360,9 +1266,7 @@
     },
     "/api/v1/options/{product_id}": {
       "get": {
-        "tags": [
-          "Option"
-        ],
+        "tags": ["Option"],
         "description": "",
         "parameters": [
           {
@@ -1379,9 +1283,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Option"
-        ],
+        "tags": ["Option"],
         "description": "",
         "parameters": [
           {
@@ -1400,9 +1302,7 @@
     },
     "/api/v1/options/{product_id}/{option_id}": {
       "get": {
-        "tags": [
-          "Option"
-        ],
+        "tags": ["Option"],
         "description": "",
         "parameters": [
           {
@@ -1425,9 +1325,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Option"
-        ],
+        "tags": ["Option"],
         "description": "",
         "parameters": [
           {
@@ -1450,9 +1348,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Option"
-        ],
+        "tags": ["Option"],
         "description": "",
         "parameters": [
           {
@@ -1477,9 +1373,7 @@
     },
     "/api/v1/optionalValue/{product_id}/{option_id}": {
       "get": {
-        "tags": [
-          "OptionalValue"
-        ],
+        "tags": ["OptionalValue"],
         "description": "",
         "parameters": [
           {
@@ -1502,9 +1396,7 @@
         }
       },
       "post": {
-        "tags": [
-          "OptionalValue"
-        ],
+        "tags": ["OptionalValue"],
         "description": "",
         "parameters": [
           {
@@ -1529,9 +1421,7 @@
     },
     "/api/v1/optionalValue/{product_id}/{option_id}/{value_id}": {
       "get": {
-        "tags": [
-          "OptionalValue"
-        ],
+        "tags": ["OptionalValue"],
         "description": "",
         "parameters": [
           {
@@ -1560,9 +1450,7 @@
         }
       },
       "put": {
-        "tags": [
-          "OptionalValue"
-        ],
+        "tags": ["OptionalValue"],
         "description": "",
         "parameters": [
           {
@@ -1591,9 +1479,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "OptionalValue"
-        ],
+        "tags": ["OptionalValue"],
         "description": "",
         "parameters": [
           {
@@ -1624,9 +1510,7 @@
     },
     "/api/v1/variants/{product_id}": {
       "get": {
-        "tags": [
-          "Variant"
-        ],
+        "tags": ["Variant"],
         "description": "",
         "parameters": [
           {
@@ -1643,9 +1527,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Variant"
-        ],
+        "tags": ["Variant"],
         "description": "",
         "parameters": [
           {
@@ -1664,9 +1546,7 @@
     },
     "/api/v1/variants/{product_id}/{sku_id}": {
       "get": {
-        "tags": [
-          "Variant"
-        ],
+        "tags": ["Variant"],
         "description": "",
         "parameters": [
           {
@@ -1689,9 +1569,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Variant"
-        ],
+        "tags": ["Variant"],
         "description": "",
         "parameters": [
           {
@@ -1714,9 +1592,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Variant"
-        ],
+        "tags": ["Variant"],
         "description": "",
         "parameters": [
           {
@@ -1741,9 +1617,7 @@
     },
     "/api/v1/coupon/": {
       "get": {
-        "tags": [
-          "Coupon"
-        ],
+        "tags": ["Coupon"],
         "description": "",
         "parameters": [
           {
@@ -1784,9 +1658,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Coupon"
-        ],
+        "tags": ["Coupon"],
         "description": "",
         "responses": {
           "default": {
@@ -1797,9 +1669,7 @@
     },
     "/api/v1/coupon/{id}": {
       "get": {
-        "tags": [
-          "Coupon"
-        ],
+        "tags": ["Coupon"],
         "description": "",
         "parameters": [
           {
@@ -1816,9 +1686,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "Coupon"
-        ],
+        "tags": ["Coupon"],
         "description": "",
         "parameters": [
           {
@@ -1835,9 +1703,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Coupon"
-        ],
+        "tags": ["Coupon"],
         "description": "",
         "parameters": [
           {
@@ -1856,10 +1722,81 @@
     },
     "/api/v1/coupon/couponValue": {
       "get": {
-        "tags": [
-          "Coupon"
-        ],
+        "tags": ["Coupon"],
         "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/articles/": {
+      "get": {
+        "tags": ["Articles"],
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": ["Articles"],
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{id}": {
+      "get": {
+        "tags": ["Articles"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": ["Articles"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Articles"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {
           "default": {
             "description": ""
@@ -1868,7 +1805,5 @@
       }
     }
   },
-  "apis": [
-    "./src/routes/*.ts"
-  ]
+  "apis": ["./src/routes/*.ts"]
 }

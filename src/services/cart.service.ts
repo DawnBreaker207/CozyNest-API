@@ -258,5 +258,5 @@ export {
   increaseQuantityService,
   RemoveCartService,
   removeFromCart,
-  RemoveFromCartService
+  RemoveFromCartService,
 };

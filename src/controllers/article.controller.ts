@@ -4,7 +4,7 @@ import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-//GET /articles 
+//GET /articles
 export const getAll: RequestHandler = async (req, res, next) => {
   try {
     const articles = await Article.find();
@@ -53,22 +53,21 @@ export const createArticle: RequestHandler = async (req, res, next) => {
 
 //PUT /articles/:id
 export const updateArticle: RequestHandler = async (req, res, next) => {
-    const {id} = req.params;
+  const { id } = req.params;
   try {
-    const updateArticle = await Article.findByIdAndUpdate(
-      id,
-      req.body,
-      { new: true }
-    );
+    const updateArticle = await Article.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+
     if (!updateArticle) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: 'Article not found' });
-    };
+    }
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_ARTICLE_SUCCESS,
       res: updateArticle,
-    }); 
+    });
   } catch (error) {
     logger.log('error', `Catch error in update article: ${error}`);
     next(error);
@@ -77,19 +76,19 @@ export const updateArticle: RequestHandler = async (req, res, next) => {
 
 //DELETE /articles/:id
 export const deleteArticle: RequestHandler = async (req, res, next) => {
-    try {
-        const deleteArticle = await Article.findByIdAndDelete(req.params.id);
-        if (!deleteArticle) {
-            return res
-              .status(StatusCodes.NOT_FOUND)
-              .json({ message: 'Article not found' });  
-        }
-        res.status(StatusCodes.OK).json({
-            message: messagesSuccess.DELETE_ARTICLE_SUCCESS,
-            res: deleteArticle
-        })
-    } catch (error) {
-        logger.log('error', `Catch error in delete article: ${error}`);
-        next(error);
+  try {
+    const deleteArticle = await Article.findByIdAndDelete(req.params.id);
+    if (!deleteArticle) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Article not found' });
     }
-}
+    res.status(StatusCodes.OK).json({
+      message: messagesSuccess.DELETE_ARTICLE_SUCCESS,
+      res: deleteArticle,
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in delete article: ${error}`);
+    next(error);
+  }
+};

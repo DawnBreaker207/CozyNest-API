@@ -15,7 +15,6 @@ import routeUser from './user.route';
 import routeArticle from './article.route';
 import routeVariant from './variant.route';
 
-
 const router = Router();
 
 //* Products
@@ -61,5 +60,6 @@ router.use('/variants', routeVariant);
 router.use('/coupon', routeCoupon);
 
 //* Articles
-router.use('/articles', routeArticle);  
+router.use('/articles', routeArticle);
+
 export default router;
