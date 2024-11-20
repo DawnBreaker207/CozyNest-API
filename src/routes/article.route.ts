@@ -5,38 +5,52 @@ import {
   getArticleDetail,
   updateArticle,
 } from '@/controllers/article.controller';
-import { checkAuth } from '@/middlewares/checkAuth';
-import { checkPermission } from '@/middlewares/checkPermission';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { articleSchema } from '@/validations/article.validation';
 import { Router } from 'express';
 
 const routeArticle = Router();
 //*get all
-routeArticle.get('/', getAll);
+routeArticle.get(
+  '/',
+  // #swagger.tags = ['Articles']
+  getAll,
+);
 
 //*get one
-routeArticle.get('/:id', getArticleDetail);
+routeArticle.get(
+  '/:id',
+  // #swagger.tags = ['Articles']
+  getArticleDetail,
+);
 
 //*create
 routeArticle.post(
   '/',
-  createArticle,
+  // checkAuth,
+  // checkPermission,
   validBodyRequest(articleSchema),
-  checkAuth,
-  checkPermission,
+  // #swagger.tags = ['Articles']
+  createArticle,
 );
 
 //*update
 routeArticle.put(
   '/:id',
-  updateArticle,
+  // checkAuth,
+  // checkPermission,
   validBodyRequest(articleSchema),
-  checkAuth,
-  checkPermission,
+  // #swagger.tags = ['Articles']
+  updateArticle,
 );
 
 //*delete
-routeArticle.delete('/:id', deleteArticle, checkAuth, checkPermission);
+routeArticle.delete(
+  '/:id',
+  // checkAuth,
+  // checkPermission,
+  // #swagger.tags = ['Articles']
+  deleteArticle,
+);
 
 export default routeArticle;
