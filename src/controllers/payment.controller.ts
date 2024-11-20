@@ -353,7 +353,9 @@ export const createZaloPay: RequestHandler = async (req, res, next) => {
       params: order,
     });
     if (result && result.data && result.data.order_url) {
-      return { payUrl: result.data.order_url }; // Trả về `order_url` nếu thành công
+      return res.status(StatusCodes.CREATED).json({
+        res: result.data.order_url, // Trả về `order_url` nếu thành công
+      });
     }
     throw new Error('Invalid response from ZaloPay API');
   } catch (error) {
