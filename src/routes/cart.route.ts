@@ -3,6 +3,7 @@ import {
   decreaseQuantity,
   GetById,
   increaseQuantity,
+  removeAllFromCart,
   RemoveCart,
   RemoveFromCart,
 } from '@/controllers/cart.controller';
@@ -50,6 +51,9 @@ routeCart.post(
   // #swagger.tags = ['Cart']
   RemoveFromCart,
 );
+
+// route xóa tất cả sản phẩm
+routeCart.delete('/remove-all/:userId', removeAllFromCart);
 
 //* Delete entire cart when order done
 routeCart.delete(

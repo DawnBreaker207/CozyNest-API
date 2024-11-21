@@ -1,16 +1,18 @@
 import { messagesSuccess } from '@/constants/messages';
+import Coupon from '@/models/Coupon';
 import {
   createCouponService,
   deleteCouponService,
   getAllCouponService,
   getOneCouponService,
-  getValueCouponService,
-  updateCouponService,
+  updateCouponService
 } from '@/services/coupon.service';
+import { AppError } from '@/utils/errorHandle';
 import logger from '@/utils/logger';
 
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import moment from 'moment';
 
 const createCoupon: RequestHandler = async (req, res, next) => {
   /**
@@ -115,15 +117,40 @@ const updateCoupon: RequestHandler = async (req, res, next) => {
 };
 
 const getValueCoupon: RequestHandler = async (req, res, next) => {
-  /**
-   * @param {string} req.body.coupon_code Param coupon_code input
-   */
-  const { coupon_code } = req.body;
   try {
-    await getValueCouponService(coupon_code);
+    const { coupon_code } = req.query; // Lấy mã coupon từ body
+    const currentDate = moment().format('YYYY-MM-DD');
+
+    const voucher = await Coupon.findOne({
+      $and: [{ couponCode: coupon_code, status: true }],
+    });
+
+    if (!voucher) {
+      throw new AppError(StatusCodes.NOT_FOUND, 'Not found coupon');
+    }
+    if (voucher.couponQuantity === 0) {
+      throw new AppError(StatusCodes.BAD_GATEWAY, 'This coupon was empty');
+    }
+    
+    const endDate = moment(voucher.couponEndDate).format('YYYY-MM-DD');
+    const startDate = moment(voucher.couponStartDate).format('YYYY-MM-DD');
+
+    if (currentDate > endDate) {
+      throw new AppError(StatusCodes.BAD_REQUEST, 'This voucher was ended');
+    }
+
+    // Sửa điều kiện này để kiểm tra ngày bắt đầu
+    if (currentDate < startDate) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'This voucher is not started'
+      );
+    }
 
     res.status(StatusCodes.OK).json({
       message: 'Get value coupon success',
+      couponValue: voucher.couponValue,
+      name: voucher.name
     });
   } catch (error) {
     logger.log('error', `Catch error in get value coupon: ${error}`);

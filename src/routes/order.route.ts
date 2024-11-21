@@ -23,6 +23,6 @@ routeOrder.get('/orderByUserId', GetOrderByUserId);
 routeOrder.post('/', CreateOrder);
 
 //* Update order status
-routeOrder.patch('/updateOrder/:id', checkAuth, checkPermission, UpdateOrder);
+routeOrder.patch('/updateOrder/:id',  UpdateOrder);
 
 export default routeOrder;

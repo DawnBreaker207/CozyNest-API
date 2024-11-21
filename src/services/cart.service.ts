@@ -165,7 +165,26 @@ const AddToCartService = async (
   await cart.save();
   return cart;
 };
+// Xóa tất cả sản phẩm trong giỏ hàng
+export const removeAllFromCartService = async (userId: string) => {
+  try {
+    // Tìm giỏ hàng của người dùng
+    const cart = await Cart.findOne({ userId });
 
+    if (!cart) {
+      throw new Error('Cart not found');
+    }
+
+    // Xóa tất cả sản phẩm trong giỏ hàng
+    cart.products = [];
+    await cart.save();
+
+    return cart;
+  } catch (error) {
+    logger.error(`Error removing all items from cart: ${error}`);
+    throw error;
+  }
+};
 const RemoveFromCartService = async (userId: string, sku_id: string) => {
   //Find cart exist
   const cart = await Cart.findOne({ userId });

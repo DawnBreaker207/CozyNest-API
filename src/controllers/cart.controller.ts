@@ -5,6 +5,7 @@ import {
   GetByIdService,
   GetCartService,
   increaseQuantityService,
+  removeAllFromCartService,
   RemoveCartService,
   RemoveFromCartService,
 } from '@/services/cart.service';
@@ -100,7 +101,22 @@ const AddToCart: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+// Xóa tất cả sản phẩm trong giỏ hàng
+const removeAllFromCart: RequestHandler = async (req, res, next) => {
+  const { userId } = req.params;
 
+  try {
+    const cart = await removeAllFromCartService(userId);
+
+    return res.status(StatusCodes.OK).json({
+      message: 'All products have been removed from the cart.',
+      res: cart,
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in remove all from cart: ${error}`);
+    next(error);
+  }
+};
 // Remove product from cart = delete product
 const RemoveFromCart: RequestHandler = async (req, res, next) => {
   /**
@@ -229,4 +245,5 @@ export {
   increaseQuantity,
   RemoveCart,
   RemoveFromCart,
+  removeAllFromCart
 };
