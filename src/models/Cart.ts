@@ -5,7 +5,6 @@ const cartSchema = new mongoose.Schema<CartType>(
   {
     cart_id: {
       type: String,
-      required: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
