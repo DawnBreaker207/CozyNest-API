@@ -17,7 +17,7 @@ export const createCoupon: RequestHandler = async (req, res, next) => {
    * @param {object} req.body Param body input
    */
   try {
-    const coupon = createCouponService(req.body);
+    const coupon = await createCouponService(req.body);
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATED,
       res: coupon,
@@ -135,7 +135,7 @@ export const deleteCoupon: RequestHandler = async (req, res, next) => {
    */
   const { id } = req.params;
   try {
-    const coupon = deleteCouponService(id);
+    const coupon = await deleteCouponService(id);
     res
       .status(StatusCodes.OK)
       .json({ message: 'Soft deleted success', res: coupon });
