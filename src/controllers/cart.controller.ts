@@ -89,7 +89,7 @@ export const AddToCart: RequestHandler = async (req, res, next) => {
    */
   const { userId, guestId, sku_id, quantity } = req.body;
   try {
-    const cart = AddToCartService(userId, guestId, sku_id, quantity);
+    const cart = await AddToCartService(userId, guestId, sku_id, quantity);
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.ADD_CART_SUCCESS,
@@ -145,7 +145,7 @@ export const increaseQuantity: RequestHandler = async (req, res, next) => {
    */
   const { userId, sku_id } = req.body;
   try {
-    const cart = increaseQuantityService(userId, sku_id);
+    const cart = await increaseQuantityService(userId, sku_id);
 
     res
       .status(StatusCodes.OK)
