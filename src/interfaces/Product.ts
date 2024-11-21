@@ -8,20 +8,21 @@ export interface Image {
 }
 export interface ProductType extends Document {
   _id: Types.ObjectId;
-  originId: Types.ObjectId | null;
   name: string;
   thumbnail: string;
-  images?: Image[];
+  // images?: Image[];
   categoryId: Category_Id;
-  brand: string;
   description: string;
   price: number;
   discount: number;
-  sold: number;
   isSale: boolean;
+  // sold: number;
   isHidden?: boolean;
   SKU: string;
   variants: Types.ObjectId[];
+  options: Types.ObjectId[];
+  created_at: Date;
+  updated_at: Date;
 }
 
 export type Product_Id = Pick<ProductType, '_id'>;

@@ -177,6 +177,8 @@ const variantOptions = (product_id: string, variants: any[], SKUs: any[]) => {
   return result;
 };
 
+//* Options
+
 const getAllOptionsService = async (id: string) => {
   const options = await Option.find({ product_id: id });
 
@@ -194,7 +196,7 @@ const getAllOptionsService = async (id: string) => {
         getOptionalValues(option.toObject(), option._id),
       ),
     );
-  if (!data) {
+  if (!data || !data.length) {
     logger.log(
       'error',
       'Options and optional values not found in get all options',
@@ -209,17 +211,19 @@ const getAllOptionsService = async (id: string) => {
 
 const getOneOptionService = async (id: string) => {
   // Tìm option theo ID
-  const option = await Option.findById(id).select('_id name');
+  const option = await Option.findById(id).select(
+    '_id name label position created_at updated_at',
+  );
   if (!option) {
     logger.log('error', 'Options not found in get one options');
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found option');
   }
 
   // Tìm option values của option
-  const optionValues = await OptionalValue.find({ id }).select(
+  const optionValues = await OptionalValue.find({ option_id: id }).select(
     '_id label value',
   );
-  if (!optionValues) {
+  if (!optionValues || optionValues.length === 0) {
     logger.log('error', 'Optional values not found in get one options');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
@@ -286,13 +290,14 @@ const deleteOptionService = async (id: string) => {
   }
 
   // Xóa tất cả các option values của option đó
-  await OptionalValue.deleteMany({ id });
+  await OptionalValue.deleteMany({ option_id: id });
 
   // Xóa chính option
   await Option.deleteOne({ _id: id });
   return option;
 };
 
+//* Optional value
 const getAllOptionalValuesService = async (
   product_id: string,
   option_id: string,
@@ -306,10 +311,10 @@ const getAllOptionalValuesService = async (
 
   // Find optional value by option id and product di
   const optionalValues = await OptionalValue.find({
-    product_id,
-    option_id,
+    product_id: product_id,
+    option_id: option_id,
   }).select('_id label value created_at updated_at');
-  if (!optionalValues) {
+  if (!optionalValues || optionalValues.length === 0) {
     logger.log('error', 'Optional value not found in get all optional value');
     throw new AppError(StatusCodes.NOT_ACCEPTABLE, 'Not found optional value');
   }
@@ -331,7 +336,7 @@ const getSingleOptionalValueService = async (id: string) => {
 const createOptionalValueService = async (
   product_id: string,
   option_id: string,
-  input: OptionalValueType,
+  optional_value: OptionalValueType,
 ) => {
   const options = await Option.findById(option_id);
 
@@ -340,14 +345,14 @@ const createOptionalValueService = async (
     logger.log('error', 'Options not found in create optional value');
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found options');
   }
-  const optionalValue = await OptionalValue.findOne({
-    product_id,
-    option_id,
-    label: input.label,
+  const existingValue = await OptionalValue.findOne({
+    product_id: product_id,
+    option_id: option_id,
+    value: optional_value.value,
   });
 
   // Check label exist in optional value
-  if (optionalValue) {
+  if (existingValue) {
     logger.log('error', 'Optional value exist in create optional value');
     throw new AppError(
       StatusCodes.CONFLICT,
@@ -355,11 +360,11 @@ const createOptionalValueService = async (
     );
   }
 
-  // Check if label and value was string type
-  if (typeof input.label !== 'string' || typeof input.label !== 'string') {
+  // Check if value was string type
+  if (typeof optional_value.value !== 'string') {
     logger.log(
       'error',
-      'Label and value must be string in create optional value',
+      'Value of optional value must be string in create optional value',
     );
     throw new AppError(
       StatusCodes.BAD_REQUEST,
@@ -367,20 +372,8 @@ const createOptionalValueService = async (
     );
   }
 
-  // Check label in optional value and name in option was equally
-  if (input.label !== options.name) {
-    logger.log(
-      'error',
-      'The label of Optional Value must match the label in create optional value',
-    );
-    throw new AppError(
-      StatusCodes.BAD_GATEWAY,
-      'The label of OptionalValue must match the label of the corresponding Option',
-    );
-  }
-
   const payload = {
-      ...input,
+      ...optional_value,
       option_id,
       product_id,
     },
