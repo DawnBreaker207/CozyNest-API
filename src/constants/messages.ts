@@ -154,4 +154,11 @@ export const messagesSuccess = Object.freeze({
 
   // Email
   SEND_EMAIL_SUCCESS: 'Send email successfully!',
+
+  //Article
+  GET_ARTICLES_SUCCESS: 'Get articles successfully!',
+  GET_ARTICLE_SUCCESS: 'Get article successfully!',
+  CREATED_ARTICLE_SUCCESS: 'Created article successfully!',
+  UPDATE_ARTICLE_SUCCESS: 'Update article successfully!',
+  DELETE_ARTICLE_SUCCESS: 'Delete article successfully!',
 });

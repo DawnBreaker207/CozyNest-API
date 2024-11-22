@@ -10,8 +10,6 @@ import {
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { productSchema } from '@/validations/product.validation';
 import { Router } from 'express';
-import { checkAuth } from '../middlewares/checkAuth';
-import { checkPermission } from '@/middlewares/checkPermission';
 
 const routeProduct = Router();
 
@@ -41,8 +39,8 @@ routeProduct.get(
 //* Create new product
 routeProduct.post(
   '/',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   validBodyRequest(productSchema),
   // #swagger.tags = ['Product']
   createProduct,
@@ -51,8 +49,8 @@ routeProduct.post(
 //* Update product
 routeProduct.put(
   '/:id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   validBodyRequest(productSchema),
   // #swagger.tags = ['Product']
   updateProduct,
@@ -61,8 +59,8 @@ routeProduct.put(
 //* Soft delete product
 routeProduct.patch(
   '/:id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   // #swagger.tags = ['Product']
   softDeleteProduct,
 );
@@ -70,8 +68,8 @@ routeProduct.patch(
 //* Hard delete product
 routeProduct.delete(
   '/:id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   // #swagger.tags = ['Product']
   hardDeleteProduct,
 );

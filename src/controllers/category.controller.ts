@@ -68,7 +68,7 @@ export const updateCategory: RequestHandler = async (req, res, next) => {
    */
   const { id } = req.params;
   try {
-    const category = updateCategoryService(id, req.body);
+    const category = await updateCategoryService(id, req.body);
 
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_CATEGORY_SUCCESS,

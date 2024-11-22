@@ -32,7 +32,7 @@ export const getAllOptions: RequestHandler = async (req, res, next) => {
    */
   const { product_id } = req.params;
   try {
-    const data = getAllOptionsService(product_id);
+    const data = await getAllOptionsService(product_id);
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_OPTION_SUCCESS,
@@ -75,7 +75,7 @@ export const createOption: RequestHandler = async (req, res, next) => {
   const { product_id } = req.params;
   try {
     // Chuẩn bị payload cho option
-    const doc = createOptionService(product_id, req.body);
+    const doc = await createOptionService(product_id, req.body);
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATE_OPTION_SUCCESS,
@@ -321,7 +321,7 @@ export const updateVariant: RequestHandler = async (req, res, next) => {
    */
   const { sku_id } = req.params;
   try {
-    const doc = updateVariantService(sku_id, req.body);
+    const doc = await updateVariantService(sku_id, req.body);
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_VARIANT_SUCCESS,

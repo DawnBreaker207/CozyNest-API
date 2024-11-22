@@ -12,6 +12,7 @@ import routeProduct from './products.route';
 import routeShipment from './shipment.route';
 import routeUpload from './upload.route';
 import routeUser from './user.route';
+import routeArticle from './article.route';
 import routeVariant from './variant.route';
 import routeReview from './review.route';
 
@@ -61,4 +62,8 @@ router.use('/review', routeReview);
 
 //* Coupon
 router.use('/coupon', routeCoupon);
+
+//* Articles
+router.use('/articles', routeArticle);
+
 export default router;

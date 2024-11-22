@@ -44,11 +44,12 @@ export const getAllUser: RequestHandler = async (req, res, next) => {
 
     res.status(StatusCodes.OK).json({
       message: 'Get users success',
-      data: users.docs,
-      total: users.totalDocs,
-      limit: users.limit,
-      page: users.page,
-      totalPages: users.totalPages,
+      res: users.docs,
+      pagination: {
+        totalItems: users.totalDocs,
+        totalPages: users.totalPages,
+        page: users.page,
+      },
     });
   } catch (error) {
     logger.log('error', `Catch error in get all user: ${error}`);

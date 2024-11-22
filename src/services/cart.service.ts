@@ -105,7 +105,6 @@ const countTotal = (arr: { price: number; quantity: number }[]) =>
 
     // Check variant exist in database
     const variant = await Variant.findOne({ sku_id });
-
     if (!variant) {
       logger.log('error', 'Variant is not exist in add to cart');
       throw new AppError(StatusCodes.NOT_FOUND, 'Variant not exist');
@@ -258,5 +257,5 @@ export {
   increaseQuantityService,
   RemoveCartService,
   removeFromCart,
-  RemoveFromCartService
+  RemoveFromCartService,
 };
