@@ -9,7 +9,9 @@ export const getAllReviewsService = async (product_id: string) => {
   if (!Types.ObjectId.isValid(product_id)) {
     throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid ProductId');
   }
-  return await Review.find({ product_id }).populate('user_id', 'name');
+  return await Review.find({ product_id }).populate([
+    { path: 'user_id', select: 'username avatar phoneNumber' },
+  ]);
 };
 
 // Tạo review mới

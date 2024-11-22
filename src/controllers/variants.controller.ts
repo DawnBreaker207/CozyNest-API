@@ -257,10 +257,19 @@ export const getAllVariants: RequestHandler = async (req, res, next) => {
 export const createVariant: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.product_id Param product_id input
+   *
    */
+  const { price, price_before_discount, price_discount_percent, stock } = req.body;
+
   const { product_id } = req.params;
   try {
-    const createVariantData = await createVariantService(product_id);
+    const createVariantData = await createVariantService(
+      product_id,
+      price,
+      price_before_discount,
+      price_discount_percent,
+      stock,
+    );
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATED,

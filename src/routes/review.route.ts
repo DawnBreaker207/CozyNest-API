@@ -13,7 +13,7 @@ const routeReview = Router();
 routeReview.get('/:product_id', getAllReviews);
 
 //* Tạo review mới
-routeReview.post('/', checkAuth, createReview);
+routeReview.post('/', createReview);
 
 //* Xóa một review
 routeReview.delete('/:id', checkAuth, deleteReview);

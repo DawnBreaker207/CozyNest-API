@@ -343,7 +343,7 @@ const createOptionalValueService = async (
   const optionalValue = await OptionalValue.findOne({
     product_id,
     option_id,
-    label: input.label,
+    value: input.value,
   });
 
   // Check label exist in optional value
@@ -367,18 +367,6 @@ const createOptionalValueService = async (
     );
   }
 
-  // Check label in optional value and name in option was equally
-  if (input.label !== options.name) {
-    logger.log(
-      'error',
-      'The label of Optional Value must match the label in create optional value',
-    );
-    throw new AppError(
-      StatusCodes.BAD_GATEWAY,
-      'The label of OptionalValue must match the label of the corresponding Option',
-    );
-  }
-
   const payload = {
       ...input,
       option_id,
@@ -396,6 +384,7 @@ const createOptionalValueService = async (
       'Something was wrong when create optional value',
     );
   }
+  return doc;
 };
 
 const updateOptionalValueService = async (
@@ -457,7 +446,13 @@ const getAllVariantsService = async (product_id: string) => {
   return data;
 };
 
-const createVariantService = async (product_id: string) => {
+const createVariantService = async (
+  product_id: string,
+  price: number,
+  price_before_discount: number,
+  price_discount_percent: number,
+  stock: number,
+) => {
   // Check product exist
   const product = await Product.findById(product_id).select(
     '-_id name SKU slug price price_before_discount price_discount_percent',
@@ -507,16 +502,20 @@ const createVariantService = async (product_id: string) => {
 
   // Create array of SKUs from variants
   const arraySKUs = variants.flat().map((variant, index) => {
-    const variantValues = variant.label,
+    const variantValues = variant.value,
       // Nếu variantValues là chuỗi trống hoặc không hợp lệ, slug sẽ được đặt thành 'default-slug'
       slug = slugify(`${product.name}-${variantValues}`) || 'default-slug';
     return {
       ...product.toObject(),
+      name: `${product.name}-${variantValues}`,
       product_id,
-      stock: 0,
+      stock: stock || 0,
       assets: [],
       SKU: `${product.SKU}-${index + 1}`,
       slug,
+      price: price,
+      price_before_discount: price_before_discount,
+      price_discount_percent: price_discount_percent,
     };
   });
   if (!arraySKUs) {
