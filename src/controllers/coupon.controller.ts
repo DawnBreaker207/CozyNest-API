@@ -121,8 +121,7 @@ export const getValueCoupon: RequestHandler = async (req, res, next) => {
 
     res.status(StatusCodes.OK).json({
       message: 'Get value coupon success',
-      couponValue: voucher.couponValue,
-      name: voucher.name,
+      res: voucher,
     });
   } catch (error) {
     logger.log('error', `Catch error in get value coupon: ${error}`);
