@@ -1,10 +1,10 @@
 import {
   AddToCart,
+  decreaseQuantity,
   GetCartById,
+  increaseQuantity,
   RemoveCart,
   RemoveFromCart,
-  decreaseQuantity,
-  increaseQuantity,
 } from '@/controllers/cart.controller';
 import { Router } from 'express';
 
