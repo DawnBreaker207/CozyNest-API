@@ -1,4 +1,5 @@
-import { Server, Socket } from '@/socket.io/dist';
+import { Server, Socket } from 'socket.io';
+import logger from './logger';
 export interface userRooms {
   roomName: string;
   message?: string;
@@ -9,7 +10,7 @@ export const realTime = (io: Server) => {
   const userRooms: Record<string, userRooms> = {};
   // Connected event to server chat
   io.on('connection', (socket: Socket) => {
-    console.log('User connected');
+    logger.log('info', 'User connected');
     // Join room event
     socket.on(
       'joinRoom',
@@ -17,9 +18,9 @@ export const realTime = (io: Server) => {
         if (!userRooms[socket.id]) {
           socket.join(input.roomName);
           userRooms[socket.id] = input;
-          console.log(`User connected to RoomID ${input.roomName}`);
+          logger.log('info', `User connected to RoomID ${input.roomName}`);
         }
-      }
+      },
     );
     // Send notification event
     socket.on(
@@ -30,20 +31,18 @@ export const realTime = (io: Server) => {
         userId: string;
         role: string;
       }) => {
-        console.log(data);
-
         const { roomName, role } = data;
         if (role === 'user') {
-          console.log('Checking');
+          logger.log('info', 'Checking');
 
           io.to(roomName).emit('notification', data);
         }
-      }
+      },
     );
 
     // Disconnected event
     socket.on('disconnect', () => {
-      console.log(`User ${userRooms[socket.id]?.userId} disconnected`);
+      logger.log('info', `User ${userRooms[socket.id]?.userId} disconnected`);
       delete userRooms[socket.id];
     });
 
@@ -51,7 +50,7 @@ export const realTime = (io: Server) => {
     socket.on('leaveRoom', (roomName: string) => {
       socket.leave(roomName);
       delete userRooms[socket.id];
-      console.log(`User left RoomID ${roomName}`);
+      logger.log('info', `User left RoomID ${roomName}`);
     });
   });
 };

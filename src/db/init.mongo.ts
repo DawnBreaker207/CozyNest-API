@@ -34,8 +34,8 @@ class Database {
       .catch((err) =>
         logger.log(
           'error',
-          `catch errors in database: Error connecting to MongoDB: ${err}`
-        )
+          `catch errors in database: Error connecting to MongoDB: ${err}`,
+        ),
       );
   }
 

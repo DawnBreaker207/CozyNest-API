@@ -4,11 +4,15 @@ import { SkuType } from '@/interfaces/Sku';
 
 const skuSchema = new mongoose.Schema<SkuType>(
   {
+    sku_id: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
     product_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
       required: true,
     },
+
     SKU: { type: String },
     name: { type: String },
     slug: {
@@ -31,12 +35,12 @@ const skuSchema = new mongoose.Schema<SkuType>(
       },
     ],
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 skuSchema.plugin(mongoosePaginate);
 
 export const Sku = mongoose.model<SkuType, PaginateModel<SkuType>>(
   'Sku',
-  skuSchema
+  skuSchema,
 );

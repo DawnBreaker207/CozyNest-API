@@ -6,33 +6,33 @@ import { messagesSuccess } from '@/constants/messages';
 import { StatusCodes } from 'http-status-codes';
 // Helper functions, library & utils
 import {
-  createOptionalValueService,
   createOptionService,
-  deleteOptionalValueService,
+  createOptionalValueService,
+  createVariantService,
   deleteOptionService,
+  deleteOptionalValueService,
   deleteVariantService,
-  getAllOptionalValueService,
+  getAllOptionalValuesService,
   getAllOptionsService,
-  getAllVariantService,
+  getAllVariantsService,
   getOneOptionService,
   getOneVariantService,
   getSingleOptionalValueService,
-  saveVariantService,
-  updateOptionalValueService,
   updateOptionService,
+  updateOptionalValueService,
   updateVariantService,
 } from '@/services/variants.service';
 import logger from '@/utils/logger';
 
 //! Option controllers
 //Lấy tất cả các option của sản phẩm
-const getAllOption: RequestHandler = async (req, res, next) => {
+export const getAllOptions: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.product_id Param product_id input
    */
   const { product_id } = req.params;
   try {
-    const data = getAllOptionsService(product_id);
+    const data = await getAllOptionsService(product_id);
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_OPTION_SUCCESS,
@@ -45,7 +45,7 @@ const getAllOption: RequestHandler = async (req, res, next) => {
 };
 
 // Lấy thông tin một option cụ thể
-const getOneOption: RequestHandler = async (req, res, next) => {
+export const getOneOption: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.option_id Param option_id input
    */
@@ -66,7 +66,7 @@ const getOneOption: RequestHandler = async (req, res, next) => {
 };
 
 // Tạo một option mới
-const createOption: RequestHandler = async (req, res, next) => {
+export const createOption: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.product_id Param product_id input
    * @param {object} req.body Param body input
@@ -75,7 +75,7 @@ const createOption: RequestHandler = async (req, res, next) => {
   const { product_id } = req.params;
   try {
     // Chuẩn bị payload cho option
-    const doc = createOptionService(product_id, req.body);
+    const doc = await createOptionService(product_id, req.body);
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATE_OPTION_SUCCESS,
@@ -88,7 +88,7 @@ const createOption: RequestHandler = async (req, res, next) => {
 };
 
 //Cập nhật thông tin một option
-const updateOption: RequestHandler = async (req, res, next) => {
+export const updateOption: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.option_id Param option_id input
    * @param {object} req.body Param body input
@@ -109,7 +109,7 @@ const updateOption: RequestHandler = async (req, res, next) => {
 };
 
 //Xóa một option
-const deleteOption: RequestHandler = async (req, res, next) => {
+export const deleteOption: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.option_id Param option_id input
    */
@@ -128,14 +128,14 @@ const deleteOption: RequestHandler = async (req, res, next) => {
 };
 
 //! Optional Value Controller
-const getAllOptionalValue: RequestHandler = async (req, res, next) => {
+export const getAllOptionalValues: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.product_id Param product_id input
    * @param {string} req.params.option_id Param option_id input
    */
   const { product_id, option_id } = req.params;
   try {
-    const optionalValues = await getAllOptionalValueService(
+    const optionalValues = await getAllOptionalValuesService(
       product_id,
       option_id,
     );
@@ -145,12 +145,16 @@ const getAllOptionalValue: RequestHandler = async (req, res, next) => {
       res: optionalValues,
     });
   } catch (error) {
-    logger.log('error', `Catch error in get all optional value: ${error}`);
+    logger.log('error', `Catch error in get all optional values: ${error}`);
     next(error);
   }
 };
 
-const getSingleOptionalValue: RequestHandler = async (req, res, next) => {
+export const getSingleOptionalValue: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
   /**
    * @param {string} req.params.value_id Param value_id input
    */
@@ -169,7 +173,7 @@ const getSingleOptionalValue: RequestHandler = async (req, res, next) => {
   }
 };
 
-const createOptionalValue: RequestHandler = async (req, res, next) => {
+export const createOptionalValue: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.product_id Param product_id input
    * @param {string} req.params.option_id Param option_id input
@@ -193,7 +197,7 @@ const createOptionalValue: RequestHandler = async (req, res, next) => {
   }
 };
 
-const updateOptionalValue: RequestHandler = async (req, res, next) => {
+export const updateOptionalValue: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.value_id Param value_id input
    * @param {object} req.body Param body input
@@ -212,7 +216,7 @@ const updateOptionalValue: RequestHandler = async (req, res, next) => {
   }
 };
 
-const deleteOptionalValue: RequestHandler = async (req, res, next) => {
+export const deleteOptionalValue: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.value_id Param value_id input
    */
@@ -233,13 +237,13 @@ const deleteOptionalValue: RequestHandler = async (req, res, next) => {
 
 //! Variant Controllers
 // Get all variant exist in product
-const getAllVariant: RequestHandler = async (req, res, next) => {
+export const getAllVariants: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.product_id Param product_id input
    */
   const { product_id } = req.params;
   try {
-    const data = await getAllVariantService(product_id);
+    const data = await getAllVariantsService(product_id);
     return res.status(StatusCodes.OK).json({
       res: data,
     });
@@ -249,27 +253,36 @@ const getAllVariant: RequestHandler = async (req, res, next) => {
   }
 };
 
-// Create variant and save multiple variants
-const saveVariant: RequestHandler = async (req, res, next) => {
+// Create variant and create multiple variants
+export const createVariant: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.product_id Param product_id input
+   *
    */
+  const { price, price_before_discount, price_discount_percent, stock } = req.body;
+
   const { product_id } = req.params;
   try {
-    const createVariantData = await saveVariantService(product_id);
+    const createVariantData = await createVariantService(
+      product_id,
+      price,
+      price_before_discount,
+      price_discount_percent,
+      stock,
+    );
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATED,
       res: createVariantData,
     });
   } catch (error) {
-    logger.log('error', `Catch error in save variants: ${error}`);
+    logger.log('error', `Catch error in create variants: ${error}`);
     next(error);
   }
 };
 
 // Delete onr variant
-const deleteVariant: RequestHandler = async (req, res, next) => {
+export const deleteVariant: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.sku_id Param sku_id input
    */
@@ -288,7 +301,7 @@ const deleteVariant: RequestHandler = async (req, res, next) => {
 };
 
 // Get one variant
-const getOneVariant: RequestHandler = async (req, res, next) => {
+export const getOneVariant: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.sku_id Param sku_id input
    */
@@ -310,14 +323,14 @@ const getOneVariant: RequestHandler = async (req, res, next) => {
 };
 
 // Update one variant
-const updateVariant: RequestHandler = async (req, res, next) => {
+export const updateVariant: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.sku_id Param sku_id input
    * @param {object} req.body Param body input
    */
   const { sku_id } = req.params;
   try {
-    const doc = updateVariantService(sku_id, req.body);
+    const doc = await updateVariantService(sku_id, req.body);
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_VARIANT_SUCCESS,
@@ -327,21 +340,4 @@ const updateVariant: RequestHandler = async (req, res, next) => {
     logger.log('error', `Catch error in update variant: ${error}`);
     next(error);
   }
-};
-export {
-  createOption,
-  createOptionalValue,
-  deleteOption,
-  deleteOptionalValue,
-  deleteVariant,
-  getAllOption,
-  getAllOptionalValue,
-  getAllVariant,
-  getOneOption,
-  getOneVariant,
-  getSingleOptionalValue,
-  saveVariant,
-  updateOption,
-  updateOptionalValue,
-  updateVariant,
 };

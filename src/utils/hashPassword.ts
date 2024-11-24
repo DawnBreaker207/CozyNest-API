@@ -7,24 +7,22 @@ import logger from './logger';
  * @returns
  */
 const hashPassword = async (password: string) => {
-  const salt = await bcrypt.genSalt(10);
-  const hashPassword = await bcrypt.hash(password, salt);
-  return hashPassword;
-};
-
-/**
- *
- * @param password
- * @param hashPassword
- * @returns
- */
-const comparePassword = async (password: string, hashPassword: string) => {
-  const checkPass = await bcrypt.compare(password, hashPassword);
-  if (!checkPass) {
-    logger.log('error', 'Compare password error : Password not right');
-    return false;
-  }
-  return checkPass;
-};
+    const salt = await bcrypt.genSalt(10);
+    return await bcrypt.hash(password, salt);
+  },
+  /**
+   *
+   * @param password
+   * @param hashPassword
+   * @returns
+   */
+  comparePassword = async (password: string, hashPassword: string) => {
+    const checkPass = await bcrypt.compare(password, hashPassword);
+    if (!checkPass) {
+      logger.log('error', 'Compare password error : Password not right');
+      return false;
+    }
+    return checkPass;
+  };
 
 export { hashPassword, comparePassword };

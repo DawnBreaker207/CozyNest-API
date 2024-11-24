@@ -7,12 +7,12 @@ const categorySchema = new mongoose.Schema<CategoryType>(
     thumbnail: {
       url: {
         type: String,
-        // required: true,
+        // Required: true,
       },
 
       public_id: {
         type: String,
-        // required: true,
+        // Required: true,
       },
     },
     isHidden: { type: Boolean, default: false },
@@ -25,7 +25,7 @@ const categorySchema = new mongoose.Schema<CategoryType>(
       default: 'normal',
     },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 export default mongoose.model<CategoryType>('Category', categorySchema);

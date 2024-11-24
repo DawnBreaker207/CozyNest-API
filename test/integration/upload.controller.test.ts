@@ -3,7 +3,7 @@ import multer from 'multer';
 import request from 'supertest';
 import {
   deleteImage,
-  uploadImages,
+  uploadSingle,
   uploadMultiple,
 } from '../../src/controllers/upload.controller';
 import { handleDelete, handleUpload } from '../../src/configs/cloudinaryConfig';
@@ -12,7 +12,7 @@ import { messagesError, messagesSuccess } from '../../src/constants/messages';
 const app = express();
 const upload = multer();
 
-app.post('/upload', upload.single('upload'), uploadImages);
+app.post('/upload', upload.single('upload'), uploadSingle);
 app.post('/upload/multiple', upload.array('upload'), uploadMultiple);
 app.delete('/upload/:publicId', deleteImage);
 

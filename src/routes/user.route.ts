@@ -1,22 +1,20 @@
 import {
   changePassword,
-  forgotPass,
+  forgotPassword,
   generateVerifyToken,
   getAllUser,
   getOneUser,
   updateUser,
   verifyEmailToken,
 } from '@/controllers/user.controller';
-import { checkAuth } from '@/middlewares/checkAuth';
-import { checkPermission } from '@/middlewares/checkPermission';
 import { Router } from 'express';
 
 const routeUser = Router();
 //* Get all users exist
 routeUser.get(
   '/',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   // #swagger.tags = ['User']
   getAllUser,
 );
@@ -31,8 +29,6 @@ routeUser.get(
 //* Update user
 routeUser.patch(
   '/:id',
-  checkAuth,
-  checkPermission,
   // #swagger.tags = ['User']
   updateUser,
 );
@@ -55,7 +51,7 @@ routeUser.post(
 routeUser.post(
   '/forgotPassword',
   // #swagger.tags = ['User']
-  forgotPass,
+  forgotPassword,
 );
 
 //* Change password

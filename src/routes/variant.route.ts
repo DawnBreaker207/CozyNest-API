@@ -1,12 +1,10 @@
 import {
+  createVariant,
   deleteVariant,
-  getAllVariant,
+  getAllVariants,
   getOneVariant,
-  saveVariant,
   updateVariant,
 } from '@/controllers/variants.controller';
-import { checkAuth } from '@/middlewares/checkAuth';
-import { checkPermission } from '@/middlewares/checkPermission';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { variantSchema } from '@/validations/variant.validation';
 import { Router } from 'express';
@@ -18,7 +16,7 @@ const routeVariant = Router();
 routeVariant.get(
   '/:product_id',
   // #swagger.tags = ['Variant']
-  getAllVariant,
+  getAllVariants,
 );
 
 //* Get one variant
@@ -31,18 +29,18 @@ routeVariant.get(
 //* Create variant
 routeVariant.post(
   '/:product_id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   validBodyRequest(variantSchema),
   // #swagger.tags = ['Variant']
-  saveVariant,
+  createVariant,
 );
 
 //* Update variant
 routeVariant.put(
   '/:product_id/:sku_id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   validBodyRequest(variantSchema),
   // #swagger.tags = ['Variant']
   updateVariant,
@@ -51,8 +49,8 @@ routeVariant.put(
 //* Delete variant
 routeVariant.delete(
   '/:product_id/:sku_id',
-  checkAuth,
-  checkPermission,
+  // checkAuth,
+  // checkPermission,
   // #swagger.tags = ['Variant']
   deleteVariant,
 );

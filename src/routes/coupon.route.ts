@@ -3,8 +3,8 @@ import {
   deleteCoupon,
   getAllCoupon,
   getOneCoupon,
-  getValueCoupon,
   updateCoupon,
+  getValueCoupon
 } from '@/controllers/coupon.controller';
 import { Router } from 'express';
 
@@ -33,6 +33,7 @@ routeCoupon.get(
 // Create new coupon
 routeCoupon.post(
   '/',
+  // checkAuth,
   // #swagger.tags = ['Coupon']
   createCoupon,
 );
@@ -40,6 +41,7 @@ routeCoupon.post(
 // Update coupon
 routeCoupon.patch(
   '/:id',
+  // checkAuth,p
   // #swagger.tags = ['Coupon']
   updateCoupon,
 );
@@ -47,6 +49,8 @@ routeCoupon.patch(
 // Soft delete coupon
 routeCoupon.delete(
   '/:id',
+  // checkAuth,
+  // checkPermission,
   // #swagger.tags = ['Coupon']
   deleteCoupon,
 );

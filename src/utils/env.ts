@@ -23,11 +23,11 @@ const {
   // Momo configs
   MOMO_ACCESS_KEY,
   MOMO_SECRET_KEY,
-  MOMO_REDIRECT_URL,
-  MOMO_IPN_URL,
+  MOMO_REDIRECT_URL = 'http://localhost:8888/api/v1/payment/momo-callback',
+  MOMO_IPN_URL = 'http://localhost:8888/api/v1/payment/transaction-status',
   // VNPay configs
   VN_PAY_TMN_CODE,
-  VN_PAY_HASH_SECRET,
+  VN_PAY_HASH_SECRET = '',
   VN_PAY_URL,
   VN_PAY_RETURN_URL,
   // ZaloPay configs
@@ -38,8 +38,8 @@ const {
   // GHN configs
   TOKEN_SHIPMENT,
   SHIPMENT_SHOP,
-  DISTRICT_ID,
-  WARD_CODE,
+  DISTRICT_ID = '1915',
+  WARD_CODE = '1B2128',
 } = process.env;
 export {
   PORT,
