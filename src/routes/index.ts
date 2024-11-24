@@ -14,6 +14,7 @@ import routeUpload from './upload.route';
 import routeUser from './user.route';
 import routeArticle from './article.route';
 import routeVariant from './variant.route';
+import routeReview from './review.route';
 
 const router = Router();
 
@@ -55,6 +56,9 @@ router.use('/optionalValue', routeOptionalValue);
 
 //* Variants depend on product,options and optional values
 router.use('/variants', routeVariant);
+
+// Review
+router.use('/review', routeReview);
 
 //* Coupon
 router.use('/coupon', routeCoupon);
