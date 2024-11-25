@@ -3,8 +3,8 @@ import {
   deleteCoupon,
   getAllCoupon,
   getOneCoupon,
-  getValueCoupon,
   updateCoupon,
+  getValueCoupon
 } from '@/controllers/coupon.controller';
 import { Router } from 'express';
 
@@ -16,20 +16,18 @@ routeCoupon.get(
   // #swagger.tags = ['Coupon']
   getAllCoupon,
 );
+// Get value in coupon
+routeCoupon.get(
+  '/couponValue',
+  // #swagger.tags = ['Coupon']
+  getValueCoupon,
+);
 
 // Get one coupon
 routeCoupon.get(
   '/:id',
   // #swagger.tags = ['Coupon']
   getOneCoupon,
-);
-
-// Get value in coupon
-routeCoupon.get(
-  '/couponValue',
-  // checkAuth,
-  // #swagger.tags = ['Coupon']
-  getValueCoupon,
 );
 
 // Create new coupon
@@ -43,7 +41,7 @@ routeCoupon.post(
 // Update coupon
 routeCoupon.patch(
   '/:id',
-  // checkAuth,
+  // checkAuth,p
   // #swagger.tags = ['Coupon']
   updateCoupon,
 );

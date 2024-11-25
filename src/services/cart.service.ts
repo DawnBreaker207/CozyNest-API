@@ -156,7 +156,6 @@ const countTotal = (arr: { price: number; quantity: number }[]) =>
       throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
     }
 
-    // If found, filter cart
     cart.products = removeFromCart(cart, sku_id);
     cart.totalPrice = countTotal(cart.products);
     // Cart.products = cart.products.filter((product) => {

@@ -8,7 +8,6 @@ import {
   updateCouponService,
 } from '@/services/coupon.service';
 import logger from '@/utils/logger';
-
 import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -118,10 +117,11 @@ export const getValueCoupon: RequestHandler = async (req, res, next) => {
    */
   const { coupon_code } = req.body;
   try {
-    await getValueCouponService(coupon_code);
+    const voucher = await getValueCouponService(coupon_code);
 
     res.status(StatusCodes.OK).json({
       message: 'Get value coupon success',
+      res: voucher,
     });
   } catch (error) {
     logger.log('error', `Catch error in get value coupon: ${error}`);

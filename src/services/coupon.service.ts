@@ -72,6 +72,7 @@ const getDate = (input?: Date): string =>
         'This voucher is not started',
       );
     }
+    return voucher;
   },
   deleteCouponService = async (id: string): Promise<CouponType> => {
     const coupon = await Coupon.findById(id);
