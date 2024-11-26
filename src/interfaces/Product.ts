@@ -1,5 +1,6 @@
 import { Document, Types } from 'mongoose';
-import { Category_Id } from './Category';
+import { CategoryType } from './Category';
+import { OptionType, VariantType } from './Variant';
 
 export interface Image {
   url: string;
@@ -11,18 +12,18 @@ export interface ProductType extends Document {
   name: string;
   thumbnail: string;
   // images?: Image[];
-  categoryId: Category_Id;
+  slug: string;
+  category_id: CategoryType;
   description: string;
-  price: number;
-  discount: number;
-  isSale: boolean;
+  // price: number;
+  // discount: number;
+  is_sale: boolean;
   // sold: number;
-  isHidden?: boolean;
-  SKU: string;
-  variants: Types.ObjectId[];
-  options: Types.ObjectId[];
+  variants: VariantType[];
+  options: OptionType[];
   created_at: Date;
   updated_at: Date;
+  is_hidden?: boolean;
 }
 
 export type Product_Id = Pick<ProductType, '_id'>;

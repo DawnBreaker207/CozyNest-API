@@ -1,5 +1,7 @@
 import { Document } from 'mongoose';
 import { Types } from 'mongoose';
+import { SkuType } from './Sku';
+import { ProductType } from './Product';
 export interface OptionType extends Document {
   _id: Types.ObjectId;
   product_id: Types.ObjectId;
@@ -9,20 +11,21 @@ export interface OptionType extends Document {
   updated_at: Date;
 }
 
-export interface OptionalValueType extends Document {
+export interface OptionValueType extends Document {
   _id: Types.ObjectId;
-  option_id: Types.ObjectId;
+  option_id: OptionType['_id'];
   value: string;
   created_at: Date;
   updated_at: Date;
 }
 export interface VariantType {
   _id: Types.ObjectId;
-  sku: string;
-  product_id: Types.ObjectId;
-  option_values: Types.ObjectId[];
-  price: number;
-  quantity: number;
+  sku_id: SkuType;
+  product_id: ProductType;
+  option_values: OptionValueType[];
+  // price: number;
+  // stock: number;
+  image: string;
   created_at: Date;
   updated_at: Date;
 }
