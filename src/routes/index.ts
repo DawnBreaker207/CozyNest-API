@@ -5,7 +5,7 @@ import routeCategory from './categories.route';
 import routeCoupon from './coupon.route';
 import routeMail from './mail.route';
 import routeOption from './option.route';
-import routeOptionalValue from './optionalValue.route';
+import routeOptionalValue from './optionValue.route';
 import routeOrder from './order.route';
 import routePayment from './payment.route';
 import routeProduct from './products.route';

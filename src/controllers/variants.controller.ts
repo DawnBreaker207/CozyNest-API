@@ -7,19 +7,19 @@ import { StatusCodes } from 'http-status-codes';
 // Helper functions, library & utils
 import {
   createOptionService,
-  createOptionalValueService,
+  createOptionValueService,
   createVariantService,
   deleteOptionService,
-  deleteOptionalValueService,
+  deleteOptionValueService,
   deleteVariantService,
-  getAllOptionalValuesService,
+  getAllOptionValuesService,
   getAllOptionsService,
   getAllVariantsService,
   getOneOptionService,
   getOneVariantService,
-  getSingleOptionalValueService,
+  getSingleOptionValueService,
   updateOptionService,
-  updateOptionalValueService,
+  updateOptionValueService,
   updateVariantService,
 } from '@/services/variants.service';
 import logger from '@/utils/logger';
@@ -128,14 +128,14 @@ export const deleteOption: RequestHandler = async (req, res, next) => {
 };
 
 //! Optional Value Controller
-export const getAllOptionalValues: RequestHandler = async (req, res, next) => {
+export const getAllOptionValues: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.product_id Param product_id input
    * @param {string} req.params.option_id Param option_id input
    */
   const { product_id, option_id } = req.params;
   try {
-    const optionalValues = await getAllOptionalValuesService(
+    const optionalValues = await getAllOptionValuesService(
       product_id,
       option_id,
     );
@@ -150,7 +150,7 @@ export const getAllOptionalValues: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const getSingleOptionalValue: RequestHandler = async (
+export const getSingleOptionValue: RequestHandler = async (
   req,
   res,
   next,
@@ -161,7 +161,7 @@ export const getSingleOptionalValue: RequestHandler = async (
   const { value_id } = req.params;
   try {
     // Find one optional value
-    const optionValue = await getSingleOptionalValueService(value_id);
+    const optionValue = await getSingleOptionValueService(value_id);
 
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_OPTION_VALUE_SUCCESS,
@@ -173,7 +173,7 @@ export const getSingleOptionalValue: RequestHandler = async (
   }
 };
 
-export const createOptionalValue: RequestHandler = async (req, res, next) => {
+export const createOptionValue: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.product_id Param product_id input
    * @param {string} req.params.option_id Param option_id input
@@ -181,11 +181,7 @@ export const createOptionalValue: RequestHandler = async (req, res, next) => {
    */
   const { product_id, option_id } = req.params;
   try {
-    const doc = await createOptionalValueService(
-      product_id,
-      option_id,
-      req.body,
-    );
+    const doc = await createOptionValueService(product_id, option_id, req.body);
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATE_OPTION_VALUE_SUCCESS,
@@ -197,14 +193,14 @@ export const createOptionalValue: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const updateOptionalValue: RequestHandler = async (req, res, next) => {
+export const updateOptionValue: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.value_id Param value_id input
    * @param {object} req.body Param body input
    */
   const { value_id } = req.params;
   try {
-    const doc = await updateOptionalValueService(value_id, req.body);
+    const doc = await updateOptionValueService(value_id, req.body);
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_OPTION_VALUE_SUCCESS,
@@ -216,14 +212,14 @@ export const updateOptionalValue: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const deleteOptionalValue: RequestHandler = async (req, res, next) => {
+export const deleteOptionValue: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.value_id Param value_id input
    */
   const { value_id } = req.params;
   try {
     // Find optional value
-    const doc = await deleteOptionalValueService(value_id);
+    const doc = await deleteOptionValueService(value_id);
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.DELETE_OPTION_VALUE_SUCCESS,
@@ -259,7 +255,13 @@ export const createVariant: RequestHandler = async (req, res, next) => {
    * @param {string} req.params.product_id Param product_id input
    *
    */
-  const { price, price_before_discount, price_discount_percent, stock } = req.body;
+  const {
+    price,
+    price_before_discount,
+    price_discount_percent,
+    stock,
+    skuPrefix,
+  } = req.body;
 
   const { product_id } = req.params;
   try {
@@ -269,6 +271,7 @@ export const createVariant: RequestHandler = async (req, res, next) => {
       price_before_discount,
       price_discount_percent,
       stock,
+      skuPrefix,
     );
 
     return res.status(StatusCodes.CREATED).json({

@@ -10,7 +10,7 @@ const optionSchema = new mongoose.Schema<OptionType>(
     },
     { timestamps: true, versionKey: false },
   ),
-  // OptionalValue Schema
+  // OptionValue Schema
   optionValueSchema = new mongoose.Schema<OptionValueType>(
     {
       option_id: {
@@ -56,8 +56,8 @@ export const Option = mongoose.model<OptionType, PaginateModel<OptionType>>(
   'Option',
   optionSchema,
 );
-// Export OptionalValue Models
-export const OptionalValue = mongoose.model<
+// Export OptionValue Models
+export const OptionValue = mongoose.model<
   OptionValueType,
   PaginateModel<OptionValueType>
 >('Option_Value', optionValueSchema);

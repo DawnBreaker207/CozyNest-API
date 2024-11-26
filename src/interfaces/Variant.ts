@@ -13,7 +13,7 @@ export interface OptionType extends Document {
 
 export interface OptionValueType extends Document {
   _id: Types.ObjectId;
-  option_id: OptionType['_id'];
+  option_id: OptionType;
   value: string;
   created_at: Date;
   updated_at: Date;

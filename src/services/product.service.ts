@@ -34,7 +34,7 @@ const getAllProductsService = async (query: object, options: object) => {
       minPrice = Math.min(minPrice, price);
     }
   });
-  return { products, maxPrice, minPrice };
+  return products;
 };
 
 const getOneProductService = async (id: string): Promise<ProductType> => {

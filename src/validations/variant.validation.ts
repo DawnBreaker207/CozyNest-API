@@ -6,7 +6,7 @@ export const optionSchema = z.object({
   position: z.number(),
 });
 
-export const optionalValuesSchema = z.object({
+export const optionValuesSchema = z.object({
   label: z.string(),
   value: z.string(),
 });

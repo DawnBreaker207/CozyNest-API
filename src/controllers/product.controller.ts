@@ -123,7 +123,7 @@ export const createProduct: RequestHandler = async (req, res, next) => {
    */
   try {
     const product = await createProductService(req.body);
-    res.status(200).json({
+    res.status(StatusCodes.OK).json({
       message: messagesSuccess.CREATE_PRODUCT_SUCCESS,
       res: product,
     });
