@@ -1,15 +1,11 @@
 import z from 'zod';
 
 export const productSchema = z.object({
-  originId: z.string().min(3).optional(),
   name: z.string().min(3, { message: 'Required name product' }),
   thumbnail: z.string().optional(),
-  categoryId: z.string().min(1, { message: 'Required category on product' }),
-  brand: z.string(),
+  category_id: z.string().min(1, { message: 'Required category on product' }),
   description: z.string(),
-  price: z.number().min(3, { message: 'Required base price product' }),
-  discount: z.number().optional(),
-  SKU: z.string().min(1, { message: 'Required SKU' }),
+  // discount: z.number().optional(),
 });
 
 export const categorySchema = z.object({

@@ -7,6 +7,11 @@ const optionSchema = new mongoose.Schema<OptionType>(
     {
       name: { type: String, required: true },
       position: { type: Number },
+      product_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true,
+      },
     },
     { timestamps: true, versionKey: false },
   ),

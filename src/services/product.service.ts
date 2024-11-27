@@ -64,14 +64,14 @@ const createProductService = async (
   input: ProductType,
 ): Promise<ProductType> => {
   // Check if SKU exist
-  const checkProduct = await Product.findOne({ slug: input.slug });
-  if (checkProduct) {
-    logger.log('error', 'Product with this slug already exists');
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      'Product with this slug already exists',
-    );
-  }
+  // const checkProduct = await Product.findOne({ slug: input.slug });
+  // if (checkProduct) {
+  //   logger.log('error', 'Product with this slug already exists');
+  //   throw new AppError(
+  //     StatusCodes.BAD_REQUEST,
+  //     'Product with this slug already exists',
+  //   );
+  // }
 
   const product = await Product.create(input),
     // Update product list in category

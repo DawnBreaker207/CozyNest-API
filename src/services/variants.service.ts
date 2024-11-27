@@ -29,7 +29,7 @@ const getOptionValues = async (option: OptionType, id: Types.ObjectId) => {
   }));
 
   return {
-    value: option.name,
+    name: option.name,
     option_id: id,
     option_values: formattedOptionValues,
   };
@@ -122,69 +122,73 @@ const getOptionValuesExist = async (option: OptionType, id: Types.ObjectId) => {
   const optionValues = await OptionValue.find({ option_id: id }).select(
     '_id value',
   );
+  console.log('Fetching option values', optionValues);
+
   return { ...option.toObject(), option_values: optionValues };
 };
 // Generate variants
 const generateVariant = (input: any[]) => {
-  let result: any[][] = [[]];
+  let result: any[][] = [[]]; // Khởi tạo mảng kết quả
 
-  // Check input length
+  // Kiểm tra input có rỗng không
   if (input.length === 0) return [];
 
-  // Loop through options properties
+  // Lặp qua từng Option
   for (const option of input) {
-    const { name, _id: optionId, option_values } = option;
+    const { option_values } = option;
 
+    // Nếu không có OptionValues, bỏ qua
     if (option_values.length === 0) continue;
 
     const append: any[][] = [];
-    // Loop through option values
-    for (const valueObj of option_values) {
-      const { _id: optionValueId, value } = valueObj;
 
-      // Create new variants
-      for (const data of result) {
-        const newVariant = [
-          ...data,
-          {
-            name,
-            value,
-            option_id: optionId,
-            option_value_id: optionValueId,
-          },
-        ];
-        append.push(newVariant);
+    // Lặp qua tất cả các kết hợp đã có trong result
+    for (const data of result) {
+      // Lặp qua các OptionValues của từng Option
+      for (const valueObj of option_values) {
+        const { value: optionValueId } = valueObj;
+
+        // Tạo một variant mới cho từng kết hợp
+        append.push([...data, optionValueId]);
       }
     }
 
-    result = append;
+    result = append; // Cập nhật result với các kết hợp mới
   }
 
-  return result;
+  // Chuyển các kết quả thành các variant objects
+  return result.map((variantData) => ({
+    option_values: variantData, // Lưu các OptionValueId cho variant
+  }));
 };
-// Create variant options if there was have options and option value
-const variantOptions = (product_id: string, variants: any[], SKUs: any[]) => {
-  const result: any[] = [];
-  // Loop through a SKU length
-  for (let index = 0; index < SKUs.length; index++) {
-    logger.log('info', 'variants SKU', SKUs[index]?._id);
 
-    // // Loop option value if have in variant
-    // Take variant index
-    const optionValue = variants.flat()[index];
-    // For (let optionValue of variants.flat()) {
-    // If variant index exist create corresponding with sku index
-    if (optionValue)
+// Create variant options if there was have options and option value
+const variantOptions = async (
+  product_id: string,
+  variants: any[],
+  SKUs: any[],
+) => {
+  const result = [];
+
+  for (let index = 0; index < SKUs.length; index++) {
+    const optionValues = variants[index]?.option_values;
+
+    if (optionValues) {
+      const optionValueIds = await Promise.all(
+        optionValues.map(async (value: string) => {
+          const optionValue = await OptionValue.findOne({ value });
+          return optionValue?._id;
+        }),
+      );
+
       result.push({
         product_id,
-        name: optionValue?.name,
-        value: optionValue?.value,
         sku_id: SKUs[index]?._id,
-        option_id: optionValue?.option_id,
-        option_value_id: optionValue?.option_value_id,
+        option_values: optionValueIds.filter(Boolean), // Loại bỏ null nếu không tìm thấy OptionValue
       });
+    }
   }
-  // }
+
   return result;
 };
 
@@ -192,7 +196,6 @@ const variantOptions = (product_id: string, variants: any[], SKUs: any[]) => {
 
 const getAllOptionsService = async (id: string) => {
   const options = await Option.find({ product_id: id });
-
   if (!options || options.length === 0) {
     logger.log('error', 'Options not found in get all options');
     throw new AppError(StatusCodes.NOT_FOUND, 'Can not find options');
@@ -272,6 +275,14 @@ const createOptionService = async (id: string, input: OptionType) => {
       'There is some problems when create option',
     );
   }
+  await Product.findByIdAndUpdate(
+    id,
+    {
+      $push: { options: doc._id },
+    },
+    { new: true },
+  ).populate('options');
+
   return doc;
 };
 
@@ -355,7 +366,6 @@ const getAllOptionValuesService = async (
 
   // Find option value by option id and product di
   const optionValues = await OptionValue.find({
-    product_id: product_id,
     option_id: option_id,
   }).select('_id value created_at updated_at');
   if (!optionValues || optionValues.length === 0) {
@@ -389,16 +399,12 @@ const createOptionValueService = async (
   }
 
   const existingValue = await OptionValue.findOne({
-    product_id: product_id,
     option_id: option_id,
     value: option_value.value,
   });
   if (existingValue) {
     logger.log('error', 'Option value exist in create option value');
-    throw new AppError(
-      StatusCodes.CONFLICT,
-      'Not found existing label in option value',
-    );
+    throw new AppError(StatusCodes.CONFLICT, 'Value exist in option value');
   }
 
   // Check if value was string type
@@ -518,7 +524,9 @@ const createVariantService = async (
   ]);
 
   // Check options exist
-  const options = await Option.find({}).select('_id name');
+  const options = await Option.find({ product_id: product_id }).select(
+    '_id name',
+  );
   if (options.length === 0) {
     logger.log('error', 'Option value not exist in save variant');
     throw new AppError(StatusCodes.NOT_FOUND, 'Option value not exist ');
@@ -538,6 +546,7 @@ const createVariantService = async (
 
   // Generate variants
   const variants = generateVariant(docs);
+  console.log(variants);
 
   if (!variants) {
     logger.log('error', 'Variant create failed in save variant');
@@ -549,7 +558,7 @@ const createVariantService = async (
   // TODO: Understand this
   // Create array of SKUs from variants
   const arraySKUs = variants.flat().map((variant, index) => {
-    const variantValues = variant.value,
+    const variantValues = variant.option_values,
       // Nếu variantValues là chuỗi trống hoặc không hợp lệ, slug sẽ được đặt thành 'default-slug'
       slug = slugify(`${product.name}-${variantValues}`) || 'default-slug';
     return {
@@ -558,6 +567,7 @@ const createVariantService = async (
       product_id,
       stock: stock || 0,
       assets: [],
+      // option-values: product?.options
       SKU: `${inputSkuPrefix}-${index + 1}`,
       slug,
       price: price,
@@ -591,7 +601,9 @@ const createVariantService = async (
   }
 
   // Combining variant option with variant and SKUs
-  const data = variantOptions(product_id, variants, SKUs);
+  const data = await variantOptions(product_id, variants, SKUs);
+  console.log(data);
+
   if (!data || data.length === 0) {
     logger.log('error', 'Option values create failed in save variant');
     throw new AppError(
@@ -621,6 +633,7 @@ const createVariantService = async (
     },
     { new: true },
   );
+  console.log(createVariantData);
   return createVariantData;
 };
 
