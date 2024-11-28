@@ -16,10 +16,10 @@ import {
 } from '@/utils/shipment';
 import { sendOrder } from '@/utils/texts';
 import { StatusCodes } from 'http-status-codes';
-import { PaginateOptions } from 'mongoose';
+import moment from 'moment';
+import mongoose, { PaginateOptions } from 'mongoose';
 import { createMomoService, createVnPayService } from './payment.service';
 import { createDeliveryOrderService } from './shipment.service';
-import moment from 'moment';
 
 // Utils functions
 /**
@@ -286,92 +286,267 @@ export const createNewOrderService = async (
   // GuestId:any,
   input: OrderType,
 ) => {
-  //* Find cart exists
-  const cart = await Cart.findOne({ _id: cart_id });
-  if (!cart) {
-    logger.log('error', 'Cart not found in create order');
-    throw new AppError(StatusCodes.NOT_FOUND, 'Not found cart');
-  }
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    //* Find cart exists
+    const cart = await Cart.findOne({ _id: cart_id });
+    if (!cart) {
+      logger.log('error', 'Cart not found in create order');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Not found cart');
+    }
+    // TODO: Understand this
+    const existingOrder = await Order.findOne({ cart_id });
+    if (existingOrder) {
+      logger.log('error', 'Cart already exists in create new order service');
+      throw new AppError(
+        StatusCodes.CONFLICT,
+        `Giỏ hàng này đã được sử dụng để tạo đơn hàng trước đó`,
+      );
+    }
 
-  //* Check payment method valid
-  const paymentMethod = buildPaymentMethod(payment_method);
+    //* Check payment method valid
+    const paymentMethod = buildPaymentMethod(payment_method);
 
-  //* Call payment method and save method
-  const payUrl = await checkPaymentMethod(paymentMethod, input);
+    //* Call payment method and save method
+    const payUrl = await checkPaymentMethod(paymentMethod, input);
 
-  //* Create order with infomation and total from cart and shipping fee
-  const order = await Order.create({
-    input,
-    total_amount: Number(total_amount) + transportation_fee,
-    payment_method: paymentMethod,
-    payment_url: payUrl,
-  });
-  if (!order) {
-    logger.log('error', 'Order create error in create order');
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Create order error');
-  }
+    //* Create order with infomation and total from cart and shipping fee
+    const order = await Order.create({
+      input,
+      total_amount: Number(total_amount) + transportation_fee,
+      payment_method: paymentMethod,
+      payment_url: payUrl,
+    });
+    if (!order) {
+      logger.log('error', 'Order create error in create order');
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Create order error');
+    }
 
-  //* Create detail product in order
-  const addProductItem = async (product: ProductCart) => {
+    // TODO: Understand this
+    //* Create detail product in order
+    const addProductItem = async (product: ProductCart) => {
+      const skuInfo = await Sku.findById(product.sku_id);
+      if (!skuInfo) {
+        logger.log('error', 'SKU not found in create order');
+        throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
+      }
+      if (skuInfo.stock < product.quantity) {
+        logger.log(
+          'error',
+          `Not enough stock for SKU in create new order service`,
+        );
+        throw new AppError(
+          StatusCodes.BAD_REQUEST,
+          `Sản phẩm ${skuInfo.name} không đủ số lượng trong kho`,
+        );
+      }
       const new_item = await Order_Detail.create({
         order_id: order._id,
         sku_id: product.sku_id,
         price: product.price,
         quantity: product.quantity,
+        image: skuInfo.image,
         price_before_discount: product.price_before_discount,
         price_discount_percent: product.price_discount_percent,
         total_money: product.quantity * product.price,
       });
+
+      await Sku.findByIdAndUpdate(
+        product.sku_id,
+        { $inc: { stock: -product.quantity } },
+        { session },
+      );
       return new_item;
-    },
-    //* Take SKU info from database
-    get_sku = async (sku_id: string) => {
-      const skuInfo = await Sku.findById(sku_id);
-      if (!skuInfo) {
-        logger.log('error', 'SKU not found in create order');
-        throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
-      }
-      return skuInfo;
-    },
+    };
+
+    // const get_sku = async (sku_id: string, quantity: number) => {
+    //   const skuInfo = await Sku.findById(sku_id);
+    //   if (!skuInfo) {
+    //     logger.log('error', 'SKU not found in create order');
+    //     throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
+    //   }
+
+    //   if (skuInfo.stock < quantity) {
+    //     logger.log(
+    //       'error',
+    //       `Not enough stock for SKU in create new order service`,
+    //     );
+    //     throw new AppError(
+    //       StatusCodes.BAD_REQUEST,
+    //       `Sản phẩm ${skuInfo.name} không đủ số lượng trong kho`,
+    //     );
+    //   }
+    //   return skuInfo;
+    // };
+
     //* Create detail product for order from cart
-    order_details = await Promise.all(
+    const order_details = await Promise.all(
       cart!.products.map((item) => addProductItem(item)),
-    ),
+    );
     //* Take detail SKU info for each product in cart
-    new_order_details = await Promise.all(
+    const new_order_details = await Promise.all(
       order_details.map(async (item) => {
-        const data_sku = await get_sku(item.sku_id.toString());
-        return {
-          _id: item._id,
-          sku_id: data_sku?._id,
-          name: data_sku?.name,
-          price: data_sku?.price,
-          price_before_discount: data_sku?.price_before_discount,
-          price_discount_percent: data_sku?.price_discount_percent,
-          image: data_sku?.image,
-          quantity: item.quantity,
-          total_money: item.total_money,
-        };
+        return addProductItem(item);
+        // const data_sku = await get_sku(item.sku_id.toString(), item.quantity);
+        // return {
+        //   _id: item._id,
+        //   sku_id: data_sku?._id,
+        //   name: data_sku?.name,
+        //   price: data_sku?.price,
+        //   price_before_discount: data_sku?.price_before_discount,
+        //   price_discount_percent: data_sku?.price_discount_percent,
+        //   image: data_sku?.image,
+        //   quantity: item.quantity,
+        //   total_money: item.total_money,
+        // };
       }),
     );
 
-  //* If order have shipping methods, update
-  if (order.shipping_method === 'Shipping') {
-    await createShippingInfo(
-      order,
-      address,
-      shipping_address,
-      transportation_fee,
+    //* If order have shipping methods, update
+    if (order.shipping_method === 'Shipping') {
+      await createShippingInfo(
+        order,
+        address,
+        shipping_address,
+        transportation_fee,
+      );
+    }
+
+    //* Clear product in cart when create order success
+    await Cart.findOneAndUpdate(
+      { cart_id },
+      { $set: { products: [], total_money: 0 } },
+      { session },
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return { new_order_details, order };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    logger.log('Error', 'Catch error in create new order service');
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Error in create new order service:${error}`,
     );
   }
+};
 
-  //* Clear product in cart when create order success
-  await Cart.findOneAndUpdate(
-    { cart_id },
-    { $set: { products: [], total_money: 0 } },
-  );
+export const cancelOrderService = async (id: string) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const ordered = await Order.findById(id);
+    if (!ordered) {
+      logger.log('error', 'Order not found in cancel order');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
+    }
 
-  return { new_order_details, order };
+    const checkStatus: { [key: string]: () => void } = {
+      cancelled: () => {
+        if (ordered?.status === 'cancelled') {
+          logger.log('error', 'Order was cancelled in cancel order');
+          throw new AppError(StatusCodes.BAD_REQUEST, 'Đơn hàng đã được hủy');
+        }
+      },
+      delivered: () => {
+        if (ordered.status === 'delivered') {
+          logger.log(
+            'error',
+            'Order can not cancel when delivery in cancel order',
+          );
+          throw new AppError(
+            StatusCodes.BAD_REQUEST,
+            'Không thể huỷ đơn hàng đang giao',
+          );
+        }
+      },
+      returned: () => {
+        if (ordered.status === 'returned') {
+          logger.log(
+            'error',
+            ' Order can not cancel when returned in cancel order',
+          );
+          throw new AppError(
+            StatusCodes.BAD_REQUEST,
+            'Không thể huỷ đơn hàng đang hoàn',
+          );
+        }
+      },
+    };
+
+    checkStatus[ordered.status as keyof typeof checkStatus]?.();
+
+    const updateOrder = await Order.findByIdAndUpdate(
+      id,
+      {
+        $set: { status: 'cancelled' },
+        $push: {
+          status_detail: {
+            status: 'cancelled',
+          },
+        },
+      },
+      { new: true, session },
+    ).populate([
+      {
+        path: 'shipping_info',
+      },
+    ]);
+    if (!updateOrder) {
+      logger.log('error', 'Order update failed in cancel order');
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Update order failed');
+    }
+
+    const checkSkuStock = async (product: {
+        sku_id: string;
+        quantity: number;
+      }) => {
+        const SKU = await Sku.findById(product.sku_id);
+        if (!SKU) {
+          logger.log('error', 'SKU not found in cancel order');
+          throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy SKU');
+        }
+        // Cộng lại số lượng vào tồn kho
+        const newStock = SKU.stock + product.quantity;
+
+        return await Sku.findByIdAndUpdate(
+          product.sku_id,
+          {
+            $set: { stock: newStock },
+          },
+          { new: true },
+        );
+      },
+      orderDetails = await Order_Detail.find({ order_id: id }).session(session);
+    if (!orderDetails) {
+      logger.log('error', 'Order detail not found in cancel order');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Order detail not found');
+    }
+    await Promise.all(
+      orderDetails.map((item) =>
+        checkSkuStock({
+          sku_id: item.sku_id.toString(),
+          quantity: item.quantity,
+        }),
+      ),
+    );
+    await session.commitTransaction();
+    session.endSession();
+
+    return updateOrder;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    logger.log('Error', 'Catch error in cancel order service');
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Error in cancel order service:${error}`,
+    );
+  }
 };
 
 export const updateStatusOrderService = async (id: string, status: string) => {
@@ -1180,104 +1355,6 @@ export const updateStatusDeliveredService = async (id: string) => {
     );
     throw new AppError(StatusCodes.BAD_REQUEST, 'Update order failed');
   }
-  return updateOrder;
-};
-
-export const cancelOrderService = async (id: string) => {
-  const ordered = await Order.findById(id);
-  if (!ordered) {
-    logger.log('error', 'Order not found in cancel order');
-    throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
-  }
-
-  const checkStatus: { [key: string]: () => void } = {
-    cancelled: () => {
-      if (ordered?.status === 'cancelled') {
-        logger.log('error', 'Order was cancelled in cancel order');
-        throw new AppError(StatusCodes.BAD_REQUEST, 'Đơn hàng đã được hủy');
-      }
-    },
-    delivered: () => {
-      if (ordered.status === 'delivered') {
-        logger.log(
-          'error',
-          'Order can not cancel when delivery in cancel order',
-        );
-        throw new AppError(
-          StatusCodes.BAD_REQUEST,
-          'Không thể huỷ đơn hàng đang giao',
-        );
-      }
-    },
-    returned: () => {
-      if (ordered.status === 'returned') {
-        logger.log(
-          'error',
-          ' Order can not cancel when returned in cancel order',
-        );
-        throw new AppError(
-          StatusCodes.BAD_REQUEST,
-          'Không thể huỷ đơn hàng đang hoàn',
-        );
-      }
-    },
-  };
-  checkStatus[ordered.status as keyof typeof checkStatus]?.();
-
-  const updateOrder = await Order.findByIdAndUpdate(
-    id,
-    {
-      $set: { status: 'cancelled' },
-      $push: {
-        status_detail: {
-          status: 'cancelled',
-        },
-      },
-    },
-    { new: true },
-  ).populate([
-    {
-      path: 'shipping_info',
-    },
-  ]);
-  if (!updateOrder) {
-    logger.log('error', 'Order update failed in cancel order');
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Update order failed');
-  }
-
-  const checkSkuStock = async (product: {
-      sku_id: string;
-      quantity: number;
-    }) => {
-      const SKU = await Sku.findById(product.sku_id);
-      if (!SKU) {
-        logger.log('error', 'SKU not found in cancel order');
-        throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy SKU');
-      }
-      // Cộng lại số lượng vào tồn kho
-      const newStock = SKU.stock + product.quantity;
-
-      return await Sku.findByIdAndUpdate(
-        product.sku_id,
-        {
-          $set: { stock: newStock },
-        },
-        { new: true },
-      );
-    },
-    orderDetails = await Order_Detail.find({ order_id: id });
-  if (!orderDetails) {
-    logger.log('error', 'Order detail not found in cancel order');
-    throw new AppError(StatusCodes.NOT_FOUND, 'Order detail not found');
-  }
-  await Promise.all(
-    orderDetails.map((item) =>
-      checkSkuStock({
-        sku_id: item.sku_id.toString(),
-        quantity: item.quantity,
-      }),
-    ),
-  );
   return updateOrder;
 };
 
