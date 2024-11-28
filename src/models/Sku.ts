@@ -4,23 +4,21 @@ import { SkuType } from '@/interfaces/Sku';
 
 const skuSchema = new mongoose.Schema<SkuType>(
   {
-    SKU: { type: String },
+    name: { type: String },
     product_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
       required: true,
     },
-
-    name: { type: String },
     slug: {
       type: String,
       unique: true,
       slug: 'name',
     },
     price: { type: Number, default: 0 },
+    stock: { type: Number, default: 0 },
     price_before_discount: { type: Number, default: 0 },
     price_discount_percent: { type: Number, default: 0 },
-    stock: { type: Number, default: 0 },
     image: {
       id: { type: String },
       url: { type: String },
@@ -31,6 +29,7 @@ const skuSchema = new mongoose.Schema<SkuType>(
         url: { type: String },
       },
     ],
+    deleted: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false },
 );

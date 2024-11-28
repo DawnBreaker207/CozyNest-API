@@ -15,21 +15,21 @@ const routeOption = Router();
 
 //* Get all option value in product
 routeOption.get(
-  '/:product_id/options',
+  '/:product_id',
   // #swagger.tags = ['Option']
   getAllOptions,
 );
 
 //* Get one option value in product
 routeOption.get(
-  '/:product_id/options/:option_id',
+  '/:product_id/get/:option_id',
   // #swagger.tags = ['Option']
   getOneOption,
 );
 
 //* Create option value in product
 routeOption.post(
-  '/:product_id/options',
+  '/:product_id',
   // checkAuth,
   // checkPermission,
   validBodyRequest(optionSchema),
@@ -39,7 +39,7 @@ routeOption.post(
 
 //* Update option value in product
 routeOption.put(
-  '/:product_id/options/:option_id',
+  '/:product_id/:option_id',
   // checkAuth,
   // checkPermission,
   validBodyRequest(optionSchema),
@@ -49,7 +49,7 @@ routeOption.put(
 
 //* Delete option value in product
 routeOption.delete(
-  '/:product_id/options/:option_id',
+  '/:product_id/:option_id',
   // checkAuth,
   // checkPermission,
   // #swagger.tags = ['Option']

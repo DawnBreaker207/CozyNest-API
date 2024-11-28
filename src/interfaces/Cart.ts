@@ -1,5 +1,4 @@
 import { Types } from 'mongoose';
-import { CouponType } from './Coupon';
 
 export interface ProductCart {
   sku_id: Types.ObjectId;
@@ -11,11 +10,9 @@ export interface ProductCart {
 
 export interface CartType extends Document {
   cart_id: string;
-  userId: Types.ObjectId;
-  guestId?: string;
+  user_id: Types.ObjectId;
   isGuest: boolean;
   products: ProductCart[];
-  coupon: CouponType;
   totalPrice: number;
   deleted_at: Date | null;
   delete: boolean;

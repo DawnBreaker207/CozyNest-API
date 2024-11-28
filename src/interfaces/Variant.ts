@@ -14,18 +14,23 @@ export interface OptionType extends Document {
 export interface OptionValueType extends Document {
   _id: Types.ObjectId;
   option_id: OptionType;
+  product_id: ProductType;
+  label: string;
   value: string;
   created_at: Date;
   updated_at: Date;
 }
-export interface VariantType {
+export interface VariantType extends Document {
   _id: Types.ObjectId;
   sku_id: SkuType;
   product_id: ProductType;
-  option_values: OptionValueType[];
+  option_id: OptionType;
+  option_value_id: OptionValueType;
   // price: number;
   // stock: number;
   image: string;
   created_at: Date;
   updated_at: Date;
+  delete: boolean;
+  deleted_at: string;
 }

@@ -1,5 +1,4 @@
 import { CartType, ProductCart } from '@/interfaces/Cart';
-import { OptionValueType } from '@/interfaces/Variant';
 import Cart from '@/models/Cart';
 import { Product } from '@/models/Product';
 import { Sku } from '@/models/Sku';
@@ -37,16 +36,16 @@ const createCartService = async (input: CartType) => {
   return newCart;
 };
 
-const GetCartService = async (userId: string) => {
-  const cart = await Cart.findOne({ userId }).populate({
+const GetCartService = async (cart_id: string) => {
+  const cart = await Cart.findOne({ cart_id }).populate({
     path: 'products.sku_id',
     populate: [
       {
         path: 'product_id',
-        select: 'name thumbnail price',
+        select: 'name thumbnail',
       },
       {
-        path: 'option_values',
+        path: 'option_value_id',
         populate: {
           path: 'option_id',
           select: 'name',
@@ -74,24 +73,29 @@ const GetCartService = async (userId: string) => {
           sku_id: item.sku_id,
         }).populate('option_values');
 
-        const optionValue = variants.map((option) =>
-          option.option_values
-            ?.map((ov) => (ov as OptionValueType).value)
-            .join(', '),
+        const optionValue = variants.map(
+          (option) => option?.toObject()?.option_value_id?.label,
         );
 
-        return { ...item, SKUData, optionValue };
+        return {
+          ...item,
+          SKUData,
+          optionValue,
+        };
       }),
     );
   return { SKUs, new_cart };
 };
 const GetByIdService = async (userId: string) => {
-  const cart = await Cart.findOne({ userId }).populate({
+  const cart = await Cart.findOne({ user_id: userId }).populate({
     path: 'products.sku_id',
-    populate: {
-      path: 'product_id',
-      select: 'thumbnail name',
-    },
+    populate: [
+      {
+        path: 'product_id',
+        select: 'name thumbnail',
+      },
+    ],
+    select: 'slug',
   });
   if (!cart) {
     logger.log('error', 'Cart is not found in get cart by id');
@@ -166,15 +170,13 @@ const AddToCartService = async (
 
   // Check if user info have
   if (userId) {
-    cart.userId = userId as unknown as Types.ObjectId;
-    cart.guestId = '';
+    cart.user_id = userId as unknown as Types.ObjectId;
   }
 
   // Save cart
   await cart.save();
   return cart;
 };
-
 
 const RemoveFromCartService = async (userId: string, sku_id: string) => {
   //Find cart exist
@@ -194,7 +196,6 @@ const RemoveFromCartService = async (userId: string, sku_id: string) => {
   await cart.save();
   return cart;
 };
-
 
 const RemoveCartService = async (id: string) => {
   const data = await Cart.findByIdAndDelete({
@@ -287,6 +288,5 @@ export {
   increaseQuantityService,
   RemoveCartService,
   removeFromCart,
-  RemoveFromCartService
+  RemoveFromCartService,
 };
-

@@ -10,8 +10,8 @@ export interface Image {
 export interface ProductType extends Document {
   _id: Types.ObjectId;
   name: string;
-  thumbnail: string;
-  // images?: Image[];
+  // thumbnail: string;
+  images?: Image[];
   slug: string;
   category_id: CategoryType;
   description: string;
@@ -19,8 +19,8 @@ export interface ProductType extends Document {
   // discount: number;
   is_sale: boolean;
   // sold: number;
+  option_id: OptionType[];
   variants: VariantType[];
-  options: OptionType[];
   created_at: Date;
   updated_at: Date;
   is_hidden?: boolean;

@@ -48,7 +48,6 @@ const getOneProductService = async (id: string): Promise<ProductType> => {
           path: 'sku_id',
           select: 'SKU name price stock price_discount_percent',
         },
-        { path: 'options', select: 'name position ' },
       ],
     },
   ]);

@@ -53,8 +53,8 @@
       "description": "Endpoints for product options"
     },
     {
-      "name": "OptionalValue",
-      "description": "Endpoints for optional values"
+      "name": "OptionValue",
+      "description": "Endpoints for option values"
     },
     {
       "name": "Variant",
@@ -106,12 +106,7 @@
             "type": "string"
           },
           {
-            "name": "_categoryId",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "_originId",
+            "name": "_category_id",
             "in": "query",
             "type": "string"
           },
@@ -136,8 +131,8 @@
         "tags": ["Product"],
         "description": "",
         "responses": {
-          "200": {
-            "description": "OK"
+          "default": {
+            "description": ""
           }
         }
       }
@@ -943,6 +938,23 @@
       "post": {
         "tags": ["Cart"],
         "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "any"
+                },
+                "sku_id": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": ""
@@ -954,6 +966,23 @@
       "post": {
         "tags": ["Cart"],
         "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "any"
+                },
+                "sku_id": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": ""
@@ -1300,7 +1329,7 @@
         }
       }
     },
-    "/api/v1/options/{product_id}/{option_id}": {
+    "/api/v1/options/{product_id}/get/{option_id}": {
       "get": {
         "tags": ["Option"],
         "description": "",
@@ -1323,7 +1352,9 @@
             "description": ""
           }
         }
-      },
+      }
+    },
+    "/api/v1/options/{product_id}/{option_id}": {
       "put": {
         "tags": ["Option"],
         "description": "",
@@ -1371,9 +1402,9 @@
         }
       }
     },
-    "/api/v1/optionalValue/{product_id}/{option_id}": {
+    "/api/v1/optionValue/{product_id}/options/{option_id}/values": {
       "get": {
-        "tags": ["OptionalValue"],
+        "tags": ["OptionValue"],
         "description": "",
         "parameters": [
           {
@@ -1396,7 +1427,7 @@
         }
       },
       "post": {
-        "tags": ["OptionalValue"],
+        "tags": ["OptionValue"],
         "description": "",
         "parameters": [
           {
@@ -1419,9 +1450,9 @@
         }
       }
     },
-    "/api/v1/optionalValue/{product_id}/{option_id}/{value_id}": {
+    "/api/v1/optionValue/{product_id}/options/{option_id}/{value_id}/values": {
       "get": {
-        "tags": ["OptionalValue"],
+        "tags": ["OptionValue"],
         "description": "",
         "parameters": [
           {
@@ -1448,9 +1479,11 @@
             "description": ""
           }
         }
-      },
+      }
+    },
+    "/api/v1/optionValue/{product_id}/options/{option_id}/values/{value_id}": {
       "put": {
-        "tags": ["OptionalValue"],
+        "tags": ["OptionValue"],
         "description": "",
         "parameters": [
           {
@@ -1477,9 +1510,11 @@
             "description": ""
           }
         }
-      },
+      }
+    },
+    "/api/v1/optionValue/{product_id}/options/{option_id}/{value_id}/value": {
       "delete": {
-        "tags": ["OptionalValue"],
+        "tags": ["OptionValue"],
         "description": "",
         "parameters": [
           {
@@ -1544,7 +1579,7 @@
         }
       }
     },
-    "/api/v1/variants/{product_id}/{sku_id}": {
+    "/api/v1/variants/{product_id}/get/{sku_id}": {
       "get": {
         "tags": ["Variant"],
         "description": "",
@@ -1567,7 +1602,9 @@
             "description": ""
           }
         }
-      },
+      }
+    },
+    "/api/v1/variants/{product_id}/{sku_id}": {
       "put": {
         "tags": ["Variant"],
         "description": "",
@@ -1603,6 +1640,52 @@
           },
           {
             "name": "sku_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/review/{product_id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/review/": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/v1/review/{id}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1667,6 +1750,17 @@
         }
       }
     },
+    "/api/v1/coupon/couponValue": {
+      "get": {
+        "tags": ["Coupon"],
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/v1/coupon/{id}": {
       "get": {
         "tags": ["Coupon"],
@@ -1713,17 +1807,6 @@
             "type": "string"
           }
         ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/v1/coupon/couponValue": {
-      "get": {
-        "tags": ["Coupon"],
-        "description": "",
         "responses": {
           "default": {
             "description": ""

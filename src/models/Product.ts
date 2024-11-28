@@ -5,14 +5,14 @@ import mongoosePaginate from 'mongoose-paginate-v2';
 const productSchema = new mongoose.Schema<ProductType>(
   {
     name: { type: String, required: true },
-    thumbnail: { type: String, required: true },
-    // images: [
-    //   {
-    //     url: { type: String, required: true },
-    //     public_id: { type: String, require: true },
-    //     _id: false,
-    //   },
-    // ],
+    // thumbnail: { type: String, required: true },
+    images: [
+      {
+        url: { type: String, required: true },
+        public_id: { type: String, require: true },
+        _id: false,
+      },
+    ],
     category_id: {
       type: mongoose.Schema.ObjectId,
       ref: 'Category',
@@ -21,7 +21,6 @@ const productSchema = new mongoose.Schema<ProductType>(
     description: { type: String, required: true },
     variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }],
     is_sale: { type: Boolean, default: false },
-    options: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Option' }],
     is_hidden: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false },

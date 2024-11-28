@@ -23,6 +23,7 @@ const optionSchema = new mongoose.Schema<OptionType>(
         ref: 'Option',
         required: true,
       },
+      label: { type: String, required: true },
       value: { type: String, required: true },
     },
     { timestamps: true, versionKey: false },
@@ -39,14 +40,19 @@ const optionSchema = new mongoose.Schema<OptionType>(
         ref: 'Product',
         required: true,
       },
-      option_values: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Option_Value',
-          required: true,
-        },
-      ],
-      image: { type: String },
+      option_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Option_Value',
+        required: true,
+      },
+      option_value_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Option_Value',
+        required: true,
+      },
+      delete: { type: Boolean, default: false },
+      deleted_at: { type: String, default: null },
+      // image: { type: String },
     },
     { timestamps: true, versionKey: false },
   );

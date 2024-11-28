@@ -1,23 +1,23 @@
 import { messagesError } from '@/constants/messages';
-import { StatusCodes } from 'http-status-codes';
 import { SkuType } from '@/interfaces/Sku';
-import { OptionType, OptionValueType, VariantType } from '@/interfaces/Variant';
+import { OptionType, OptionValueType } from '@/interfaces/Variant';
 import { Product } from '@/models/Product';
 import { Sku } from '@/models/Sku';
 import { Option, OptionValue, Variant } from '@/models/Variant';
-import moment from 'moment';
 import { AppError } from '@/utils/errorHandle';
 import { slugify } from '@/utils/formatters';
-import { sortOptions } from '@/utils/sortOption';
-import mongoose, { Types } from 'mongoose';
 import logger from '@/utils/logger';
+import { sortOptions } from '@/utils/sortOption';
+import { StatusCodes } from 'http-status-codes';
+import moment from 'moment';
+import mongoose, { Types } from 'mongoose';
 
 //* Options
 //* Get All Option
 // Get all option value and option
 const getOptionValues = async (option: OptionType, id: Types.ObjectId) => {
   const optionValues = await OptionValue.find({ option_id: id }).select(
-    '_id value',
+    '_id label value',
   );
   if (!optionValues) {
     logger.log('error', 'Option values not found in get option values');
@@ -25,11 +25,13 @@ const getOptionValues = async (option: OptionType, id: Types.ObjectId) => {
   }
   const formattedOptionValues = optionValues.map((optionValue) => ({
     option_value_id: optionValue._id,
+    label: optionValue.label,
     value: optionValue.value,
   }));
 
   return {
     name: option.name,
+    position: option.position,
     option_id: id,
     option_values: formattedOptionValues,
   };
@@ -68,13 +70,13 @@ const getVariants = async (
   options: OptionType[],
 ) => {
   const variants = await Variant.find({ sku_id: skuId }).populate({
-    path: 'option_values',
+    path: 'option_value_id',
     populate: {
       path: 'option_id', // Dùng option_id để lấy thông tin tùy chọn của mỗi option value
       model: 'Option',
       select: 'name position', // Chọn thông tin name và position của option
     },
-    select: 'value', // Lấy giá trị option value
+    select: 'value label', // Lấy giá trị option value
   });
   if (!variants || variants.length === 0) {
     logger.log('error', 'Not variant found in get variants');
@@ -84,9 +86,8 @@ const getVariants = async (
   const optionFilter = await Promise.all(
     variants.map(async (variant) => {
       const optionValues = await OptionValue.find({
-        _id: { $in: variant.option_values },
+        _id: variant.option_value_id,
       });
-
       if (!optionValues || optionValues.length === 0) {
         logger.log('error', 'Option values not found for variant');
         throw new AppError(StatusCodes.BAD_REQUEST, 'Option values not found');
@@ -120,10 +121,8 @@ const getVariants = async (
 // Get option value exist in options
 const getOptionValuesExist = async (option: OptionType, id: Types.ObjectId) => {
   const optionValues = await OptionValue.find({ option_id: id }).select(
-    '_id value',
+    '_id label value',
   );
-  console.log('Fetching option values', optionValues);
-
   return { ...option.toObject(), option_values: optionValues };
 };
 // Generate variants
@@ -135,10 +134,10 @@ const generateVariant = (input: any[]) => {
 
   // Lặp qua từng Option
   for (const option of input) {
-    const { option_values } = option;
+    const { option_values, name, _id: optionId } = option;
 
     // Nếu không có OptionValues, bỏ qua
-    if (option_values.length === 0) continue;
+    if (!option_values || option_values.length === 0) continue;
 
     const append: any[][] = [];
 
@@ -146,10 +145,19 @@ const generateVariant = (input: any[]) => {
     for (const data of result) {
       // Lặp qua các OptionValues của từng Option
       for (const valueObj of option_values) {
-        const { value: optionValueId } = valueObj;
+        const { value, label, _id: optionValueId } = valueObj;
 
         // Tạo một variant mới cho từng kết hợp
-        append.push([...data, optionValueId]);
+        append.push([
+          ...data,
+          {
+            name,
+            label,
+            value,
+            option_id: optionId,
+            option_value_id: optionValueId,
+          },
+        ]);
       }
     }
 
@@ -157,9 +165,7 @@ const generateVariant = (input: any[]) => {
   }
 
   // Chuyển các kết quả thành các variant objects
-  return result.map((variantData) => ({
-    option_values: variantData, // Lưu các OptionValueId cho variant
-  }));
+  return result;
 };
 
 // Create variant options if there was have options and option value
@@ -168,27 +174,27 @@ const variantOptions = async (
   variants: any[],
   SKUs: any[],
 ) => {
-  const result = [];
-
+  const result: any[] = [];
+  // Loop through a SKU length
   for (let index = 0; index < SKUs.length; index++) {
-    const optionValues = variants[index]?.option_values;
+    logger.log('info', 'variants SKU', SKUs[index]?._id);
 
-    if (optionValues) {
-      const optionValueIds = await Promise.all(
-        optionValues.map(async (value: string) => {
-          const optionValue = await OptionValue.findOne({ value });
-          return optionValue?._id;
-        }),
-      );
-
+    // // Loop optional value if have in variant
+    // Take variant index
+    const optionalValue = variants.flat()[index];
+    // For (let optionalValue of variants.flat()) {
+    // If variant index exist create corresponding with sku index
+    if (optionalValue)
       result.push({
         product_id,
+        name: optionalValue?.name,
+        label: optionalValue?.label,
         sku_id: SKUs[index]?._id,
-        option_values: optionValueIds.filter(Boolean), // Loại bỏ null nếu không tìm thấy OptionValue
+        option_id: optionalValue?.option_id,
+        option_value_id: optionalValue?.option_value_id,
       });
-    }
   }
-
+  // }
   return result;
 };
 
@@ -231,7 +237,7 @@ const getOneOptionService = async (id: string) => {
 
   // Tìm option values của option
   const optionValues = await OptionValue.find({ option_id: id }).select(
-    '_id value',
+    '_id label value',
   );
   if (!optionValues || optionValues.length === 0) {
     logger.log('error', 'Option values not found in get one options');
@@ -275,31 +281,24 @@ const createOptionService = async (id: string, input: OptionType) => {
       'There is some problems when create option',
     );
   }
-  await Product.findByIdAndUpdate(
-    id,
-    {
-      $push: { options: doc._id },
-    },
-    { new: true },
-  ).populate('options');
 
   return doc;
 };
 
 const updateOptionService = async (
-  id: string,
+  option_id: string,
   input: OptionType & { optionValues?: OptionValueType[] },
 ) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const existingOption = await Option.findById(id).session(session);
+    const existingOption = await Option.findById(option_id).session(session);
     if (!existingOption) {
       logger.log('error', 'Option not found in update option service');
       throw new AppError(StatusCodes.NOT_FOUND, 'Not found option');
     }
 
-    const updatedOption = await Option.findByIdAndUpdate(id, input, {
+    const updatedOption = await Option.findByIdAndUpdate(option_id, input, {
       new: true,
       session,
     });
@@ -309,7 +308,7 @@ const updateOptionService = async (
         .map((v) => new Types.ObjectId(v._id));
 
       await OptionValue.deleteMany({
-        option_id: id,
+        option_id: option_id,
         _id: { $in: optionValuesIds },
       }).session(session);
 
@@ -318,7 +317,9 @@ const updateOptionService = async (
           if (v._id) {
             await OptionValue.findByIdAndUpdate(v._id, v, { session });
           } else {
-            await OptionValue.create([{ ...v, option_id: id }], { session });
+            await OptionValue.create([{ ...v, option_id: option_id }], {
+              session,
+            });
           }
         }),
       );
@@ -336,19 +337,20 @@ const updateOptionService = async (
   }
 };
 
-const deleteOptionService = async (id: string) => {
+const deleteOptionService = async (option_id: string) => {
   // Tìm option theo ID
-  const option = await Option.findById(id);
+  const option = await Option.findById(option_id);
   if (!option) {
     logger.log('error', 'Option not found in delete option');
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found option');
   }
 
-  // Xóa tất cả các option values của option đó
-  await OptionValue.deleteMany({ option_id: id });
-
-  // Xóa chính option
-  await Option.deleteOne({ _id: id });
+  await Promise.all([
+    // Xóa tất cả các option values của option đó
+    OptionValue.deleteMany({ option_id: option_id }),
+    // Xóa chính option
+    Option.deleteOne({ _id: option_id }),
+  ]);
   return option;
 };
 
@@ -367,7 +369,7 @@ const getAllOptionValuesService = async (
   // Find option value by option id and product di
   const optionValues = await OptionValue.find({
     option_id: option_id,
-  }).select('_id value created_at updated_at');
+  }).select('_id label value created_at updated_at');
   if (!optionValues || optionValues.length === 0) {
     logger.log('error', 'Option value not found in get all option value');
     throw new AppError(StatusCodes.NOT_ACCEPTABLE, 'Not found option value');
@@ -378,7 +380,7 @@ const getAllOptionValuesService = async (
 const getSingleOptionValueService = async (id: string) => {
   // Find one option value
   const optionValue = await OptionValue.findById(id).select(
-    '_id value created_at updated_at',
+    '_id label value created_at updated_at',
   );
   if (!optionValue) {
     logger.log('error', 'Option value not found in get one option value');
@@ -407,25 +409,12 @@ const createOptionValueService = async (
     throw new AppError(StatusCodes.CONFLICT, 'Value exist in option value');
   }
 
-  // Check if value was string type
-  if (typeof option_value.value !== 'string') {
-    logger.log(
-      'error',
-      'Value of option value must be string in create option value',
-    );
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      'Label and value must be strings',
-    );
-  }
-
-  const payload = {
-      ...option_value,
-      option_id,
-      product_id,
-    },
-    // Create new option value
-    doc = await OptionValue.create(payload);
+  // Create new option value
+  const doc = await OptionValue.create({
+    ...option_value,
+    option_id: option_id,
+    product_id: product_id,
+  });
   if (!doc) {
     logger.log('error', 'Option value create failed in create option value');
     throw new AppError(
@@ -500,14 +489,7 @@ const getAllVariantsService = async (product_id: string) => {
   return data;
 };
 
-const createVariantService = async (
-  product_id: string,
-  price: number,
-  price_before_discount: number,
-  price_discount_percent: number,
-  stock: number,
-  inputSkuPrefix: string, // Đầu vào SKU prefix từ người dùng hoặc hệ thống
-) => {
+const createVariantService = async (product_id: string) => {
   // Check product exist
   const product = await Product.findById(product_id).select(
     '-_id name slug price price_before_discount price_discount_percent',
@@ -546,8 +528,6 @@ const createVariantService = async (
 
   // Generate variants
   const variants = generateVariant(docs);
-  console.log(variants);
-
   if (!variants) {
     logger.log('error', 'Variant create failed in save variant');
     throw new AppError(
@@ -558,21 +538,17 @@ const createVariantService = async (
   // TODO: Understand this
   // Create array of SKUs from variants
   const arraySKUs = variants.flat().map((variant, index) => {
-    const variantValues = variant.option_values,
+    const variantValues = variant.value,
       // Nếu variantValues là chuỗi trống hoặc không hợp lệ, slug sẽ được đặt thành 'default-slug'
       slug = slugify(`${product.name}-${variantValues}`) || 'default-slug';
     return {
       ...product.toObject(),
       name: `${product.name}-${variantValues}`,
       product_id,
-      stock: stock || 0,
       assets: [],
       // option-values: product?.options
-      SKU: `${inputSkuPrefix}-${index + 1}`,
+      SKU: `${variant.SKU}-${index + 1}`,
       slug,
-      price: price,
-      price_before_discount: price_before_discount,
-      price_discount_percent: price_discount_percent,
     };
   });
   if (!arraySKUs) {
@@ -602,8 +578,6 @@ const createVariantService = async (
 
   // Combining variant option with variant and SKUs
   const data = await variantOptions(product_id, variants, SKUs);
-  console.log(data);
-
   if (!data || data.length === 0) {
     logger.log('error', 'Option values create failed in save variant');
     throw new AppError(
@@ -633,7 +607,6 @@ const createVariantService = async (
     },
     { new: true },
   );
-  console.log(createVariantData);
   return createVariantData;
 };
 
@@ -656,6 +629,13 @@ const deleteVariantService = async (sku_id: string) => {
   // Đánh dấu SKU là đã xóa
   sku.deleted_at = new Date();
   await sku.save();
+
+  await Promise.all(
+    variants.map(async (variant) => {
+      variant.deleted_at = moment(new Date()).toISOString();
+      await variant.save();
+    }),
+  );
 
   return variants;
 };
@@ -701,17 +681,31 @@ const getOneVariantService = async (sku_id: string) => {
   }
 
   // Xử lý và định dạng lại dữ liệu options
-  const options = variants.flatMap((variant) => {
-    return variant.option_values.map((optionValue) => ({
-      _id: optionValue.option_id?._id,
-      name: optionValue.option_id?.name,
-      position: optionValue.option_id?.position,
-      option_value: {
-        _id: optionValue._id,
-        value: optionValue.value,
-      },
-    }));
-  });
+  const options = await Promise.all(
+    variants.map(async (variant) => {
+      const option = await Option.findOne({ _id: variant.option_id });
+      const optionValue = await OptionValue.findOne({
+        _id: variant.option_value_id,
+      });
+      if (!option || !optionValue) {
+        logger.log('error', 'Option or OptionValue not found');
+        throw new AppError(
+          StatusCodes.NOT_FOUND,
+          'Option or OptionValue not found',
+        );
+      }
+      return {
+        _id: option?._id,
+        name: option?.name,
+        position: option?.position,
+        option_value: {
+          _id: optionValue?._id,
+          label: optionValue?.label,
+          value: optionValue?.value,
+        },
+      };
+    }),
+  );
   if (!options) {
     logger.log('error', 'Option sort failed in get one variant');
     throw new AppError(StatusCodes.BAD_REQUEST, messagesError.BAD_REQUEST);
@@ -722,13 +716,14 @@ const getOneVariantService = async (sku_id: string) => {
   return { sku, optionSort };
 };
 
-const updateVariantService = async (sku_id: string, input: VariantType) => {
+const updateVariantService = async (sku_id: string, input: any) => {
+  const { options, ...payload } = input;
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
     const doc = await Sku.findOneAndUpdate(
       { _id: sku_id },
-      { ...input, updated_at: moment().toISOString() },
+      { ...payload, updated_at: moment().toISOString() },
       { new: true, session: session },
     );
     if (!doc) {
@@ -739,20 +734,28 @@ const updateVariantService = async (sku_id: string, input: VariantType) => {
       );
     }
     await Promise.all(
-      input.option_values.map(async (option) => {
-        const optionID = option._id,
-          // Lấy giá trị option từ OptionValueType
-          optionValues = await OptionValue.find({
-            option_id: optionID,
-          }).session(session),
-          optionValueID = optionValues.length > 0 ? optionValues[0]._id : null,
-          optionPayload = {
-            name: option.option_id.name,
-            position: option.option_id.position,
-          },
-          optionValuePayload = {
-            value: option.value,
-          };
+      options.map(async (option: any) => {
+        const optionID = option?._id;
+        const optionValueID = option?.option_value?._id;
+
+        if (!optionID || !optionValueID) {
+          throw new AppError(
+            StatusCodes.BAD_REQUEST,
+            'Option or OptionValue ID missing',
+          );
+        }
+
+        const optionPayload = {
+          name: option?.name,
+          position: option?.position,
+          updated_at: moment().toISOString(),
+        };
+
+        const optionValuePayload = {
+          label: option?.option_value?.label,
+          value: option?.option_value?.value,
+          updated_at: moment().toISOString(),
+        };
 
         Option.findOneAndUpdate(
           { _id: optionID },
@@ -784,19 +787,19 @@ const updateVariantService = async (sku_id: string, input: VariantType) => {
 };
 
 export {
-  createOptionValueService,
   createOptionService,
-  deleteOptionValueService,
+  createOptionValueService,
+  createVariantService,
   deleteOptionService,
+  deleteOptionValueService,
   deleteVariantService,
-  getAllOptionValuesService,
   getAllOptionsService,
+  getAllOptionValuesService,
   getAllVariantsService,
   getOneOptionService,
   getOneVariantService,
   getSingleOptionValueService,
-  createVariantService,
-  updateOptionValueService,
   updateOptionService,
+  updateOptionValueService,
   updateVariantService,
 };

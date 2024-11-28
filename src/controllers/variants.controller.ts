@@ -127,7 +127,7 @@ export const deleteOption: RequestHandler = async (req, res, next) => {
   }
 };
 
-//! Optional Value Controller
+//! Option Value Controller
 export const getAllOptionValues: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.product_id Param product_id input
@@ -135,32 +135,25 @@ export const getAllOptionValues: RequestHandler = async (req, res, next) => {
    */
   const { product_id, option_id } = req.params;
   try {
-    const optionalValues = await getAllOptionValuesService(
-      product_id,
-      option_id,
-    );
+    const optionValues = await getAllOptionValuesService(product_id, option_id);
 
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_OPTION_VALUE_SUCCESS,
-      res: optionalValues,
+      res: optionValues,
     });
   } catch (error) {
-    logger.log('error', `Catch error in get all optional values: ${error}`);
+    logger.log('error', `Catch error in get all option values: ${error}`);
     next(error);
   }
 };
 
-export const getSingleOptionValue: RequestHandler = async (
-  req,
-  res,
-  next,
-) => {
+export const getSingleOptionValue: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.params.value_id Param value_id input
    */
   const { value_id } = req.params;
   try {
-    // Find one optional value
+    // Find one option value
     const optionValue = await getSingleOptionValueService(value_id);
 
     res.status(StatusCodes.OK).json({
@@ -168,7 +161,7 @@ export const getSingleOptionValue: RequestHandler = async (
       res: optionValue,
     });
   } catch (error) {
-    logger.log('error', `Catch error in get one optional value: ${error}`);
+    logger.log('error', `Catch error in get one option value: ${error}`);
     next(error);
   }
 };
@@ -188,7 +181,7 @@ export const createOptionValue: RequestHandler = async (req, res, next) => {
       res: doc,
     });
   } catch (error) {
-    logger.log('error', `Catch error in create optional value: ${error}`);
+    logger.log('error', `Catch error in create option value: ${error}`);
     next(error);
   }
 };
@@ -207,7 +200,7 @@ export const updateOptionValue: RequestHandler = async (req, res, next) => {
       res: doc,
     });
   } catch (error) {
-    logger.log('error', `Catch error in update optional value: ${error}`);
+    logger.log('error', `Catch error in update option value: ${error}`);
     next(error);
   }
 };
@@ -218,7 +211,7 @@ export const deleteOptionValue: RequestHandler = async (req, res, next) => {
    */
   const { value_id } = req.params;
   try {
-    // Find optional value
+    // Find option value
     const doc = await deleteOptionValueService(value_id);
 
     return res.status(StatusCodes.OK).json({
@@ -226,7 +219,7 @@ export const deleteOptionValue: RequestHandler = async (req, res, next) => {
       res: doc,
     });
   } catch (error) {
-    logger.log('error', `Catch error in delete optional value: ${error}`);
+    logger.log('error', `Catch error in delete option value: ${error}`);
     next(error);
   }
 };
@@ -241,6 +234,7 @@ export const getAllVariants: RequestHandler = async (req, res, next) => {
   try {
     const data = await getAllVariantsService(product_id);
     return res.status(StatusCodes.OK).json({
+      message: messagesSuccess.GET_VARIANT_SUCCESS,
       res: data,
     });
   } catch (error) {
@@ -255,24 +249,10 @@ export const createVariant: RequestHandler = async (req, res, next) => {
    * @param {string} req.params.product_id Param product_id input
    *
    */
-  const {
-    price,
-    price_before_discount,
-    price_discount_percent,
-    stock,
-    skuPrefix,
-  } = req.body;
 
   const { product_id } = req.params;
   try {
-    const createVariantData = await createVariantService(
-      product_id,
-      price,
-      price_before_discount,
-      price_discount_percent,
-      stock,
-      skuPrefix,
-    );
+    const createVariantData = await createVariantService(product_id);
 
     return res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.CREATED,

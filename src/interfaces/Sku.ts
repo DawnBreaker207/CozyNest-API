@@ -3,15 +3,15 @@ import { ProductType } from './Product';
 
 export interface SkuType extends Document {
   _id: Types.ObjectId;
-  SKU: string;
   product_id: ProductType;
   name?: string;
+  // SKU: string;
   slug: string;
   shared_url: string;
   price: number;
+  stock: number;
   price_before_discount?: number;
   price_discount_percent?: number;
-  stock: number;
   image?: {
     id: string;
     url: string;
