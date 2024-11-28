@@ -42,7 +42,7 @@ const optionSchema = new mongoose.Schema<OptionType>(
       },
       option_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Option_Value',
+        ref: 'Option',
         required: true,
       },
       option_value_id: {
