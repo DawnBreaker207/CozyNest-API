@@ -1,5 +1,6 @@
+import Article from '@/models/Article';
 import { Product } from '@/models/Product';
-import { Request, RequestHandler, Response } from 'express';
+import {  RequestHandler } from 'express';
 
 // Tìm kiếm sản phẩm theo từ khóa
 export const searchProducts: RequestHandler = async (req ,res, next) => {
@@ -24,6 +25,21 @@ export const searchProducts: RequestHandler = async (req ,res, next) => {
     }
 
     res.json(products);
+  } catch (error) {
+    next(error);
+    console.error(error);
+    res.status(500).json({ message: 'Đã có lỗi xảy ra' });
+  }
+};
+
+export const searchArticles: RequestHandler = async (req, res, next) => {
+  const { query } = req.query;
+  try {
+    const searchQuery = typeof query === 'string' ? query : '';
+    const articles = await Article.find({
+      title: { $regex: searchQuery, $options: "i" }
+    }).select('title content author');
+    res.status(200).json(articles);
   } catch (error) {
     next(error);
     console.error(error);
