@@ -15,6 +15,7 @@ import routeUser from './user.route';
 import routeArticle from './article.route';
 import routeVariant from './variant.route';
 import routeReview from './review.route';
+import routeSearch from './search.route';
 
 const router = Router();
 
@@ -65,5 +66,10 @@ router.use('/coupon', routeCoupon);
 
 //* Articles
 router.use('/articles', routeArticle);
+
+//* Search
+router.use('/search', routeSearch);  
+
+
 
 export default router;
