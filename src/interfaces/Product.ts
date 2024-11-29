@@ -21,6 +21,7 @@ export interface ProductType extends Document {
   // sold: number;
   option_id: OptionType[];
   variants: VariantType[];
+  SKU: string;
   created_at: Date;
   updated_at: Date;
   is_hidden?: boolean;

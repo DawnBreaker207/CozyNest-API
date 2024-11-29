@@ -492,7 +492,7 @@ const getAllVariantsService = async (product_id: string) => {
 const createVariantService = async (product_id: string) => {
   // Check product exist
   const product = await Product.findById(product_id).select(
-    '-_id name slug price price_before_discount price_discount_percent',
+    '-_id name SKU slug price price_before_discount price_discount_percent',
   );
   if (!product) {
     logger.log('error', 'Variants not found in save variant');
@@ -543,7 +543,7 @@ const createVariantService = async (product_id: string) => {
       slug = slugify(`${product.name}-${variantValues}`) || 'default-slug';
     return {
       ...product.toObject(),
-      name: `${product.name}-${variantValues}`,
+      name: `${product.SKU}-${index + 1}`,
       product_id,
       assets: [],
       // option-values: product?.options

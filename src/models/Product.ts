@@ -6,6 +6,12 @@ const productSchema = new mongoose.Schema<ProductType>(
   {
     name: { type: String, required: true },
     // thumbnail: { type: String, required: true },
+    SKU: { type: String, required: true, unique: true },
+    category_id: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Category',
+      required: true,
+    },
     images: [
       {
         url: { type: String, required: true },
@@ -13,11 +19,6 @@ const productSchema = new mongoose.Schema<ProductType>(
         _id: false,
       },
     ],
-    category_id: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'Category',
-      required: true,
-    },
     description: { type: String, required: true },
     variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }],
     is_sale: { type: Boolean, default: false },
