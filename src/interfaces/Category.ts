@@ -1,10 +1,10 @@
 import { Types } from 'mongoose';
-import { Image, Product_Id } from './Product';
+import {  Product_Id } from './Product';
 
 export interface CategoryType {
   _id?: Types.ObjectId | string;
   name: string;
-  thumbnail?: Image;
+  thumbnail?: string;
   isHidden: boolean;
   products: Product_Id[];
   type: string;
