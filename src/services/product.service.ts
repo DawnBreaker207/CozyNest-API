@@ -68,14 +68,14 @@ const createProductService = async (
   input: ProductType,
 ): Promise<ProductType> => {
   // Check if SKU exist
-  const checkProduct = await Product.findOne({ SKU: input.SKU });
-  if (checkProduct) {
-    logger.log('error', 'Product with this SKU already exists');
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      'Product with this SKU already exists',
-    );
-  }
+  // const checkProduct = await Product.findOne({ SKU: input.SKU });
+  // if (checkProduct) {
+  //   logger.log('error', 'Product with this SKU already exists');
+  //   throw new AppError(
+  //     StatusCodes.BAD_REQUEST,
+  //     'Product with this SKU already exists',
+  //   );
+  // }
 
   const product = await Product.create(input),
     // Update product list in category
