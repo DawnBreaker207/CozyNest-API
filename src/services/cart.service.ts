@@ -39,17 +39,23 @@ const createCartService = async (input: CartType) => {
 const GetCartService = async (cart_id: string) => {
   const cart = await Cart.findOne({ cart_id }).populate({
     path: 'products.sku_id',
+    select: 'product_id',
     populate: [
       {
         path: 'product_id',
-        select: 'name thumbnail',
+        select: 'name thumbnail images',
       },
       {
-        path: 'option_value_id',
-        populate: {
-          path: 'option_id',
-          select: 'name',
-        },
+        path: 'variants',
+        populate: [
+          {
+            path: 'option_value_id',
+            populate: {
+              path: 'option_id',
+              select: 'name',
+            },
+          },
+        ],
       },
     ],
   });
@@ -92,10 +98,19 @@ const GetByIdService = async (userId: string) => {
     populate: [
       {
         path: 'product_id',
-        select: 'name thumbnail',
+        select: 'name images',
+        populate: {
+          path: 'variants',
+          populate: {
+            path: 'option_value_id',
+            populate: {
+              path: 'option_id',
+              select: 'name',
+            },
+          },
+        },
       },
     ],
-    select: 'slug',
   });
   if (!cart) {
     logger.log('error', 'Cart is not found in get cart by id');

@@ -5,7 +5,6 @@ import {
   getOneVariant,
   updateVariant,
 } from '@/controllers/variants.controller';
-import validBodyRequest from '@/middlewares/validBodyRequest';
 import { Router } from 'express';
 
 const routeVariant = Router();
