@@ -25,8 +25,7 @@ const reviewSchema = new Schema<ReviewType>(
       required: true,
     },
     image: {
-      id: { type: String },
-      url: { type: String },
+    type: String
     },
   },
   {
