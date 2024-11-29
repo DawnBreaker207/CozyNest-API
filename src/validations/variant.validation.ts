@@ -9,9 +9,9 @@ export const optionValuesSchema = z.object({
   value: z.string(),
 });
 
-export const variantSchema = z.object({
-  image: z.object({}).optional(),
-});
+// export const variantSchema = z.object({
+//   image: z.object({}).optional(),
+// });
 
 export const skuSchema = z.object({
   name: z.string(),
