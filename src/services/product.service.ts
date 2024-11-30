@@ -42,11 +42,16 @@ const getOneProductService = async (id: string): Promise<ProductType> => {
     { path: 'category_id', select: 'name' },
     {
       path: 'variants',
-      select: 'sku_id option_values image ',
+      select: 'sku_id images ',
       populate: [
         {
           path: 'sku_id',
-          select: 'SKU name price stock price_discount_percent',
+          select: 'name price stock price_discount_percent',
+        },
+        { path: 'option_id', select: 'name position' },
+        {
+          path: 'option_value_id',
+          select: 'label value',
         },
       ],
     },
@@ -63,12 +68,12 @@ const createProductService = async (
   input: ProductType,
 ): Promise<ProductType> => {
   // Check if SKU exist
-  // const checkProduct = await Product.findOne({ slug: input.slug });
+  // const checkProduct = await Product.findOne({ SKU: input.SKU });
   // if (checkProduct) {
-  //   logger.log('error', 'Product with this slug already exists');
+  //   logger.log('error', 'Product with this SKU already exists');
   //   throw new AppError(
   //     StatusCodes.BAD_REQUEST,
-  //     'Product with this slug already exists',
+  //     'Product with this SKU already exists',
   //   );
   // }
 
