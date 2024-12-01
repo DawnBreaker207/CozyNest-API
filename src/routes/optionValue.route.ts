@@ -48,7 +48,7 @@ routeOptionValue.put(
 
 //* Delete option value depend option model
 routeOptionValue.delete(
-  '/:product_id/options/:option_id/:value_id/value',
+  '/:product_id/options/:option_id/:value_id/values',
   // [ checkAuth,
   // checkPermission,]
   // #swagger.tags = ['OptionValue']
