@@ -257,8 +257,6 @@ const createOptionService = async (id: string, input: OptionType) => {
     product_id: id.trim(),
     name: input.name.trim(),
   };
-  console.log('🚀 ~ createOptionService ~ payload:', payload);
-
   const checkProduct = await Product.findById(id);
   if (!checkProduct) {
     logger.log('error', 'Product not found in create option');
@@ -535,16 +533,15 @@ const createVariantService = async (product_id: string) => {
   }
   // TODO: Understand this
   // Create array of SKUs from variants
-  const arraySKUs = variants.flat().map((variant, index) => {
-    const variantValues = variant.value;
-      // Nếu variantValues là chuỗi trống hoặc không hợp lệ, slug sẽ được đặt thành 'default-slug'
+  const arraySKUs = variants.map((variant, index) => {
+    const variantValues = variant.map((v) => v.value).join(' - '); // Kết hợp các giá trị của option
     const slug = slugify(`${product.name}-${variantValues}`) || 'default-slug';
     return {
       ...product.toObject(),
       name: `${product.name}-${variantValues}`,
       product_id,
-      assets: [],
-      SKU: `${product.SKU}-${index + 1}`,
+      assets: [], // Giả sử chưa có assets
+      SKU: `${product.SKU}-${index + 1}`, // SKU dựa trên index
       slug,
     };
   });
@@ -556,7 +553,6 @@ const createVariantService = async (product_id: string) => {
       'There are some problem when creating array SKUs',
     );
   }
-
   // Create SKU base on variants
   const SKUs = await Promise.all(
     arraySKUs.map(async (item) =>
