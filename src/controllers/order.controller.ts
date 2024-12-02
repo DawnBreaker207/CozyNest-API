@@ -38,7 +38,7 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
     // GuestId,
     cart_id,
     ...body
-  } = req.body;
+  } = req.body;  
   try {
     //* Find cart exists
     const { order, new_order_details } = await createNewOrderService(

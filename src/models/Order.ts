@@ -71,7 +71,7 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
     {
       customer_name: {
         type: String,
-        required: true,
+        // required: true,
       },
       total_amount: {
         type: Number,
@@ -96,7 +96,6 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
       },
       phone_number: {
         type: String,
-        required: true,
       },
       payment_status: {
         type: String,

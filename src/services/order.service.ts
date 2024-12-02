@@ -143,7 +143,7 @@ export const buildPaymentMethod = (method: string) => {
         // Trả về cấu trúc cho phương thức thanh toán qua ví điện tử MOMO
         return {
           // Mô tả phương thức thanh toán
-          method: 'Thanh toán qua ví MOMO',
+          method: 'momo',
           // Trạng thái thanh toán ban đầu là chưa thanh toán
           status: 'unpaid',
           // Thông tin thêm về loại thanh toán
@@ -230,24 +230,23 @@ export const checkPaymentMethod = async (
 ) => {
   // Tùy theo phương thức thanh toán (`momo`, `zalopay`, `vnpay`), gọi hàm tạo liên kết thanh toán và lưu liên kết vào `payUrl`
   let payUrl: string | undefined;
+  console.log('Input data', inputData);
+
   try {
-    switch (paymentMethod) {
+    switch (paymentMethod.method) {
       case 'momo': {
         const momoResponse: any = await createMomoService(inputData);
-        payUrl = momoResponse?.payUrl ?? '';
-        break;
+        return (payUrl = momoResponse?.payUrl ?? '');
       }
 
       case 'zalopay': {
         const zalopayResponse: any = await createVnPayService(inputData);
-        payUrl = zalopayResponse?.payUrl ?? '';
-        break;
+        return (payUrl = zalopayResponse?.payUrl ?? '');
       }
 
       case 'vnpay': {
         const vnpayResponse: any = await createVnPayService(inputData);
-        payUrl = vnpayResponse?.payUrl ?? '';
-        break;
+        return (payUrl = vnpayResponse?.payUrl ?? '');
       }
 
       default:
@@ -286,6 +285,7 @@ export const createNewOrderService = async (
   // GuestId:any,
   input: OrderType,
 ) => {
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -312,8 +312,12 @@ export const createNewOrderService = async (
     const payUrl = await checkPaymentMethod(paymentMethod, input);
 
     //* Create order with infomation and total from cart and shipping fee
+    console.log(input);
+    console.log(payUrl);
+
     const order = await Order.create({
       input,
+      email: input.email,
       total_amount: Number(total_amount) + transportation_fee,
       payment_method: paymentMethod,
       payment_url: payUrl,
@@ -1108,7 +1112,7 @@ export const getAllOrdersService = async (
 ) => {
   // Thực hiện truy vấn và phân trang
   const orders = await Order.paginate(conditions, options);
-  if (!orders.length) {
+  if (!orders || orders.length === 0) {
     logger.log('error', 'Can not find order in get all order');
     throw new AppError(StatusCodes.NOT_FOUND, 'Can not find order');
   }
