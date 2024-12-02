@@ -636,16 +636,9 @@ const deleteVariantService = async (sku_id: string) => {
 
 const getOneVariantService = async (sku_id: string) => {
   // Find SKU
-  const sku = await Sku.findOne({ _id: sku_id })
-    .populate({
-      path: 'product_id',
-      select: 'name thumbnail description',
-    })
-    .populate({
-      path: 'assets',
-      select: 'id url',
-    })
-    .select('-created_at -updated_at -__v');
+  const sku = await Sku.findOne({ _id: sku_id }).select(
+    '-deleted -deleted_at -created_at -updated_at',
+  );
   if (!sku) {
     logger.log('error', 'SKU not found in get one variant');
     throw new AppError(
@@ -655,18 +648,10 @@ const getOneVariantService = async (sku_id: string) => {
   }
 
   // Find Variants
-  const variants = await Variant.find({ sku_id })
-    .populate({
-      path: 'option_values',
-      populate: {
-        path: 'option_id',
-        model: 'Option',
-        select: 'name position',
-      },
-      select: 'value',
-    })
-    .select('-created_at -updated_at -__v');
-  if (!variants || variants.length === 0) {
+  const variants = await Variant.find({ sku_id }).select(
+    '-deleted -deleted_at -created_at -updated_at',
+  );
+  if (!variants) {
     logger.log('error', 'Variant not found in get one variant');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
@@ -674,24 +659,22 @@ const getOneVariantService = async (sku_id: string) => {
     );
   }
 
-  // Xử lý và định dạng lại dữ liệu options
   const options = await Promise.all(
     variants.map(async (variant) => {
-      const option = await Option.findOne({ _id: variant.option_id });
-      const optionValue = await OptionValue.findOne({
-        _id: variant.option_value_id,
-      });
-      if (!option || !optionValue) {
-        logger.log('error', 'Option or OptionValue not found');
-        throw new AppError(
-          StatusCodes.NOT_FOUND,
-          'Option or OptionValue not found',
-        );
+      const option = await Option.findById(variant.option_id);
+      if (!option) {
+        logger.log('error', 'Options not found in get one variant');
+        throw new AppError(StatusCodes.NOT_FOUND, 'Can not find options');
+      }
+      const optionValue = await OptionValue.findById(variant.option_value_id);
+      if (!optionValue) {
+        logger.log('error', 'Optional Value not found in get one variant');
+        throw new AppError(StatusCodes.NOT_FOUND, 'Can not find option values');
       }
       return {
         _id: option?._id,
         name: option?.name,
-        position: option?.position,
+        position: option?.position ?? 0,
         option_value: {
           _id: optionValue?._id,
           label: optionValue?.label,
@@ -711,73 +694,19 @@ const getOneVariantService = async (sku_id: string) => {
 };
 
 const updateVariantService = async (sku_id: string, input: any) => {
-  const { options, ...payload } = input;
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    const doc = await Sku.findOneAndUpdate(
-      { _id: sku_id },
-      { ...payload, updated_at: moment().toISOString() },
-      { new: true, session: session },
-    );
-    if (!doc) {
-      logger.log('error', 'SKU not found in update variant');
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        'There some problem when find SKU',
-      );
-    }
-    await Promise.all(
-      options.map(async (option: any) => {
-        const optionID = option?._id;
-        const optionValueID = option?.option_value?._id;
-
-        if (!optionID || !optionValueID) {
-          throw new AppError(
-            StatusCodes.BAD_REQUEST,
-            'Option or OptionValue ID missing',
-          );
-        }
-
-        const optionPayload = {
-          name: option?.name,
-          position: option?.position,
-          updated_at: moment().toISOString(),
-        };
-
-        const optionValuePayload = {
-          label: option?.option_value?.label,
-          value: option?.option_value?.value,
-          updated_at: moment().toISOString(),
-        };
-
-        Option.findOneAndUpdate(
-          { _id: optionID },
-          { ...optionPayload, updated_at: moment().toISOString() },
-          { new: true, session: session },
-        );
-
-        OptionValue.findOneAndUpdate(
-          { _id: optionValueID },
-          { ...optionValuePayload, updated_at: moment().toISOString() },
-          { new: true, session: session },
-        );
-      }),
-    );
-
-    await session.commitTransaction();
-    session.endSession();
-    return doc;
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-
-    logger.log('error', error);
+  const doc = await Sku.findOneAndUpdate(
+    { _id: sku_id },
+    { ...input, updated_at: moment().toISOString() },
+    { new: true },
+  );
+  if (!doc) {
+    logger.log('error', 'SKU not found in update variant');
     throw new AppError(
-      StatusCodes.INTERNAL_SERVER_ERROR,
-      'Update variant failed',
+      StatusCodes.BAD_REQUEST,
+      'There some problem when find SKU',
     );
   }
+  return doc;
 };
 
 export {
