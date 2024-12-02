@@ -203,26 +203,26 @@ const variantOptions = async (
 
 const getAllOptionsService = async (id: string) => {
   const options = await Option.find({ product_id: id });
-  if (!options || options.length === 0) {
-    logger.log('error', 'Options not found in get all options');
-    throw new AppError(StatusCodes.NOT_FOUND, 'Can not find options');
-  }
+  // if (!options || options.length === 0) {
+  //   logger.log('error', 'Options not found in get all options');
+  //   throw new AppError(StatusCodes.NOT_FOUND, 'Can not find options');
+  // }
 
   const optionsSort = sortOptions(options);
   // Lấy thông tin đầy đủ các option và option values
   const data = await Promise.all(
     optionsSort.map((option) => getOptionValues(option.toObject(), option._id)),
   );
-  if (!data || data.length === 0) {
-    logger.log(
-      'error',
-      'Options and option values not found in get all options',
-    );
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      'Can not find option and option values',
-    );
-  }
+  // if (!data || data.length === 0) {
+  //   logger.log(
+  //     'error',
+  //     'Options and option values not found in get all options',
+  //   );
+  //   throw new AppError(
+  //     StatusCodes.BAD_REQUEST,
+  //     'Can not find option and option values',
+  //   );
+  // }
   return data;
 };
 
@@ -257,6 +257,7 @@ const createOptionService = async (id: string, input: OptionType) => {
     product_id: id.trim(),
     name: input.name.trim(),
   };
+  console.log('🚀 ~ createOptionService ~ payload:', payload);
 
   const checkProduct = await Product.findById(id);
   if (!checkProduct) {
@@ -511,7 +512,9 @@ const createVariantService = async (product_id: string) => {
 
   // Create option values base on options
   const docs = await Promise.all(
-    options.map((option) => getOptionValuesExist(option, option._id)),
+    options.map((option) =>
+      getOptionValuesExist(option.toObject(), option._id),
+    ),
   );
   if (!docs) {
     logger.log('error', 'Option value create failed in save variant');
@@ -533,19 +536,19 @@ const createVariantService = async (product_id: string) => {
   // TODO: Understand this
   // Create array of SKUs from variants
   const arraySKUs = variants.flat().map((variant, index) => {
-    const variantValues = variant.value,
+    const variantValues = variant.value;
       // Nếu variantValues là chuỗi trống hoặc không hợp lệ, slug sẽ được đặt thành 'default-slug'
-      slug = slugify(`${product.name}-${variantValues}`) || 'default-slug';
+    const slug = slugify(`${product.name}-${variantValues}`) || 'default-slug';
     return {
       ...product.toObject(),
-      name: `${product.SKU}-${index + 1}`,
+      name: `${product.name}-${variantValues}`,
       product_id,
       assets: [],
-      // option-values: product?.options
-      SKU: `${variant.SKU}-${index + 1}`,
+      SKU: `${product.SKU}-${index + 1}`,
       slug,
     };
   });
+
   if (!arraySKUs) {
     logger.log('error', 'SKUs array create failed in save variant');
     throw new AppError(
