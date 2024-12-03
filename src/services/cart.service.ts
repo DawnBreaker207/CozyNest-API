@@ -195,7 +195,7 @@ const AddToCartService = async (
 
 const RemoveFromCartService = async (userId: string, sku_id: string) => {
   //Find cart exist
-  const cart = await Cart.findOne({ userId });
+  const cart = await Cart.findOne({ user_id: userId });
   // If not found
   if (!cart) {
     logger.log('error', 'Cart is not found in remove from cart');

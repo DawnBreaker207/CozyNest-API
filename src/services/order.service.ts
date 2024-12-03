@@ -285,7 +285,6 @@ export const createNewOrderService = async (
   // GuestId:any,
   input: OrderType,
 ) => {
-
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
