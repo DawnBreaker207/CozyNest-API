@@ -561,186 +561,186 @@ export const cancelOrderService = async (id: string) => {
 };
 
 export const updateStatusOrderService = async (id: string, status: string) => {
-  if (!statusOrder.includes(status)) {
-    logger.log('error', 'Status not valid in update status order');
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái không hợp lệ');
-  }
+  // if (!statusOrder.includes(status)) {
+  //   logger.log('error', 'Status not valid in update status order');
+  //   throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái không hợp lệ');
+  // }
 
-  const ordered = await Order.findById(id);
-  if (!ordered) {
-    logger.log('error', 'Not find order in update status order');
-    throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
-  }
+  // const ordered = await Order.findById(id);
+  // if (!ordered) {
+  //   logger.log('error', 'Not find order in update status order');
+  //   throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
+  // }
 
-  const orderDetails = await Order_Detail.find({ order_id: id });
-  if (!orderDetails) {
-    logger.log('error', 'Not find order details in update status order');
-    throw new AppError(
-      StatusCodes.NOT_FOUND,
-      'Không tìm thấy chi tiết đơn hàng',
-    );
-  }
+  // const orderDetails = await Order_Detail.find({ order_id: id });
+  // if (!orderDetails) {
+  //   logger.log('error', 'Not find order details in update status order');
+  //   throw new AppError(
+  //     StatusCodes.NOT_FOUND,
+  //     'Không tìm thấy chi tiết đơn hàng',
+  //   );
+  // }
 
-  const check_status = ordered.status_detail?.find(
-    (item) => item.status === status,
-  );
-  if (check_status) {
-    logger.log('error', 'Status exist in update status order');
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái đã tồn tại');
-  }
-  if (ordered?.status === status) {
-    logger.log('error', 'Status can not change in update status order');
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái không thay đổi');
-  }
+  // const check_status = ordered.status_detail?.find(
+  //   (item) => item.status === status,
+  // );
+  // if (check_status) {
+  //   logger.log('error', 'Status exist in update status order');
+  //   throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái đã tồn tại');
+  // }
+  // if (ordered?.status === status) {
+  //   logger.log('error', 'Status can not change in update status order');
+  //   throw new AppError(StatusCodes.BAD_REQUEST, 'Trạng thái không thay đổi');
+  // }
 
-  const statusCondition: { [key: string]: () => void } = {
-    cancelled: () => {
-      if (ordered?.status === 'cancelled') {
-        logger.log('error', 'Order was cancelled update status order');
-        throw new AppError(StatusCodes.BAD_REQUEST, 'Đơn hàng đã được hủy');
-      }
-    },
-    delivered: () => {
-      if (ordered.status === 'delivered') {
-        logger.log('error', 'Order was complete in update status order');
-        throw new AppError(
-          StatusCodes.BAD_REQUEST,
-          'Đơn hàng đã được hoàn thành',
-        );
-      }
-      if (ordered.status !== 'confirmed') {
-        logger.log(
-          'error',
-          'Need confirm from customer to complete in update status order',
-        );
-        throw new AppError(
-          StatusCodes.BAD_REQUEST,
-          'Đợi xác nhận từ khách hàng để hoàn thành đơn',
-        );
-      }
-    },
-    returned: () => {
-      if (ordered?.status === 'delivered') {
-        logger.log(
-          'error',
-          'Can not cancel order returned in update status order',
-        );
-        throw new AppError(
-          StatusCodes.BAD_REQUEST,
-          'Không thể huỷ đơn hàng đã hoàn',
-        );
-      }
-    },
-  };
+  // const statusCondition: { [key: string]: () => void } = {
+  //   cancelled: () => {
+  //     if (ordered?.status === 'cancelled') {
+  //       logger.log('error', 'Order was cancelled update status order');
+  //       throw new AppError(StatusCodes.BAD_REQUEST, 'Đơn hàng đã được hủy');
+  //     }
+  //   },
+  //   delivered: () => {
+  //     if (ordered.status === 'delivered') {
+  //       logger.log('error', 'Order was complete in update status order');
+  //       throw new AppError(
+  //         StatusCodes.BAD_REQUEST,
+  //         'Đơn hàng đã được hoàn thành',
+  //       );
+  //     }
+  //     if (ordered.status !== 'confirmed') {
+  //       logger.log(
+  //         'error',
+  //         'Need confirm from customer to complete in update status order',
+  //       );
+  //       throw new AppError(
+  //         StatusCodes.BAD_REQUEST,
+  //         'Đợi xác nhận từ khách hàng để hoàn thành đơn',
+  //       );
+  //     }
+  //   },
+  //   returned: () => {
+  //     if (ordered?.status === 'delivered') {
+  //       logger.log(
+  //         'error',
+  //         'Can not cancel order returned in update status order',
+  //       );
+  //       throw new AppError(
+  //         StatusCodes.BAD_REQUEST,
+  //         'Không thể huỷ đơn hàng đã hoàn',
+  //       );
+  //     }
+  //   },
+  // };
 
-  statusCondition[status]?.();
+  // statusCondition[status]?.();
 
-  if (status === 'confirmed' && ordered.shipping_method === 'Shipping') {
-    const shipping = await Shipping.findOne({ _id: ordered.shipping_info });
-    if (!shipping) {
-      logger.log(
-        'error',
-        'Can not find delivery info order in update status order',
-      );
-      throw new AppError(
-        StatusCodes.NOT_FOUND,
-        'Không tìm thấy thông tin giao hàng cho đơn hàng này',
-      );
-    }
+  // if (status === 'confirmed' && ordered.shipping_method === 'Shipping') {
+  //   const shipping = await Shipping.findOne({ _id: ordered.shipping_info });
+  //   if (!shipping) {
+  //     logger.log(
+  //       'error',
+  //       'Can not find delivery info order in update status order',
+  //     );
+  //     throw new AppError(
+  //       StatusCodes.NOT_FOUND,
+  //       'Không tìm thấy thông tin giao hàng cho đơn hàng này',
+  //     );
+  //   }
 
-    //* Find SKU info
-    const getSKU = async (sku_id: string) => {
-      const new_item = await Sku.findById(sku_id);
-      if (!new_item) {
-        logger.log('error', 'SKU ID not found in update status order');
-        throw new AppError(
-          StatusCodes.NOT_FOUND,
-          `SKU with ID ${sku_id} not found`,
-        );
-      }
-      return new_item;
-    };
-    //* Take info details
-    const new_order_details = await Promise.all(
-      orderDetails.map(async (item) => {
-        const data_sku = await getSKU(item.sku_id.toString());
-        return {
-          _id: item._id,
-          sku_id: data_sku._id,
-          name: data_sku.name,
-          price: data_sku.price,
-          price_before_discount: data_sku.price_before_discount,
-          price_discount_percent: data_sku.price_discount_percent,
-          image: data_sku.image,
-          quantity: item.quantity,
-          total_money: item.total_money,
-        };
-      }),
-    );
-    // Tách địa chỉ giao hàng thành các phần
-    const address_detail = shipping.shipping_address.split(',');
-    // Const addressString = address_detail.join(',');
-    // Const address = address_detail.shift();
-    // Lấy phần địa chỉ chính
-    const code_ward_district = await getAddressLocation(
-      // Gọi hàm lấy mã phường/xã và quận/huyện từ địa chỉ
-      address_detail.join(','),
-    );
-    // Kiểm tra xem có lấy được thông tin mã phường/xã và quận/huyện không
-    if (!code_ward_district) {
-      logger.log(
-        'error',
-        'Can not find district from address in update status order',
-      );
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        'Không thể lấy mã phường/xã và quận/huyện từ địa chỉ', // Nếu không lấy được
-      );
-    }
+  //   //* Find SKU info
+  //   const getSKU = async (sku_id: string) => {
+  //     const new_item = await Sku.findById(sku_id);
+  //     if (!new_item) {
+  //       logger.log('error', 'SKU ID not found in update status order');
+  //       throw new AppError(
+  //         StatusCodes.NOT_FOUND,
+  //         `SKU with ID ${sku_id} not found`,
+  //       );
+  //     }
+  //     return new_item;
+  //   };
+  //   //* Take info details
+  //   const new_order_details = await Promise.all(
+  //     orderDetails.map(async (item) => {
+  //       const data_sku = await getSKU(item.sku_id.toString());
+  //       return {
+  //         _id: item._id,
+  //         sku_id: data_sku._id,
+  //         name: data_sku.name,
+  //         price: data_sku.price,
+  //         price_before_discount: data_sku.price_before_discount,
+  //         price_discount_percent: data_sku.price_discount_percent,
+  //         image: data_sku.image,
+  //         quantity: item.quantity,
+  //         total_money: item.total_money,
+  //       };
+  //     }),
+  //   );
+  //   // Tách địa chỉ giao hàng thành các phần
+  //   const address_detail = shipping.shipping_address.split(',');
+  //   // Const addressString = address_detail.join(',');
+  //   // Const address = address_detail.shift();
+  //   // Lấy phần địa chỉ chính
+  //   const code_ward_district = await getAddressLocation(
+  //     // Gọi hàm lấy mã phường/xã và quận/huyện từ địa chỉ
+  //     address_detail.join(','),
+  //   );
+  //   // Kiểm tra xem có lấy được thông tin mã phường/xã và quận/huyện không
+  //   if (!code_ward_district) {
+  //     logger.log(
+  //       'error',
+  //       'Can not find district from address in update status order',
+  //     );
+  //     throw new AppError(
+  //       StatusCodes.BAD_REQUEST,
+  //       'Không thể lấy mã phường/xã và quận/huyện từ địa chỉ', // Nếu không lấy được
+  //     );
+  //   }
 
-    // Dữ liệu để gửi đi cho API tạo đơn hàng mới
-    const data_shipping = {
-      to_name: ordered.customer_name,
-      to_phone: ordered.phone_number,
-      to_address: shipping.shipping_address,
-      to_ward_code: code_ward_district.ward_code,
-      // Lấy DistrictID từ district
-      to_district_id: code_ward_district.district.DistrictID,
-      content: ordered.content,
-      // Ví dụ: trọng lượng của một chiếc tủ
-      weight: 10,
-      // Chiều dài 100 cm
-      length: 100,
-      // Chiều rộng 60 cm
-      width: 90,
-      // Chiều cao 75 cm
-      height: 75,
-      service_type_id: 2,
-      service_id: 53319,
-      payment_type_id: 1,
-      required_note: 'CHOXEMHANGKHONGTHU',
-      Items: new_order_details,
-      name: 'Đồ nội thất',
-      quantity: new_order_details.length,
-    };
+  //   // Dữ liệu để gửi đi cho API tạo đơn hàng mới
+  //   const data_shipping = {
+  //     to_name: ordered.customer_name,
+  //     to_phone: ordered.phone_number,
+  //     to_address: shipping.shipping_address,
+  //     to_ward_code: code_ward_district.ward_code,
+  //     // Lấy DistrictID từ district
+  //     to_district_id: code_ward_district.district.DistrictID,
+  //     content: ordered.content,
+  //     // Ví dụ: trọng lượng của một chiếc tủ
+  //     weight: 10,
+  //     // Chiều dài 100 cm
+  //     length: 100,
+  //     // Chiều rộng 60 cm
+  //     width: 90,
+  //     // Chiều cao 75 cm
+  //     height: 75,
+  //     service_type_id: 2,
+  //     service_id: 53319,
+  //     payment_type_id: 1,
+  //     required_note: 'CHOXEMHANGKHONGTHU',
+  //     Items: new_order_details,
+  //     name: 'Đồ nội thất',
+  //     quantity: new_order_details.length,
+  //   };
 
-    //* Create new shipment order
-    const orderCode = await createDeliveryOrderService(data_shipping);
+  //   //* Create new shipment order
+  //   const orderCode = await createDeliveryOrderService(data_shipping);
 
-    // Nếu tạo đơn hàng thành công
-    if (orderCode.data.code === StatusCodes.OK) {
-      // Cập nhật thông tin giao hàng với mã đơn hàng mới và thời gian giao hàng ước tính
-      await Shipping.findByIdAndUpdate(
-        { _id: ordered.shipping_info },
-        {
-          $set: {
-            order_code: orderCode.data.data.order_code,
-            estimated_delivery_date: orderCode.data.data.expected_delivery_time,
-          },
-        },
-      );
-    }
-  }
+  //   // Nếu tạo đơn hàng thành công
+  //   if (orderCode.data.code === StatusCodes.OK) {
+  //     // Cập nhật thông tin giao hàng với mã đơn hàng mới và thời gian giao hàng ước tính
+  //     await Shipping.findByIdAndUpdate(
+  //       { _id: ordered.shipping_info },
+  //       {
+  //         $set: {
+  //           order_code: orderCode.data.data.order_code,
+  //           estimated_delivery_date: orderCode.data.data.expected_delivery_time,
+  //         },
+  //       },
+  //     );
+  //   }
+  // }
 
   // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
   const updateOrder = await Order.findByIdAndUpdate(
@@ -763,7 +763,7 @@ export const updateStatusOrderService = async (id: string, status: string) => {
     logger.log('error', 'Order update error in update status');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Update status order error');
   }
-  await sendOrderMail(updateOrder.email, updateOrder, ordered.total_amount);
+  // await sendOrderMail(updateOrder.email, updateOrder, ordered.total_amount);
   return updateOrder;
 };
 
