@@ -18,7 +18,11 @@ import { sendOrder } from '@/utils/texts';
 import { StatusCodes } from 'http-status-codes';
 import moment from 'moment';
 import mongoose, { PaginateOptions } from 'mongoose';
-import { createMomoService, createVnPayService } from './payment.service';
+import {
+  createMomoService,
+  createVnPayService,
+  createZaloPayService,
+} from './payment.service';
 import { createDeliveryOrderService } from './shipment.service';
 
 // Utils functions
@@ -158,7 +162,7 @@ export const buildPaymentMethod = (method: string) => {
         // Trả về cấu trúc cho phương thức thanh toán qua VNPAY
         return {
           // Mô tả phương thức thanh toán
-          method: 'Thanh toán qua VNPAY',
+          method: 'vnpay',
           // Trạng thái thanh toán ban đầu là chưa thanh toán
           status: 'unpaid',
           // Thông tin thêm về loại thanh toán
@@ -173,7 +177,7 @@ export const buildPaymentMethod = (method: string) => {
         // Trả về cấu trúc cho phương thức thanh toán qua ZALOPAY
         return {
           // Mô tả phương thức thanh toán
-          method: 'Thanh toán qua ZALOPAY',
+          method: 'zalopay',
           // Trạng thái thanh toán ban đầu là chưa thanh toán
           status: 'unpaid',
           // Thông tin thêm về loại thanh toán
@@ -230,8 +234,8 @@ export const checkPaymentMethod = async (
 ) => {
   // Tùy theo phương thức thanh toán (`momo`, `zalopay`, `vnpay`), gọi hàm tạo liên kết thanh toán và lưu liên kết vào `payUrl`
   let payUrl: string | undefined;
-  console.log('Input data', inputData);
-
+  console.log(inputData);
+  
   try {
     switch (paymentMethod.method) {
       case 'momo': {
@@ -240,7 +244,7 @@ export const checkPaymentMethod = async (
       }
 
       case 'zalopay': {
-        const zalopayResponse: any = await createVnPayService(inputData);
+        const zalopayResponse: any = await createZaloPayService(inputData);
         return (payUrl = zalopayResponse?.payUrl ?? '');
       }
 
@@ -258,13 +262,13 @@ export const checkPaymentMethod = async (
     }
 
     // Kiểm tra nếu `payUrl` không tồn tại, trả về lỗi
-    if (!payUrl) {
-      logger.log('error', 'Pay URL not found in create order');
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        'Không thể lấy liên kết thanh toán từ phản hồi.',
-      );
-    }
+    // if (!payUrl) {
+    //   logger.log('error', 'Pay URL not found in create order');
+    //   throw new AppError(
+    //     StatusCodes.BAD_REQUEST,
+    //     'Không thể lấy liên kết thanh toán từ phản hồi.',
+    //   );
+    // }
   } catch (error: unknown) {
     if (error instanceof AppError) {
       logger.log('error', `Catch error in check payUrl ${error.message}`);
@@ -277,8 +281,10 @@ export const checkPaymentMethod = async (
 
 export const createNewOrderService = async (
   cart_id: string,
-  address: string,
+  customer_name: string,
+  phone_number: string,
   shipping_address: string,
+  address: string,
   payment_method: string,
   total_amount: number,
   transportation_fee: number = 3000,
@@ -308,7 +314,7 @@ export const createNewOrderService = async (
     const paymentMethod = buildPaymentMethod(payment_method);
 
     //* Call payment method and save method
-    const payUrl = await checkPaymentMethod(paymentMethod, input);
+    const payUrl = await checkPaymentMethod(paymentMethod, {total_amount});
 
     //* Create order with infomation and total from cart and shipping fee
     console.log(input);
@@ -316,6 +322,8 @@ export const createNewOrderService = async (
 
     const order = await Order.create({
       input,
+      customer_name: customer_name,
+      phone_number: phone_number,
       email: input.email,
       total_amount: Number(total_amount) + transportation_fee,
       payment_method: paymentMethod,
@@ -334,7 +342,7 @@ export const createNewOrderService = async (
         logger.log('error', 'SKU not found in create order');
         throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
       }
-      if (skuInfo.stock < product.quantity) {
+      if (product.quantity >= skuInfo.stock  ) {
         logger.log(
           'error',
           `Not enough stock for SKU in create new order service`,

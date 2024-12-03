@@ -1,5 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 import {
+  MOMO_ACCESS_KEY,
+  MOMO_IPN_URL,
+  MOMO_REDIRECT_URL,
+  MOMO_SECRET_KEY,
   ZALO_PAY_APP_ID,
   ZALO_PAY_ENDPOINT,
   ZALO_PAY_KEY_1,
@@ -14,15 +18,15 @@ import moment from 'moment';
 import qs from 'qs';
 
 export type CreateVnPayInput = {
-  amount: number;
+  total_amount: number;
   backCode: string;
   socket: string;
   ip: string;
   language?: string;
 };
 
-const createVnPayService = async (data: CreateVnPayInput): Promise<string> => {
-  const { amount = 100000, backCode = 'NCB', language = 'vn', ip } = data,
+const createVnPayService = async (data: CreateVnPayInput) => {
+  const { total_amount = 100000, backCode = 'NCB', language = 'vn', ip } = data,
     date = new Date(),
     orderId = moment(date).format('DDHHmmss'),
     createDate = moment(date).format('YYYYMMDDHHmmss'),
@@ -39,7 +43,7 @@ const createVnPayService = async (data: CreateVnPayInput): Promise<string> => {
       vnp_TxnRef: orderId,
       vnp_OrderInfo: `Thanh toan cho ma GD: ${orderId}`,
       vnp_OrderType: 'other',
-      vnp_Amount: amount * 100,
+      vnp_Amount: total_amount * 100,
       vnp_ReturnUrl: returnUrl,
       vnp_IpAddr: ip,
       vnp_CreateDate: createDate,
@@ -53,7 +57,9 @@ const createVnPayService = async (data: CreateVnPayInput): Promise<string> => {
     signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
   sortedParams.vnp_SecureHash = signed;
 
-  return `${vnpUrl}?${qs.stringify(sortedParams, { encode: false })}`;
+  return {
+    payUrl: `${vnpUrl}?${qs.stringify(sortedParams, { encode: false })}`,
+  };
 };
 
 export type VnPayCallbackInput = Record<string, string>;
@@ -137,19 +143,19 @@ const vnPayStatusService = async (
 };
 
 export type MomoPaymentInput = {
-  amount: string;
+  total_amount: string;
   info?: string;
   orderId?: string;
 };
 
 const createMomoService = async (paymentData: MomoPaymentInput) => {
-  const accessKey = process.env.MOMO_ACCESS_KEY || '',
-    secretKey = process.env.MOMO_SECRET_KEY || '',
+  const accessKey = MOMO_ACCESS_KEY || '',
+    secretKey = MOMO_SECRET_KEY || '',
     partnerCode = 'MOMO',
-    redirectUrl = process.env.MOMO_REDIRECT_URL || '',
-    ipnUrl = process.env.MOMO_IPN_URL || '',
+    redirectUrl = MOMO_REDIRECT_URL,
+    ipnUrl = MOMO_IPN_URL ,
     requestType = 'payWithMethod',
-    amount = paymentData.amount || '1000',
+    amount = paymentData.total_amount || '1000',
     orderInfo = paymentData.info || 'pay with MoMo',
     orderId = paymentData.orderId || `${partnerCode}${Date.now()}`,
     requestId = orderId,
@@ -231,12 +237,12 @@ const momoStatusService = async ({ orderId }: MomoStatusInput) => {
 };
 export type ZaloPayCreateInput = {
   user?: string;
-  amount: number;
+  total_amount: number;
 };
 
 const createZaloPayService = async ({
   user = 'user123',
-  amount = 50000,
+  total_amount = 50000,
 }: ZaloPayCreateInput) => {
   const embed_data = {
       redirecturl: '/',
@@ -250,13 +256,13 @@ const createZaloPayService = async ({
       app_time: Date.now(),
       item: JSON.stringify(items),
       embed_data: JSON.stringify(embed_data),
-      amount,
+      total_amount,
       callback_url:
         'https://f396-2402-800-61ae-ad78-ac2c-6cfa-4402-79e0.ngrok-free.app/callback',
       description: `Lazada - Payment for the order #${transID}`,
       bank_code: '',
     },
-    data = `${order.app_id}|${order.app_trans_id}|${order.app_user}|${order.amount}|${order.app_time}|${order.embed_data}|${order.item}`,
+    data = `${order.app_id}|${order.app_trans_id}|${order.app_user}|${order.total_amount}|${order.app_time}|${order.embed_data}|${order.item}`,
     mac = crypto
       .createHmac('sha256', process.env.ZALO_PAY_KEY_1 || '')
       .update(data)
