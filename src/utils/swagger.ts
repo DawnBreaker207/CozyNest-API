@@ -20,7 +20,7 @@ const doc = {
       { name: 'Shipment', description: 'Endpoints for shipment' },
       { name: 'Payment', description: 'Endpoints for payment' },
       { name: 'Option', description: 'Endpoints for product options' },
-      { name: 'OptionalValue', description: 'Endpoints for optional values' },
+      { name: 'OptionValue', description: 'Endpoints for option values' },
       { name: 'Variant', description: 'Endpoints for variants' },
       { name: 'Coupon', description: 'Endpoints for coupons' },
     ],

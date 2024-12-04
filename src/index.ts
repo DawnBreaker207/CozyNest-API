@@ -35,7 +35,13 @@ const Stream = {
 //* Init Middleware
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:4200'],
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:4200',
+      'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province',
+      'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district',
+      'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward',
+    ],
     credentials: true,
   }),
 );

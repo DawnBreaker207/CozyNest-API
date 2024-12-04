@@ -31,8 +31,7 @@ export const getAllProducts: RequestHandler = async (req, res, next) => {
     _limit = 9999,
     _sort = 'createdAt',
     _q = '',
-    _categoryId = '',
-    _originId = '',
+    _category_id = '',
     _minPrice = '',
     _maxPrice = '',
   } = req.query;
@@ -49,14 +48,20 @@ export const getAllProducts: RequestHandler = async (req, res, next) => {
         },
 
         populate: [
-          { path: 'categoryId', select: 'name' },
+          { path: 'category_id', select: 'name' },
           {
             path: 'variants',
-            select: 'sku_id option_id option_value_id',
+            select: 'sku_id images',
             populate: [
-              { path: 'sku_id', select: 'SKU name price stock' },
-              { path: 'option_id', select: 'name' },
-              { path: 'option_value_id', select: 'value' },
+              {
+                path: 'sku_id',
+                select: 'name price stock price_discount_percent',
+              },
+              { path: 'option_id', select: 'name position' },
+              {
+                path: 'option_value_id',
+                select: 'label value',
+              },
             ],
           },
         ],
@@ -67,12 +72,8 @@ export const getAllProducts: RequestHandler = async (req, res, next) => {
       query.name = { $regex: _q, $options: 'i' };
     }
 
-    if (_categoryId && typeof _categoryId === 'string') {
-      query.categoryId = _categoryId;
-    }
-    if (_originId && typeof _originId === 'string') {
-      const originIds = _originId.split(',').map((id: string) => id.trim());
-      query.originId = { $in: originIds };
+    if (_category_id && typeof _category_id === 'string') {
+      query.categoryId = _category_id;
     }
     if (_minPrice && typeof _minPrice === 'string') {
       query.price = { ...query.price, $gte: parseFloat(_minPrice) };
@@ -123,7 +124,7 @@ export const createProduct: RequestHandler = async (req, res, next) => {
    */
   try {
     const product = await createProductService(req.body);
-    res.status(200).json({
+    res.status(StatusCodes.OK).json({
       message: messagesSuccess.CREATE_PRODUCT_SUCCESS,
       res: product,
     });

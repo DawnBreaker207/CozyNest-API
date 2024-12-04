@@ -5,8 +5,6 @@ import {
   getOneVariant,
   updateVariant,
 } from '@/controllers/variants.controller';
-import validBodyRequest from '@/middlewares/validBodyRequest';
-import { variantSchema } from '@/validations/variant.validation';
 import { Router } from 'express';
 
 const routeVariant = Router();
@@ -21,7 +19,7 @@ routeVariant.get(
 
 //* Get one variant
 routeVariant.get(
-  '/:product_id/:sku_id',
+  '/:product_id/get/:sku_id',
   // #swagger.tags = ['Variant']
   getOneVariant,
 );
@@ -31,7 +29,7 @@ routeVariant.post(
   '/:product_id',
   // checkAuth,
   // checkPermission,
-  validBodyRequest(variantSchema),
+  // validBodyRequest(variantSchema),
   // #swagger.tags = ['Variant']
   createVariant,
 );
@@ -41,7 +39,7 @@ routeVariant.put(
   '/:product_id/:sku_id',
   // checkAuth,
   // checkPermission,
-  validBodyRequest(variantSchema),
+  // validBodyRequest(variantSchema),
   // #swagger.tags = ['Variant']
   updateVariant,
 );

@@ -5,7 +5,7 @@ import routeCategory from './categories.route';
 import routeCoupon from './coupon.route';
 import routeMail from './mail.route';
 import routeOption from './option.route';
-import routeOptionalValue from './optionalValue.route';
+import routeOptionValue from './optionValue.route';
 import routeOrder from './order.route';
 import routePayment from './payment.route';
 import routeProduct from './products.route';
@@ -53,9 +53,9 @@ router.use('/payment', routePayment);
 router.use('/options', routeOption);
 
 //* Optional value depend on products and options
-router.use('/optionalValue', routeOptionalValue);
+router.use('/optionValue', routeOptionValue);
 
-//* Variants depend on product,options and optional values
+//* Variants depend on product,options and option values
 router.use('/variants', routeVariant);
 
 // Review
@@ -68,8 +68,6 @@ router.use('/coupon', routeCoupon);
 router.use('/articles', routeArticle);
 
 //* Search
-router.use('/search', routeSearch);  
-
-
+router.use('/search', routeSearch);
 
 export default router;

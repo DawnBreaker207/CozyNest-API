@@ -10,8 +10,7 @@ export interface ProductCart {
 
 export interface CartType extends Document {
   cart_id: string;
-  userId: Types.ObjectId;
-  guestId?: string;
+  user_id: Types.ObjectId;
   isGuest: boolean;
   products: ProductCart[];
   totalPrice: number;

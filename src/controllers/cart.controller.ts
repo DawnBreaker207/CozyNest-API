@@ -1,7 +1,7 @@
 import {
   AddToCartService,
   GetByIdService,
-  GetCartService, 
+  GetCartService,
   RemoveCartService,
   RemoveFromCartService,
   createCartService,
@@ -218,4 +218,3 @@ export const decreaseQuantity: RequestHandler = async (req, res, next) => {
 //     Next(error);
 //   }
 // };
-

@@ -1,10 +1,9 @@
 import {
-  getAllReviews,
   createReview,
   deleteReview,
+  getAllReviews,
 } from '@/controllers/review.controller';
 import { checkAuth } from '@/middlewares/checkAuth';
-import { checkPermission } from '@/middlewares/checkPermission';
 import { Router } from 'express';
 
 const routeReview = Router();

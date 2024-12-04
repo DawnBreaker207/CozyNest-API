@@ -4,7 +4,7 @@ import {
   getAllCoupon,
   getOneCoupon,
   updateCoupon,
-  getValueCoupon
+  getValueCoupon,
 } from '@/controllers/coupon.controller';
 import { Router } from 'express';
 

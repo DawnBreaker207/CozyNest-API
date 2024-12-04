@@ -22,7 +22,7 @@ routeOption.get(
 
 //* Get one option value in product
 routeOption.get(
-  '/:product_id/:option_id',
+  '/:product_id/get/:option_id',
   // #swagger.tags = ['Option']
   getOneOption,
 );
