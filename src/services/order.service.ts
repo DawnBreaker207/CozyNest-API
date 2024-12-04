@@ -132,7 +132,7 @@ export const buildPaymentMethod = (method: string) => {
         // Trả về cấu trúc cho phương thức thanh toán bằng tiền mặt khi nhận hàng
         return {
           // Mô tả phương thức thanh toán
-          method: 'Thanh toán khi nhận hàng',
+          method: 'cod',
           // Trạng thái thanh toán ban đầu là chưa thanh toán
           status: 'unpaid',
           // Thông tin thêm về loại thanh toán
@@ -235,7 +235,7 @@ export const checkPaymentMethod = async (
   // Tùy theo phương thức thanh toán (`momo`, `zalopay`, `vnpay`), gọi hàm tạo liên kết thanh toán và lưu liên kết vào `payUrl`
   let payUrl: string | undefined;
   console.log(inputData);
-  
+
   try {
     switch (paymentMethod.method) {
       case 'momo': {
@@ -252,7 +252,9 @@ export const checkPaymentMethod = async (
         const vnpayResponse: any = await createVnPayService(inputData);
         return (payUrl = vnpayResponse?.payUrl ?? '');
       }
-
+      case 'cod': {
+        return ;
+      }
       default:
         logger.log('error', 'Payment method not valid in create order');
         throw new AppError(
@@ -291,8 +293,8 @@ export const createNewOrderService = async (
   // GuestId:any,
   input: OrderType,
 ) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  // const session = await mongoose.startSession();
+  // session.startTransaction();
   try {
     //* Find cart exists
     const cart = await Cart.findOne({ _id: cart_id });
@@ -314,7 +316,7 @@ export const createNewOrderService = async (
     const paymentMethod = buildPaymentMethod(payment_method);
 
     //* Call payment method and save method
-    const payUrl = await checkPaymentMethod(paymentMethod, {total_amount});
+    const payUrl = await checkPaymentMethod(paymentMethod, { total_amount });
 
     //* Create order with infomation and total from cart and shipping fee
     console.log(input);
@@ -342,7 +344,7 @@ export const createNewOrderService = async (
         logger.log('error', 'SKU not found in create order');
         throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
       }
-      if (product.quantity >= skuInfo.stock  ) {
+      if (product.quantity >= skuInfo.stock) {
         logger.log(
           'error',
           `Not enough stock for SKU in create new order service`,
@@ -366,7 +368,7 @@ export const createNewOrderService = async (
       await Sku.findByIdAndUpdate(
         product.sku_id,
         { $inc: { stock: -product.quantity } },
-        { session },
+        // { session },
       );
       return new_item;
     };
@@ -428,16 +430,16 @@ export const createNewOrderService = async (
     await Cart.findOneAndUpdate(
       { cart_id },
       { $set: { products: [], total_money: 0 } },
-      { session },
+      // { session },
     );
 
-    await session.commitTransaction();
-    session.endSession();
+    // await session.commitTransaction();
+    // session.endSession();
 
     return { new_order_details, order };
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    // await session.abortTransaction();
+    // session.endSession();
     logger.log('Error', 'Catch error in create new order service');
     throw new AppError(
       StatusCodes.BAD_REQUEST,

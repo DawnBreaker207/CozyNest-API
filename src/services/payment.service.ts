@@ -250,7 +250,7 @@ const createZaloPayService = async ({
     items: { id: number; name: string; price: number }[] = [],
     transID = Math.floor(Math.random() * 1000000),
     order = {
-      app_id: process.env.ZALO_PAY_APP_ID,
+      app_id:ZALO_PAY_APP_ID,
       app_trans_id: `${moment().format('YYMMDD')}_${transID}`,
       app_user: user,
       app_time: Date.now(),
@@ -264,11 +264,11 @@ const createZaloPayService = async ({
     },
     data = `${order.app_id}|${order.app_trans_id}|${order.app_user}|${order.total_amount}|${order.app_time}|${order.embed_data}|${order.item}`,
     mac = crypto
-      .createHmac('sha256', process.env.ZALO_PAY_KEY_1 || '')
+      .createHmac('sha256', ZALO_PAY_KEY_1 || '')
       .update(data)
       .digest('hex'),
     requestData = { ...order, mac },
-    result = await axios.post(process.env.ZALO_PAY_ENDPOINT || '', null, {
+    result = await axios.post(ZALO_PAY_ENDPOINT || '', null, {
       params: requestData,
     });
 

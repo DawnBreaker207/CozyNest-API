@@ -85,7 +85,7 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
       },
       payment_url: {
         type: String,
-        required: true,
+        // required: true,
       },
       coupon_id: {
         type: mongoose.Schema.Types.ObjectId,
