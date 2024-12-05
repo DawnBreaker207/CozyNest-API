@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import {
   createReviewService,
   deleteReviewService,
+  getAllReviewsByProductIdService,
   getAllReviewsService,
 } from '@/services/review.service';
 import { messagesSuccess, messagesError } from '@/constants/messages';
@@ -25,9 +26,28 @@ export const createReview: RequestHandler = async (req, res, next) => {
 
 // Lấy tất cả các review
 export const getAllReviews: RequestHandler = async (req, res, next) => {
+  try {
+    const data = await getAllReviewsService();
+
+    return res.status(StatusCodes.OK).json({
+      message: messagesSuccess.GET_REVIEW_SUCCESS,
+      data,
+    });
+  } catch (error) {
+    logger.log('error', `Error in getAllReviews: ${error}`);
+    next(error);
+  }
+};
+
+// Lấy tất cả các review trong product_id
+export const getAllReviewsByProductId: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
   const { product_id } = req.params;
   try {
-    const data = await getAllReviewsService(product_id);
+    const data = await getAllReviewsByProductIdService(product_id);
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.GET_REVIEW_SUCCESS,

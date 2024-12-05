@@ -5,7 +5,24 @@ import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 
 // Lấy tất cả các review
-export const getAllReviewsService = async (product_id: string) => {
+export const getAllReviewsService = async () => {
+  try {
+    const reviews = await Review.find().populate([
+      { path: 'product_id', select: 'name SKU description' },
+      { path: 'user_id', select: 'username avatar phoneNumber' },
+    ]);
+
+    return reviews;
+  } catch (error) {
+    throw new AppError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      'Unable to fetch reviews',
+    );
+  }
+};
+
+// Lấy tất cả các review theo product_id
+export const getAllReviewsByProductIdService = async (product_id: string) => {
   if (!Types.ObjectId.isValid(product_id)) {
     throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid ProductId');
   }

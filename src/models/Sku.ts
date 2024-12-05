@@ -10,6 +10,7 @@ const skuSchema = new mongoose.Schema<SkuType>(
       ref: 'Product',
       required: true,
     },
+    SKU: {type: String},
     slug: {
       type: String,
       unique: true,
