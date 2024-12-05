@@ -7,10 +7,11 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
       order_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Order',
+        required: true,
       },
       sku_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Sku',
+        ref: 'SKU',
         required: true,
       },
       quantity: {
@@ -21,14 +22,14 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
         type: Number,
         required: true,
       },
-      price_before_discount: {
-        type: Number,
-        default: 0,
-      },
-      price_discount_percent: {
-        type: Number,
-        default: 0,
-      },
+      // price_before_discount: {
+      //   type: Number,
+      //   default: 0,
+      // },
+      // price_discount_percent: {
+      //   type: Number,
+      //   default: 0,
+      // },
       total_money: {
         type: Number,
         default: 0,
@@ -71,7 +72,7 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
     {
       customer_name: {
         type: String,
-        // required: true,
+        required: true,
       },
       total_amount: {
         type: Number,
@@ -189,17 +190,39 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Shipping',
       },
-      products: [
+      //  products: [
+      //       {
+      //         productId: {
+      //           type: mongoose.Schema.Types.ObjectId,
+      //           ref: 'Product',
+      //           required: true,
+      //         },
+      //         originName: { type: String, required: true },
+      //         productName: { type: String, required: true },
+      //         thumbnail: { type: String, required: true },
+      //         price: { type: Number, required: true },
+      //         quantity: { type: Number, required: true },
+      //         // Thêm variant_id để lưu thông tin về biến thể
+      //         variant_id: {
+      //           type: mongoose.Schema.Types.ObjectId,
+      //           ref: 'Variant',
+      //           required: false,
+      //         },
+      //         variant_name: {
+      //           type: String,
+      //           required: false,
+      //         },
+      //         variant_label: {
+      //           type: String,
+      //           required: false,
+      //         },
+      //       },
+      //     ],
+      order_details: [
         {
-          productId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true,
-          },
-          originName: { type: String, required: true },
-          productName: { type: String, required: true },
-          thumbnail: { type: String, required: true },
-          price: { type: Number, required: true },
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'OrderDetail',
+          required: true,
         },
       ],
     },

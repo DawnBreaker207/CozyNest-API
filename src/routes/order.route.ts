@@ -17,7 +17,7 @@ import {
   updateInfoCustomer,
   updatePaymentStatus,
   updateStatusDelivered,
-  updateStatusOrder,
+  updateStatusOrder
 } from '@/controllers/order.controller';
 import { Router } from 'express';
 

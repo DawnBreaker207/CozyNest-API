@@ -6,7 +6,7 @@ import { Variant } from '@/models/Variant';
 import { AppError } from '@/utils/errorHandle';
 import logger from '@/utils/logger';
 import { StatusCodes } from 'http-status-codes';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 //* Cart
 
@@ -224,73 +224,88 @@ const RemoveCartService = async (id: string) => {
   return data;
 };
 const increaseQuantityService = async (userId: string, sku_id: string) => {
-  // Check cart exist
-  const cart = await Cart.findOne({ user_id: userId });
-  // If not exist
+  let objectUserId;
+  try {
+    objectUserId = new mongoose.Types.ObjectId(userId);
+  } catch {
+    logger.log('error', `Invalid userId format: ${userId}`);
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid userId format');
+  }
+  // Kiểm tra xem giỏ hàng có tồn tại không
+  const cart = await Cart.findOne({ user_id: objectUserId });
+  console.log('Cart Query Result:', cart);
+
+  // Nếu không tồn tại
   if (!cart) {
     logger.log('error', 'Cart is not exist in increase quantity');
     throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
   }
-  // Find product exist in cart
-  const product = findProduct<ProductCart>(
-    cart.products as ProductCart[],
-    sku_id,
-  );
-  // Const product = cart?.products.find(
-  //   (item) => item.sku_id.toString() === sku_id
-  // ) as ProductCart;
-  // If not exist
 
+  // Tìm sản phẩm trong giỏ hàng
+  const product = cart.products.find(
+    (item) => item.sku_id.toString() === sku_id,
+  ) as ProductCart;
+
+  // Nếu không tìm thấy sản phẩm
   if (!product) {
     logger.log('error', 'Product is not found in increase quantity');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
   }
+
+  // Nếu sản phẩm tồn tại, cập nhật số lượng
   if (product?.quantity) {
-    // If exist update quantity
     product.quantity++;
-    // Update total price
+    // Cập nhật giá trị tổng
     cart.totalPrice += product.price;
   }
 
-  await cart?.save();
+  // Lưu lại giỏ hàng
+  await cart.save();
   return cart;
 };
-const decreaseQuantityService = async (userId: string, sku_id: string) => {
-  // Check cart exist
-  const cart = await Cart.findOne({ user_id: userId });
-  // If not exist
+
+const decreaseQuantityService = async (userId: string, sku_id: string, quantityToDecrease = 1) => {
+  console.log('Decreasing by quantity:', quantityToDecrease);
+  let objectUserId;
+  try {
+    objectUserId = new mongoose.Types.ObjectId(userId);
+  } catch {
+    logger.log('error', `Invalid userId format: ${userId}`);
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid userId format');
+  }
+
+  // Check cart existence
+  const cart = await Cart.findOne({ user_id: objectUserId });
   if (!cart) {
     logger.log('error', 'Cart is not exist in decrease quantity');
     throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
   }
-  // Find product exist in cart
-  const product = findProduct(cart.products as ProductCart[], sku_id);
-  // Const product = cart?.products.find(
-  //   (item) => item.sku_id.toString() === sku_id
-  // ) as ProductCart;
-  // If not exist
 
-  // If not exist
+  // Find product in cart
+  const product = findProduct(cart.products as ProductCart[], sku_id);
   if (!product) {
     logger.log('error', 'Product is not exist in decrease quantity');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
   }
 
-  // If exist update quantity
-  if (product?.quantity && product.quantity > 1) {
-    product.quantity--;
-    // Update total price
-    cart.totalPrice -= product.price;
-  } else {
-    // Remove product if quantity is 1
-    cart.products = removeFromCart(cart, sku_id);
-    // Cart.products = cart.products.filter((product) => {
-    //   Return product.sku_id && product.sku_id.toString() !== sku_id;
-    // }) as Types.DocumentArray<ProductCart>;
+  // Check if the requested quantity to decrease is valid
+  if (product.quantity < quantityToDecrease) {
+    logger.log('error', `Insufficient quantity to decrease for product ${sku_id}`);
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Insufficient quantity to decrease');
   }
-  await cart?.save();
+
+  // Decrease quantity or remove product if necessary
+  product.quantity -= quantityToDecrease;
+  cart.totalPrice -= product.price * quantityToDecrease;
+
+  if (product.quantity === 0) {
+    cart.products = removeFromCart(cart, sku_id);
+  }
+
+  await cart.save();
   return cart;
 };
+
 
 export {
   AddToCartService,

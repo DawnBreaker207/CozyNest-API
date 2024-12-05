@@ -74,9 +74,9 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
 // Cập nhật trạng thái của một đơn hàng
 export const updateStatusOrder: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { payment_status } = req.body;
   try {
-    const updateOrder = await updateStatusOrderService(id, status);
+    const updateOrder = await updateStatusOrderService(id, payment_status);
     res.status(StatusCodes.CREATED).json({
       message: 'Order update successfully',
       res: updateOrder,

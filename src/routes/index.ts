@@ -16,6 +16,7 @@ import routeArticle from './article.route';
 import routeVariant from './variant.route';
 import routeReview from './review.route';
 import routeSearch from './search.route';
+import routeStock from './stock.route';
 
 const router = Router();
 
@@ -69,5 +70,10 @@ router.use('/articles', routeArticle);
 
 //* Search
 router.use('/search', routeSearch);
+
+//* Stock
+
+router.use('/stock', routeStock);
+
 
 export default router;

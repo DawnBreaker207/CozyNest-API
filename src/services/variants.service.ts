@@ -485,9 +485,7 @@ const getAllVariantsService = async (product_id: string) => {
 
 const createVariantService = async (product_id: string) => {
   // Check product exist
-  const product = await Product.findById(product_id).select(
-    '-_id name SKU slug price price_before_discount price_discount_percent',
-  );
+  const product = await Product.findById(product_id).select('-_id name SKU');
   if (!product) {
     logger.log('error', 'Variants not found in save variant');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
@@ -636,9 +634,17 @@ const deleteVariantService = async (sku_id: string) => {
 
 const getOneVariantService = async (sku_id: string) => {
   // Find SKU
-  const sku = await Sku.findOne({ _id: sku_id }).select(
-    '-deleted -deleted_at -created_at -updated_at',
-  );
+  const sku = await Sku.findOne({ _id: sku_id })
+    .populate({
+      path: 'product_id',
+      select: 'name description',
+    })
+    // .populate({
+    //   path: 'assets',
+    //   select: 'id url',
+    // })
+    .select('-created_at -updated_at -__v');
+
   if (!sku) {
     logger.log('error', 'SKU not found in get one variant');
     throw new AppError(
@@ -692,7 +698,6 @@ const getOneVariantService = async (sku_id: string) => {
 
   return { sku, optionSort };
 };
-
 
 const updateVariantService = async (
   sku_id: string,

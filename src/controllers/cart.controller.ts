@@ -161,10 +161,11 @@ export const decreaseQuantity: RequestHandler = async (req, res, next) => {
   /**
    * @param {string} req.body.userId Param userId input
    * @param {string} req.body.sku_id Param sku_id input
+   * @param {string} req.body.quantity Param sku_id input
    */
-  const { userId, sku_id } = req.body;
+  const { userId, sku_id,quantity } = req.body;
   try {
-    const cart = await decreaseQuantityService(userId, sku_id);
+    const cart = await decreaseQuantityService(userId, sku_id, quantity);
 
     res
       .status(StatusCodes.OK)

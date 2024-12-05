@@ -11,7 +11,7 @@ export interface ProductType extends Document {
   _id: Types.ObjectId;
   name: string;
   // thumbnail: string;
-  images?: Image[];
+  // images?: Image[];
   slug: string;
   category_id: CategoryType;
   description: string;
