@@ -2,6 +2,8 @@ import { Document, Types } from 'mongoose';
 import { ProductType } from './Product';
 
 export interface SkuType extends Document {
+  option_value_id: any;
+  skuCode: any;
   _id: Types.ObjectId;
   product_id: ProductType;
   name?: string;

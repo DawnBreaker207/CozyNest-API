@@ -320,7 +320,7 @@ export const momoStatus: RequestHandler = async (req, res, next) => {
 export const createZaloPay: RequestHandler = async (req, res, next) => {
   const embed_data = {
       //Sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
-      redirecturl: '/',
+      redirecturl: 'http://localhost:5173/paymentresult',
     },
     items: { id: number; name: string; price: number }[] = [],
     transID = Math.floor(Math.random() * 1000000),

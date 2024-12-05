@@ -290,19 +290,16 @@ export const createNewOrderService = async (
   payment_method: string,
   total_amount: number,
   transportation_fee: number = 3000,
-  // GuestId:any,
   input: OrderType,
 ) => {
-  // const session = await mongoose.startSession();
-  // session.startTransaction();
   try {
-    //* Find cart exists
+    // Tìm giỏ hàng
     const cart = await Cart.findOne({ _id: cart_id });
     if (!cart) {
       logger.log('error', 'Cart not found in create order');
       throw new AppError(StatusCodes.NOT_FOUND, 'Not found cart');
     }
-    // TODO: Understand this
+
     const existingOrder = await Order.findOne({ cart_id });
     if (existingOrder) {
       logger.log('error', 'Cart already exists in create new order service');
@@ -312,20 +309,15 @@ export const createNewOrderService = async (
       );
     }
 
-    //* Check payment method valid
+    // Kiểm tra phương thức thanh toán
     const paymentMethod = buildPaymentMethod(payment_method);
-
-    //* Call payment method and save method
     const payUrl = await checkPaymentMethod(paymentMethod, { total_amount });
 
-    //* Create order with infomation and total from cart and shipping fee
-    console.log(input);
-    console.log(payUrl);
-
+    // Tạo đơn hàng
     const order = await Order.create({
       input,
-      customer_name: customer_name,
-      phone_number: phone_number,
+      customer_name,
+      phone_number,
       email: input.email,
       total_amount: Number(total_amount) + transportation_fee,
       payment_method: paymentMethod,
@@ -336,8 +328,7 @@ export const createNewOrderService = async (
       throw new AppError(StatusCodes.BAD_REQUEST, 'Create order error');
     }
 
-    // TODO: Understand this
-    //* Create detail product in order
+    // Tạo chi tiết sản phẩm trong đơn hàng
     const addProductItem = async (product: ProductCart) => {
       const skuInfo = await Sku.findById(product.sku_id);
       if (!skuInfo) {
@@ -345,15 +336,13 @@ export const createNewOrderService = async (
         throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
       }
       if (product.quantity >= skuInfo.stock) {
-        logger.log(
-          'error',
-          `Not enough stock for SKU in create new order service`,
-        );
+        logger.log('error', `Not enough stock for SKU in create new order service`);
         throw new AppError(
           StatusCodes.BAD_REQUEST,
           `Sản phẩm ${skuInfo.name} không đủ số lượng trong kho`,
         );
       }
+
       const new_item = await Order_Detail.create({
         order_id: order._id,
         sku_id: product.sku_id,
@@ -368,55 +357,19 @@ export const createNewOrderService = async (
       await Sku.findByIdAndUpdate(
         product.sku_id,
         { $inc: { stock: -product.quantity } },
-        // { session },
       );
       return new_item;
     };
 
-    // const get_sku = async (sku_id: string, quantity: number) => {
-    //   const skuInfo = await Sku.findById(sku_id);
-    //   if (!skuInfo) {
-    //     logger.log('error', 'SKU not found in create order');
-    //     throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
-    //   }
-
-    //   if (skuInfo.stock < quantity) {
-    //     logger.log(
-    //       'error',
-    //       `Not enough stock for SKU in create new order service`,
-    //     );
-    //     throw new AppError(
-    //       StatusCodes.BAD_REQUEST,
-    //       `Sản phẩm ${skuInfo.name} không đủ số lượng trong kho`,
-    //     );
-    //   }
-    //   return skuInfo;
-    // };
-
-    //* Create detail product for order from cart
+    // Tạo chi tiết sản phẩm từ giỏ hàng
     const order_details = await Promise.all(
       cart!.products.map((item) => addProductItem(item)),
     );
-    //* Take detail SKU info for each product in cart
-    const new_order_details = await Promise.all(
-      order_details.map(async (item) => {
-        return addProductItem(item);
-        // const data_sku = await get_sku(item.sku_id.toString(), item.quantity);
-        // return {
-        //   _id: item._id,
-        //   sku_id: data_sku?._id,
-        //   name: data_sku?.name,
-        //   price: data_sku?.price,
-        //   price_before_discount: data_sku?.price_before_discount,
-        //   price_discount_percent: data_sku?.price_discount_percent,
-        //   image: data_sku?.image,
-        //   quantity: item.quantity,
-        //   total_money: item.total_money,
-        // };
-      }),
-    );
 
-    //* If order have shipping methods, update
+    // Đảm bảo trả lại order_details, không cần phải gọi lại addProductItem
+    const new_order_details = order_details;
+
+    // Nếu đơn hàng có phương thức giao hàng, cập nhật thông tin giao hàng
     if (order.shipping_method === 'Shipping') {
       await createShippingInfo(
         order,
@@ -426,20 +379,14 @@ export const createNewOrderService = async (
       );
     }
 
-    //* Clear product in cart when create order success
+    // Xóa sản phẩm trong giỏ hàng khi tạo đơn hàng thành công
     await Cart.findOneAndUpdate(
       { cart_id },
       { $set: { products: [], total_money: 0 } },
-      // { session },
     );
-
-    // await session.commitTransaction();
-    // session.endSession();
 
     return { new_order_details, order };
   } catch (error) {
-    // await session.abortTransaction();
-    // session.endSession();
     logger.log('Error', 'Catch error in create new order service');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
@@ -447,6 +394,7 @@ export const createNewOrderService = async (
     );
   }
 };
+
 
 export const cancelOrderService = async (id: string) => {
   const session = await mongoose.startSession();

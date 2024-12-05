@@ -21,6 +21,7 @@ export interface OptionValueType extends Document {
   updated_at: Date;
 }
 export interface VariantType extends Document {
+  stock: any;
   _id: Types.ObjectId;
   sku_id: SkuType;
   product_id: ProductType;

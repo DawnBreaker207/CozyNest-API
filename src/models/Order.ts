@@ -189,19 +189,34 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Shipping',
       },
-      products: [
-        {
-          productId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true,
-          },
-          originName: { type: String, required: true },
-          productName: { type: String, required: true },
-          thumbnail: { type: String, required: true },
-          price: { type: Number, required: true },
+ products: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true,
         },
-      ],
+        originName: { type: String, required: true },
+        productName: { type: String, required: true },
+        thumbnail: { type: String, required: true },
+        price: { type: Number, required: true },
+        quantity: { type: Number, required: true },
+        // Thêm variant_id để lưu thông tin về biến thể
+        variant_id: { 
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Variant',
+          required: false,
+        },
+        variant_name: { 
+          type: String,
+          required: false, 
+        },
+        variant_label: { 
+          type: String,
+          required: false,
+        },
+      },
+    ],
     },
     {
       collection: 'orders',
