@@ -7,10 +7,11 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
       order_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Order',
+        required: true,
       },
       sku_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Sku',
+        ref: 'SKU',
         required: true,
       },
       quantity: {
@@ -71,7 +72,7 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
     {
       customer_name: {
         type: String,
-        // required: true,
+        required: true,
       },
       total_amount: {
         type: Number,

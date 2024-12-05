@@ -253,7 +253,7 @@ export const checkPaymentMethod = async (
         return (payUrl = vnpayResponse?.payUrl ?? '');
       }
       case 'cod': {
-        return ;
+        return;
       }
       default:
         logger.log('error', 'Payment method not valid in create order');
@@ -315,9 +315,9 @@ export const createNewOrderService = async (
 
     // Tạo đơn hàng
     const order = await Order.create({
-      input,
-      customer_name,
-      phone_number,
+      ...input,
+      customer_name: customer_name,
+      phone_number: phone_number,
       email: input.email,
       total_amount: Number(total_amount) + transportation_fee,
       payment_method: paymentMethod,
@@ -336,7 +336,10 @@ export const createNewOrderService = async (
         throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
       }
       if (product.quantity >= skuInfo.stock) {
-        logger.log('error', `Not enough stock for SKU in create new order service`);
+        logger.log(
+          'error',
+          `Not enough stock for SKU in create new order service`,
+        );
         throw new AppError(
           StatusCodes.BAD_REQUEST,
           `Sản phẩm ${skuInfo.name} không đủ số lượng trong kho`,
@@ -354,10 +357,9 @@ export const createNewOrderService = async (
         total_money: product.quantity * product.price,
       });
 
-      await Sku.findByIdAndUpdate(
-        product.sku_id,
-        { $inc: { stock: -product.quantity } },
-      );
+      await Sku.findByIdAndUpdate(product.sku_id, {
+        $inc: { stock: -product.quantity },
+      });
       return new_item;
     };
 
@@ -368,6 +370,9 @@ export const createNewOrderService = async (
 
     // Đảm bảo trả lại order_details, không cần phải gọi lại addProductItem
     const new_order_details = order_details;
+
+    const orderDetailIds = order_details.map((detail) => detail._id);
+    await Order.findByIdAndUpdate(order._id, { order_details: orderDetailIds });
 
     // Nếu đơn hàng có phương thức giao hàng, cập nhật thông tin giao hàng
     if (order.shipping_method === 'Shipping') {
@@ -381,7 +386,7 @@ export const createNewOrderService = async (
 
     // Xóa sản phẩm trong giỏ hàng khi tạo đơn hàng thành công
     await Cart.findOneAndUpdate(
-      { cart_id },
+      { cart_id: cart_id },
       { $set: { products: [], total_money: 0 } },
     );
 
@@ -394,7 +399,6 @@ export const createNewOrderService = async (
     );
   }
 };
-
 
 export const cancelOrderService = async (id: string) => {
   const session = await mongoose.startSession();
@@ -694,16 +698,9 @@ export const updateStatusOrderService = async (id: string, status: string) => {
 
   // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
   const updateOrder = await Order.findByIdAndUpdate(
-    id,
-    {
-      $set: { status },
-      $push: {
-        status_detail: {
-          status,
-        },
-      },
-    },
-    { new: true },
+    { _id: id },
+    { payment_status: status }, // Chỉ truyền chuỗi, không phải đối tượng
+    { new: true }, // Để trả về tài liệu đã được cập nhật
   ).populate([
     {
       path: 'shipping_info',
@@ -1145,7 +1142,18 @@ export const getAllUserOrdersService = async () => {
 };
 
 export const getOneOrderService = async (id: string) => {
-  const order = await Order.findById(id).exec();
+  const order = await Order.findById(id)
+    .populate({
+      path: 'order_details',
+      select: 'sku_id quantity price total_money',
+      populate: [
+        {
+          path: 'sku_id',
+          select: 'name image',
+        },
+      ],
+    })
+    .exec();
   if (!order) {
     logger.log('error', 'Order not found in get one status');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Order not exist');
