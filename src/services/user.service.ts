@@ -76,7 +76,7 @@ const generateToken = (): string => crypto.randomBytes(3).toString('hex'),
     return { user, verification };
   },
   forgotPasswordService = async (email: string) => {
-    const findUser = await User.findOne({ email });
+    const findUser = await User.findOne({ email: email });
     if (!findUser) {
       logger.log('error', 'User not found in forgot pass');
       throw new AppError(StatusCodes.NOT_FOUND, 'User not found');

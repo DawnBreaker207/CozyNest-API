@@ -5,7 +5,7 @@ const categorySchema = new mongoose.Schema<CategoryType>(
   {
     name: { type: String, required: true },
     thumbnail: {
-     type: String,
+      type: String,
     },
     isHidden: { type: Boolean, default: false },
     products: [

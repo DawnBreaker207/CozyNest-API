@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import {  Product_Id } from './Product';
+import { Product_Id } from './Product';
 
 export interface CategoryType {
   _id?: Types.ObjectId | string;

@@ -117,7 +117,7 @@ const GetByIdService = async (userId: string) => {
     throw new AppError(StatusCodes.NOT_FOUND, 'Cart not found');
   }
   const cartData = {
-    cartId: cart?._id.toString(),
+    cart_id: cart?._id.toString(),
     products: cart?.products.map((item) => ({
       sku_id: item.sku_id,
       quantity: item.quantity,
@@ -134,13 +134,13 @@ const AddToCartService = async (
   quantity: number,
 ) => {
   // Check if cart exist by userId
-  let cart = await Cart.findOne({ $or: [{ userId }, { guestId }] }).select(
+  let cart = await Cart.findOne({ $or: [{ user_id: userId }, { guestId }] }).select(
     '-deleted_at -deleted -created_at -updated_at -createdAt -__v',
   );
 
   // If cart not exist create new one
   if (!cart) {
-    cart = new Cart({ userId, guestId, products: [] });
+    cart = new Cart({ user_id: userId, guestId, products: [] });
   }
 
   // Check variant exist in database
@@ -195,7 +195,7 @@ const AddToCartService = async (
 
 const RemoveFromCartService = async (userId: string, sku_id: string) => {
   //Find cart exist
-  const cart = await Cart.findOne({ userId });
+  const cart = await Cart.findOne({ user_id: userId });
   // If not found
   if (!cart) {
     logger.log('error', 'Cart is not found in remove from cart');
@@ -225,7 +225,7 @@ const RemoveCartService = async (id: string) => {
 };
 const increaseQuantityService = async (userId: string, sku_id: string) => {
   // Check cart exist
-  const cart = await Cart.findOne({ userId });
+  const cart = await Cart.findOne({ user_id: userId });
   // If not exist
   if (!cart) {
     logger.log('error', 'Cart is not exist in increase quantity');
@@ -257,7 +257,7 @@ const increaseQuantityService = async (userId: string, sku_id: string) => {
 };
 const decreaseQuantityService = async (userId: string, sku_id: string) => {
   // Check cart exist
-  const cart = await Cart.findOne({ userId });
+  const cart = await Cart.findOne({ user_id: userId });
   // If not exist
   if (!cart) {
     logger.log('error', 'Cart is not exist in decrease quantity');

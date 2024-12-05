@@ -35,6 +35,8 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
     payment_method,
     total_amount,
     transportation_fee = 3000,
+    phone_number,
+    customer_name,
     // GuestId,
     cart_id,
     ...body
@@ -43,8 +45,10 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
     //* Find cart exists
     const { order, new_order_details } = await createNewOrderService(
       cart_id,
-      address,
+      customer_name,
+      phone_number,
       shipping_address,
+      address,
       payment_method,
       total_amount,
       transportation_fee,

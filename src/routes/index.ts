@@ -68,8 +68,6 @@ router.use('/coupon', routeCoupon);
 router.use('/articles', routeArticle);
 
 //* Search
-router.use('/search', routeSearch);  
-
-
+router.use('/search', routeSearch);
 
 export default router;

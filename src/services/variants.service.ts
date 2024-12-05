@@ -693,20 +693,89 @@ const getOneVariantService = async (sku_id: string) => {
   return { sku, optionSort };
 };
 
-const updateVariantService = async (sku_id: string, input: any) => {
-  const doc = await Sku.findOneAndUpdate(
-    { _id: sku_id },
-    { ...input, updated_at: moment().toISOString() },
-    { new: true },
-  );
-  if (!doc) {
-    logger.log('error', 'SKU not found in update variant');
+
+const updateVariantService = async (
+  sku_id: string,
+  options: any[],
+  input: any,
+) => {
+  console.log(input);
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const checkVariant = await Sku.findOne({ _id: sku_id });
+    if (!checkVariant) {
+      logger.log('error', 'SKU not found in update variant');
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There some problem when find SKU',
+      );
+    }
+    const doc = await Sku.findOneAndUpdate(
+      { _id: sku_id },
+      { ...input, updated_at: moment().toISOString() },
+      { new: true, session: session },
+    );
+    if (!doc) {
+      logger.log('error', 'SKU not found in update variant');
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'There some problem when update SKU',
+      );
+    }
+    if (options.length > 0) {
+      await Promise.all(
+        options.map(async (option: any) => {
+          const optionID = option?._id;
+          const optionValueID = option?.option_value?._id;
+
+          if (!optionID || !optionValueID) {
+            throw new AppError(
+              StatusCodes.BAD_REQUEST,
+              'Option or OptionValue ID missing',
+            );
+          }
+
+          const optionPayload = {
+            name: option?.name,
+            position: option?.position,
+            updated_at: moment().toISOString(),
+          };
+
+          const optionValuePayload = {
+            label: option?.option_value?.label,
+            value: option?.option_value?.value,
+            updated_at: moment().toISOString(),
+          };
+
+          await Option.findOneAndUpdate(
+            { _id: optionID },
+            { ...optionPayload, updated_at: moment().toISOString() },
+            { new: true, session: session },
+          );
+
+          await OptionValue.findOneAndUpdate(
+            { _id: optionValueID },
+            { ...optionValuePayload, updated_at: moment().toISOString() },
+            { new: true, session: session },
+          );
+        }),
+      );
+    }
+    await session.commitTransaction();
+    session.endSession();
+    return doc;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+
+    logger.log('error', error);
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'There some problem when find SKU',
     );
   }
-  return doc;
 };
 
 export {
