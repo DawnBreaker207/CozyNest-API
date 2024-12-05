@@ -485,9 +485,7 @@ const getAllVariantsService = async (product_id: string) => {
 
 const createVariantService = async (product_id: string) => {
   // Check product exist
-  const product = await Product.findById(product_id).select(
-    '-_id name SKU',
-  );
+  const product = await Product.findById(product_id).select('-_id name SKU');
   if (!product) {
     logger.log('error', 'Variants not found in save variant');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
@@ -700,7 +698,6 @@ const getOneVariantService = async (sku_id: string) => {
 
   return { sku, optionSort };
 };
-
 
 const updateVariantService = async (
   sku_id: string,
