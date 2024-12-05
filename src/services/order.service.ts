@@ -349,8 +349,8 @@ export const createNewOrderService = async (
         price: product.price,
         quantity: product.quantity,
         image: skuInfo.image,
-        price_before_discount: product.price_before_discount,
-        price_discount_percent: product.price_discount_percent,
+        // price_before_discount: product.price_before_discount,
+        // price_discount_percent: product.price_discount_percent,
         total_money: product.quantity * product.price,
       });
 
@@ -987,7 +987,7 @@ export const getOrderByPhoneNumberService = async (
         orderDetails.map(async (item) => {
           const sku = await Sku.findOne({ _id: item.sku_id }).select(
               // Lấy tên, URL chia sẻ và hình ảnh
-              'name shared_url image',
+              'name image',
             ),
             newSku = sku?.toObject();
           return {
@@ -1040,7 +1040,7 @@ export const getOrderByUserIdService = async (
       const newOrderDetails = await Promise.all(
         orderDetails.map(async (detail) => {
           const sku = await Sku.findOne({ _id: detail.sku_id }).select(
-            'name shared_url image',
+            'name image',
           );
           return {
             ...detail.toObject(),

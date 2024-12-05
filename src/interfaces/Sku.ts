@@ -12,16 +12,17 @@ export interface SkuType extends Document {
   shared_url: string;
   price: number;
   stock: number;
+  sold: number;
   price_before_discount?: number;
   price_discount_percent?: number;
   image?: {
     id: string;
     url: string;
   };
-  assets: {
-    id: string;
-    url: string;
-  }[];
+  // assets: {
+  //   id: string;
+  //   url: string;
+  // }[];
   deleted: boolean;
   deleted_at: Date | null;
   created_at: Date;

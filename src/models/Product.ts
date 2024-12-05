@@ -12,13 +12,13 @@ const productSchema = new mongoose.Schema<ProductType>(
       ref: 'Category',
       required: true,
     },
-    images: [
-      {
-        url: { type: String, required: true },
-        public_id: { type: String, require: true },
-        _id: false,
-      },
-    ],
+    // images: [
+    //   {
+    //     url: { type: String, required: true },
+    //     public_id: { type: String, require: true },
+    //     _id: false,
+    //   },
+    // ],
     description: { type: String, required: true },
     variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }],
     is_sale: { type: Boolean, default: false },

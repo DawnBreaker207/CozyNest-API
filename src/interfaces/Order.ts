@@ -85,12 +85,13 @@ export interface OrderType extends Document {
   content?: string;
   shipping_method?: ShippingMethodType;
   shipping_info?: Types.ObjectId;
-  products?: {
-    productId: Types.ObjectId;
-    originName: string;
-    productName: string;
-    thumbnail: string;
-    price: number;
-  }[];
+  // products?: {
+  //   productId: Types.ObjectId;
+  //   originName: string;
+  //   productName: string;
+  //   thumbnail: string;
+  //   price: number;
+  // }[];
+  order_details: OrderItemType[];
   billTotals?: number;
 }

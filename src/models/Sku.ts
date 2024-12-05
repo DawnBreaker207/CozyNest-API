@@ -17,18 +17,19 @@ const skuSchema = new mongoose.Schema<SkuType>(
     },
     price: { type: Number, default: 0 },
     stock: { type: Number, default: 0 },
+    sold: { type: Number, default: 0 },
     price_before_discount: { type: Number, default: 0 },
     price_discount_percent: { type: Number, default: 0 },
     image: {
       id: { type: String },
       url: { type: String },
     },
-    assets: [
-      {
-        id: { type: String },
-        url: { type: String },
-      },
-    ],
+    // assets: [
+    //   {
+    //     id: { type: String },
+    //     url: { type: String },
+    //   },
+    // ],
     deleted: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false },
