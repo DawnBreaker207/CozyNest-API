@@ -8,7 +8,7 @@ import {
 import { Router } from 'express';
 
 const routeReview = Router();
-//* Lấy tất cả các review
+//* Lấy tất cả các review.
 routeReview.get('/', getAllReviews);
 
 //* Lấy tất cả các review trong product_id
