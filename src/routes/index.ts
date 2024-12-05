@@ -60,7 +60,7 @@ router.use('/optionValue', routeOptionValue);
 router.use('/variants', routeVariant);
 
 // Review
-router.use('/review', routeReview);
+router.use('/reviews', routeReview);
 
 //* Coupon
 router.use('/coupon', routeCoupon);

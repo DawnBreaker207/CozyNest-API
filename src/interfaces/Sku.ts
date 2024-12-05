@@ -7,7 +7,7 @@ export interface SkuType extends Document {
   _id: Types.ObjectId;
   product_id: ProductType;
   name?: string;
-  // SKU: string;
+  SKU: string;
   slug: string;
   shared_url: string;
   price: number;
