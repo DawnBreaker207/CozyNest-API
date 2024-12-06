@@ -1,39 +1,50 @@
-import { OrderItemType, OrderType, ShippingInfoType } from '@/interfaces/Order';
+import {
+  OrderDetailType,
+  OrderType,
+  ShippingInfoType,
+} from '@/interfaces/Order';
 import mongoose, { PaginateModel } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
-const orderItemSchema = new mongoose.Schema<OrderItemType>(
+const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
     {
       order_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Order',
         required: true,
       },
-      sku_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'SKU',
-        required: true,
-      },
-      quantity: {
-        type: Number,
-        required: true,
-      },
-      price: {
-        type: Number,
-        required: true,
-      },
-      // price_before_discount: {
-      //   type: Number,
-      //   default: 0,
-      // },
-      // price_discount_percent: {
-      //   type: Number,
-      //   default: 0,
-      // },
-      total_money: {
-        type: Number,
-        default: 0,
-      },
+      total: { type: Number },
+      coupon: { type: String },
+      installation_fee: { type: Number, default: 0 },
+      products: [
+        {
+          sku_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'SKU',
+            required: true,
+          },
+          quantity: {
+            type: Number,
+            required: true,
+          },
+          price: {
+            type: Number,
+            required: true,
+          },
+          price_before_discount: {
+            type: Number,
+            default: 0,
+          },
+          price_discount_percent: {
+            type: Number,
+            default: 0,
+          },
+          total_money: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
     },
     {
       collection: 'order_details',
@@ -78,7 +89,6 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
         type: Number,
         required: true,
       },
-
       email: { type: String, required: true },
       user_id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -88,14 +98,14 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
         type: String,
         // required: true,
       },
-      coupon_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Coupon',
-      },
-      shop_address: {
+      // coupon_id: {
+      //   type: mongoose.Schema.Types.ObjectId,
+      //   ref: 'Coupon',
+      // },
+      phone_number: {
         type: String,
       },
-      phone_number: {
+      address: {
         type: String,
       },
       payment_status: {
@@ -218,13 +228,10 @@ const orderItemSchema = new mongoose.Schema<OrderItemType>(
       //         },
       //       },
       //     ],
-      order_details: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'OrderDetail',
-          required: true,
-        },
-      ],
+      order_details: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'OrderDetail',
+      },
     },
     {
       collection: 'orders',
@@ -239,7 +246,10 @@ const Order = mongoose.model<OrderType, PaginateModel<OrderType>>(
     'Order',
     orderSchema,
   ),
-  Order_Detail = mongoose.model<OrderItemType>('OrderDetail', orderItemSchema),
+  Order_Detail = mongoose.model<OrderDetailType>(
+    'OrderDetail',
+    orderDetailSchema,
+  ),
   Shipping = mongoose.model<ShippingInfoType>('Shipping', shippingInfoSchema);
 
 export { Order, Order_Detail, Shipping };

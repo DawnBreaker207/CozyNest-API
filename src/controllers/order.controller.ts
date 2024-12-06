@@ -38,11 +38,14 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
     transportation_fee = 3000,
     phone_number,
     customer_name,
+    installation_fee,
     // GuestId,
     cart_id,
     ...body
   } = req.body;
   try {
+    console.log(req.body);
+
     //* Find cart exists
     const { order, new_order_details } = await createNewOrderService(
       cart_id,
@@ -53,6 +56,7 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
       payment_method,
       total_amount,
       transportation_fee,
+      installation_fee,
       body,
     );
 
