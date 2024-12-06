@@ -16,6 +16,7 @@ import {
   serviceCalFee,
   updateInfoCustomer,
   updatePaymentStatus,
+  updatePaymentStatusOrder,
   updateStatusDelivered,
   updateStatusOrder
 } from '@/controllers/order.controller';
@@ -44,7 +45,8 @@ routeOrder.get('/shipping', getAllShipping);
 routeOrder.get('/:id', getOneOrder);
 routeOrder.delete('/cancel/:id', cancelOrder);
 //* Update order status
-routeOrder.put('/updateStatus/:id', updateStatusOrder);
+routeOrder.put('/updateStatusPayment/:id', updatePaymentStatusOrder);
+routeOrder.put('/updateStatusOrder/:id', updateStatusOrder);
 routeOrder.put('/updateInfoCustomer/:id', updateInfoCustomer);
 
 export default routeOrder;

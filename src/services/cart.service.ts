@@ -134,9 +134,9 @@ const AddToCartService = async (
   quantity: number,
 ) => {
   // Check if cart exist by userId
-  let cart = await Cart.findOne({ $or: [{ user_id: userId }, { guestId }] }).select(
-    '-deleted_at -deleted -created_at -updated_at -createdAt -__v',
-  );
+  let cart = await Cart.findOne({
+    $or: [{ user_id: userId }, { guestId }],
+  }).select('-deleted_at -deleted -created_at -updated_at -createdAt -__v');
 
   // If cart not exist create new one
   if (!cart) {
@@ -193,6 +193,26 @@ const AddToCartService = async (
   return cart;
 };
 
+// Xóa tất cả sản phẩm trong giỏ hàng
+export const removeAllFromCartService = async (userId: string) => {
+  try {
+    // Tìm giỏ hàng của người dùng
+    const cart = await Cart.findOne({ user_id: userId });
+
+    if (!cart) {
+      throw new Error('Cart not found');
+    }
+
+    // Xóa tất cả sản phẩm trong giỏ hàng
+    cart.products = [];
+    await cart.save();
+
+    return cart;
+  } catch (error) {
+    logger.error(`Error removing all items from cart: ${error}`);
+    throw error;
+  }
+};
 const RemoveFromCartService = async (userId: string, sku_id: string) => {
   //Find cart exist
   const cart = await Cart.findOne({ user_id: userId });
@@ -264,7 +284,11 @@ const increaseQuantityService = async (userId: string, sku_id: string) => {
   return cart;
 };
 
-const decreaseQuantityService = async (userId: string, sku_id: string, quantityToDecrease = 1) => {
+const decreaseQuantityService = async (
+  userId: string,
+  sku_id: string,
+  quantityToDecrease = 1,
+) => {
   console.log('Decreasing by quantity:', quantityToDecrease);
   let objectUserId;
   try {
@@ -290,8 +314,14 @@ const decreaseQuantityService = async (userId: string, sku_id: string, quantityT
 
   // Check if the requested quantity to decrease is valid
   if (product.quantity < quantityToDecrease) {
-    logger.log('error', `Insufficient quantity to decrease for product ${sku_id}`);
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Insufficient quantity to decrease');
+    logger.log(
+      'error',
+      `Insufficient quantity to decrease for product ${sku_id}`,
+    );
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Insufficient quantity to decrease',
+    );
   }
 
   // Decrease quantity or remove product if necessary
@@ -305,7 +335,6 @@ const decreaseQuantityService = async (userId: string, sku_id: string, quantityT
   await cart.save();
   return cart;
 };
-
 
 export {
   AddToCartService,

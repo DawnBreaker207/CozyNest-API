@@ -319,7 +319,7 @@ export const createNewOrderService = async (
       customer_name: customer_name,
       phone_number: phone_number,
       email: input.email,
-      total_amount: Number(total_amount) + transportation_fee,
+      total_amount: Number(total_amount),
       payment_method: paymentMethod,
       payment_url: payUrl,
     });
@@ -335,7 +335,7 @@ export const createNewOrderService = async (
         logger.log('error', 'SKU not found in create order');
         throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
       }
-      if (product.quantity >= skuInfo.stock) {
+      if (product.quantity > skuInfo.stock) {
         logger.log(
           'error',
           `Not enough stock for SKU in create new order service`,
@@ -699,7 +699,26 @@ export const updateStatusOrderService = async (id: string, status: string) => {
   // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
   const updateOrder = await Order.findByIdAndUpdate(
     { _id: id },
-    { payment_status: status }, // Chỉ truyền chuỗi, không phải đối tượng
+    { status: status }, // Chỉ truyền chuỗi, không phải đối tượng
+    { new: true }, // Để trả về tài liệu đã được cập nhật
+  ).populate([
+    {
+      path: 'shipping_info',
+    },
+  ]);
+  if (!updateOrder) {
+    logger.log('error', 'Order update error in update status');
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Update status order error');
+  }
+  // await sendOrderMail(updateOrder.email, updateOrder, ordered.total_amount);
+  return updateOrder;
+};
+export const updatePaymentStatusOrderService = async (id: string, payment_status: string) => {
+
+  // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
+  const updateOrder = await Order.findByIdAndUpdate(
+    { _id: id },
+    { payment_status: payment_status }, // Chỉ truyền chuỗi, không phải đối tượng
     { new: true }, // Để trả về tài liệu đã được cập nhật
   ).populate([
     {

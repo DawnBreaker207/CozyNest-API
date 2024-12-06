@@ -17,6 +17,7 @@ import {
   returnedOrderService,
   serviceCalFeeService,
   updateInfoCustomerService,
+  updatePaymentStatusOrderService,
   updatePaymentStatusService,
   updateStatusDeliveredService,
   updateStatusOrderService,
@@ -74,9 +75,9 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
 // Cập nhật trạng thái của một đơn hàng
 export const updateStatusOrder: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
-  const { payment_status } = req.body;
+  const { status } = req.body;
   try {
-    const updateOrder = await updateStatusOrderService(id, payment_status);
+    const updateOrder = await updateStatusOrderService(id, status);
     res.status(StatusCodes.CREATED).json({
       message: 'Order update successfully',
       res: updateOrder,
@@ -86,7 +87,21 @@ export const updateStatusOrder: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
+// Cập nhật trạng  thanh toán của một đơn hàng
+export const updatePaymentStatusOrder: RequestHandler = async (req, res, next) => {
+  const { id } = req.params;
+  const { payment_status } = req.body;
+  try {
+    const updateOrder = await updatePaymentStatusOrderService(id, payment_status);
+    res.status(StatusCodes.CREATED).json({
+      message: 'Order update successfully',
+      res: updateOrder,
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in get update status ${error}`);
+    next(error);
+  }
+};
 // Hàm xử lý yêu cầu hoàn trả đơn hàng
 export const returnedOrder: RequestHandler = async (req, res, next) => {
   const { order_id, reason, customer_name, phone_number, images } =

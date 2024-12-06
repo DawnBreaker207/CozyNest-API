@@ -7,6 +7,7 @@ import {
   createCartService,
   decreaseQuantityService,
   increaseQuantityService,
+  removeAllFromCartService,
 } from '@/services/cart.service';
 import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
@@ -101,6 +102,22 @@ export const AddToCart: RequestHandler = async (req, res, next) => {
   }
 };
 
+// Remove all product from cart = delete product
+export const removeAllFromCart: RequestHandler = async (req, res, next) => {
+  const { userId } = req.params;
+
+  try {
+    const cart = await removeAllFromCartService(userId);
+
+    return res.status(StatusCodes.OK).json({
+      message: 'All products have been removed from the cart.',
+      res: cart,
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in remove all from cart: ${error}`);
+    next(error);
+  }
+};
 // Remove product from cart = delete product
 export const RemoveFromCart: RequestHandler = async (req, res, next) => {
   /**
