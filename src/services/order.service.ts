@@ -1,5 +1,5 @@
 import { configSendMail } from '@/configs/configMail';
-import { statusOrder, timeCounts } from '@/constants/initialValue';
+import { timeCounts } from '@/constants/initialValue';
 import { messagesSuccess } from '@/constants/messages';
 import { ProductCart } from '@/interfaces/Cart';
 import { OrderType } from '@/interfaces/Order';
@@ -234,7 +234,6 @@ export const checkPaymentMethod = async (
 ) => {
   // Tùy theo phương thức thanh toán (`momo`, `zalopay`, `vnpay`), gọi hàm tạo liên kết thanh toán và lưu liên kết vào `payUrl`
   let payUrl: string | undefined;
-  console.log(inputData);
 
   try {
     switch (paymentMethod.method) {
@@ -290,6 +289,7 @@ export const createNewOrderService = async (
   payment_method: string,
   total_amount: number,
   transportation_fee: number = 3000,
+  installation_fee: number,
   input: OrderType,
 ) => {
   try {
@@ -318,10 +318,12 @@ export const createNewOrderService = async (
       ...input,
       customer_name: customer_name,
       phone_number: phone_number,
+      address: address,
       email: input.email,
-      total_amount: Number(total_amount) + transportation_fee,
+      total_amount: Number(total_amount),
       payment_method: paymentMethod,
       payment_url: payUrl,
+      status: input.status,
     });
     if (!order) {
       logger.log('error', 'Order create error in create order');
@@ -335,7 +337,7 @@ export const createNewOrderService = async (
         logger.log('error', 'SKU not found in create order');
         throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
       }
-      if (product.quantity >= skuInfo.stock) {
+      if (product.quantity > skuInfo.stock) {
         logger.log(
           'error',
           `Not enough stock for SKU in create new order service`,
@@ -345,16 +347,21 @@ export const createNewOrderService = async (
           `Sản phẩm ${skuInfo.name} không đủ số lượng trong kho`,
         );
       }
-
       const new_item = await Order_Detail.create({
         order_id: order._id,
-        sku_id: product.sku_id,
-        price: product.price,
-        quantity: product.quantity,
-        image: skuInfo.image,
-        // price_before_discount: product.price_before_discount,
-        // price_discount_percent: product.price_discount_percent,
-        total_money: product.quantity * product.price,
+        installation_fee: installation_fee,
+        // coupon: input.order_details.coupon,
+        products: [
+          {
+            sku_id: product.sku_id,
+            price: product.price,
+            quantity: product.quantity,
+            image: skuInfo.image,
+            price_before_discount: product.price_before_discount,
+            price_discount_percent: product.price_discount_percent,
+            total_money: product.quantity * product.price,
+          },
+        ],
       });
 
       await Sku.findByIdAndUpdate(product.sku_id, {
@@ -492,12 +499,14 @@ export const cancelOrderService = async (id: string) => {
       throw new AppError(StatusCodes.NOT_FOUND, 'Order detail not found');
     }
     await Promise.all(
-      orderDetails.map((item) =>
-        checkSkuStock({
-          sku_id: item.sku_id.toString(),
-          quantity: item.quantity,
-        }),
-      ),
+      orderDetails.map((item) => {
+        item.products.map((product) => {
+          checkSkuStock({
+            sku_id: product.sku_id.toString(),
+            quantity: product.quantity,
+          });
+        });
+      }),
     );
     await session.commitTransaction();
     session.endSession();
@@ -549,20 +558,20 @@ export const updateStatusOrderService = async (id: string, status: string) => {
 
   // const statusCondition: { [key: string]: () => void } = {
   //   cancelled: () => {
-  //     if (ordered?.status === 'cancelled') {
+  //     if (ordered?.status === 'Cancelled') {
   //       logger.log('error', 'Order was cancelled update status order');
   //       throw new AppError(StatusCodes.BAD_REQUEST, 'Đơn hàng đã được hủy');
   //     }
   //   },
   //   delivered: () => {
-  //     if (ordered.status === 'delivered') {
+  //     if (ordered.status === 'Delivered') {
   //       logger.log('error', 'Order was complete in update status order');
   //       throw new AppError(
   //         StatusCodes.BAD_REQUEST,
   //         'Đơn hàng đã được hoàn thành',
   //       );
   //     }
-  //     if (ordered.status !== 'confirmed') {
+  //     if (ordered.status !== 'Confirmed') {
   //       logger.log(
   //         'error',
   //         'Need confirm from customer to complete in update status order',
@@ -574,7 +583,7 @@ export const updateStatusOrderService = async (id: string, status: string) => {
   //     }
   //   },
   //   returned: () => {
-  //     if (ordered?.status === 'delivered') {
+  //     if (ordered?.status === 'Returned') {
   //       logger.log(
   //         'error',
   //         'Can not cancel order returned in update status order',
@@ -589,7 +598,7 @@ export const updateStatusOrderService = async (id: string, status: string) => {
 
   // statusCondition[status]?.();
 
-  // if (status === 'confirmed' && ordered.shipping_method === 'Shipping') {
+  // if (status === 'Confirmed' && ordered.shipping_method === 'Shipping') {
   //   const shipping = await Shipping.findOne({ _id: ordered.shipping_info });
   //   if (!shipping) {
   //     logger.log(
@@ -699,7 +708,28 @@ export const updateStatusOrderService = async (id: string, status: string) => {
   // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
   const updateOrder = await Order.findByIdAndUpdate(
     { _id: id },
-    { payment_status: status }, // Chỉ truyền chuỗi, không phải đối tượng
+    { status: status }, // Chỉ truyền chuỗi, không phải đối tượng
+    { new: true }, // Để trả về tài liệu đã được cập nhật
+  ).populate([
+    {
+      path: 'shipping_info',
+    },
+  ]);
+  if (!updateOrder) {
+    logger.log('error', 'Order update error in update status');
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Update status order error');
+  }
+  // await sendOrderMail(updateOrder.email, updateOrder, ordered.total_amount);
+  return updateOrder;
+};
+export const updatePaymentStatusOrderService = async (
+  id: string,
+  payment_status: string,
+) => {
+  // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
+  const updateOrder = await Order.findByIdAndUpdate(
+    { _id: id },
+    { payment_status: payment_status }, // Chỉ truyền chuỗi, không phải đối tượng
     { new: true }, // Để trả về tài liệu đã được cập nhật
   ).populate([
     {
@@ -806,7 +836,8 @@ export const increaseProductFromOrderService = async (
 ) => {
   // Tìm chi tiết đơn hàng tương ứng với order_id và sku_id
   const orderDetail = await Order_Detail.findOne({
-    $and: [{ order_id }, { sku_id }],
+    order_id: order_id,
+    'products.sku_id': sku_id,
   });
 
   if (!orderDetail) {
@@ -820,24 +851,28 @@ export const increaseProductFromOrderService = async (
     logger.log('error', 'SKU not found in add one product order');
     throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy SKU');
   }
-
+  const product = orderDetail.products.find(
+    (p) => p.sku_id.toString() === sku_id,
+  );
+  if (!product) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'Sản phẩm không tồn tại');
+  }
   // Kiểm tra nếu số lượng kho nhỏ hơn số lượng trong chi tiết đơn hàng
-  if (SKU.stock < orderDetail.quantity) {
+  if (SKU.stock <= 0) {
     logger.log('error', 'Product exceed quantity in add one product order');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Sản phẩm quá số lượng');
-  } else {
-    // Giảm số lượng kho xuống 1
-    const new_stock = SKU.stock - 1;
-    // Cập nhật số lượng kho trong cơ sở dữ liệu
-    await Sku.findByIdAndUpdate(sku_id, {
-      $set: { stock: new_stock },
-    });
   }
+  // Giảm số lượng kho xuống 1
+  const new_stock = SKU.stock - 1;
+  // Cập nhật số lượng kho trong cơ sở dữ liệu
+  await Sku.findByIdAndUpdate(sku_id, {
+    $set: { stock: new_stock },
+  });
 
   // Tăng số lượng sản phẩm trong chi tiết đơn hàng
-  orderDetail.quantity++;
+  product.quantity++;
   // Cập nhật tổng tiền dựa trên số lượng và giá
-  orderDetail.total_money = orderDetail.quantity * orderDetail.price;
+  product.total_money = product.quantity * product.price;
   // Lưu thay đổi vào cơ sở dữ liệu
   await orderDetail.save();
 
@@ -854,7 +889,7 @@ export const increaseProductFromOrderService = async (
   const total_amount = orderDetails.reduce(
       (total, amount) =>
         // Cộng tổng tiền, nếu không có thì tính là 0
-        total + (amount.total_money ?? 0),
+        total + (amount.total ?? 0),
       0,
     ),
     // Cập nhật tổng tiền cho đơn hàng
@@ -886,15 +921,24 @@ export const decreaseProductFromOrderService = async (
 ) => {
   // Tìm chi tiết đơn hàng tương ứng với order_id và sku_id
   const orderDetail = await Order_Detail.findOne({
-    $and: [{ order_id }, { sku_id }],
+    order_id,
+    'products.sku_id': sku_id,
   });
   if (!orderDetail) {
     logger.log('error', 'Order detail not found in delete product order');
     throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy sản phẩm');
   }
 
+  const product = orderDetail.products.find(
+    (p) => p.sku_id.toString() === sku_id,
+  );
+  if (!product) {
+    logger.error('Product not found in order details');
+    throw new AppError(StatusCodes.NOT_FOUND, 'Sản phẩm không tồn tại');
+  }
+
   // Kiểm tra số lượng sản phẩm
-  if (orderDetail.quantity <= 1) {
+  if (product.quantity <= 1) {
     logger.log(
       'error',
       'Order detail have at least one product in delete product order',
@@ -917,9 +961,9 @@ export const decreaseProductFromOrderService = async (
   });
 
   // Giảm số lượng sản phẩm trong chi tiết đơn hàng
-  orderDetail.quantity--;
+  product.quantity--;
   // Cập nhật tổng tiền dựa trên số lượng và giá
-  orderDetail.total_money = orderDetail.quantity * orderDetail.price;
+  product.total_money = product.quantity * product.price;
   // Lưu thay đổi vào cơ sở dữ liệu
   await orderDetail.save();
 
@@ -934,7 +978,7 @@ export const decreaseProductFromOrderService = async (
   }
   // Tính tổng tiền của đơn hàng
   const total_amount = orderDetails.reduce(
-      (total, amount) => total + (amount.total_money ?? 0),
+      (total, amount) => total + (amount.total ?? 0),
       0,
     ),
     // Cập nhật tổng tiền cho đơn hàng
@@ -969,7 +1013,12 @@ export const getOrderByPhoneNumberService = async (
 
   // Lấy chi tiết từng đơn hàng trong danh sách kết quả
   const orderDetailsPromises = orders.docs.map(async (result) => {
-      const orderDetails = await Order_Detail.find({ order_id: result._id }); // Lấy chi tiết đơn hàng
+      const orderDetails = await Order_Detail.find({
+        order_id: result._id,
+      }).populate({
+        path: 'products.sku_id',
+        select: 'name image',
+      }); // Lấy chi tiết đơn hàng
       if (!orderDetails) {
         logger.log(
           'error',
@@ -982,7 +1031,9 @@ export const getOrderByPhoneNumberService = async (
       }
       const newOrder = await Promise.all(
         orderDetails.map(async (item) => {
-          const sku = await Sku.findOne({ _id: item.sku_id }).select(
+          const sku = await Sku.findOne({
+              _id: item.products[0].sku_id,
+            }).select(
               // Lấy tên, URL chia sẻ và hình ảnh
               'name image',
             ),
@@ -1036,9 +1087,9 @@ export const getOrderByUserIdService = async (
       }
       const newOrderDetails = await Promise.all(
         orderDetails.map(async (detail) => {
-          const sku = await Sku.findOne({ _id: detail.sku_id }).select(
-            'name image',
-          );
+          const sku = await Sku.findOne({
+            _id: detail.products[0].sku_id,
+          }).select('name image');
           return {
             ...detail.toObject(),
             ...(sku ? sku.toObject() : {}),
@@ -1145,13 +1196,11 @@ export const getOneOrderService = async (id: string) => {
   const order = await Order.findById(id)
     .populate({
       path: 'order_details',
-      select: 'sku_id quantity price total_money',
-      populate: [
-        {
-          path: 'sku_id',
-          select: 'name image',
-        },
-      ],
+      select: 'total coupon installation_fee products',
+      populate: {
+        path: 'products.sku_id',
+        select: 'name image',
+      },
     })
     .exec();
   if (!order) {
@@ -1211,7 +1260,7 @@ export const removeProductFromOrderService = async (
   const total_amount = orderDetails.reduce(
       (total, amount) =>
         // Đảm bảo tổng tiền không bị undefined
-        total + (amount.total_money ?? 0),
+        total + (amount.total ?? 0),
       0,
     ),
     // Cập nhật tổng số tiền trong đơn hàng
@@ -1387,13 +1436,16 @@ export const confirmReturnedOrderService = async (id: string) => {
       'Không tìm thấy đơn hàng chi tiết',
     );
   }
+
   await Promise.all(
-    orderItems.map((item) =>
-      checkSKUStock({
-        sku_id: item.sku_id.toString(),
-        quantity: item.quantity,
-      }),
-    ),
+    orderItems.map((item) => {
+      item.products.map((product) => {
+        checkSKUStock({
+          sku_id: product.sku_id.toString(),
+          quantity: product.quantity,
+        });
+      });
+    }),
   );
   return;
 };
@@ -1556,7 +1608,7 @@ export const getTokenPrintBillsService = async (order_id: string) => {
     const order_details = await Order_Detail.find({ order_id }),
       new_order_details = await Promise.all(
         order_details.map(async (item) => {
-          const data_sku = await Sku.findById(item.sku_id);
+          const data_sku = await Sku.findById(item.products[0].sku_id);
           if (!data_sku) {
             logger.log('error', 'SKU not found in get token print bills');
             throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy SKU');
@@ -1571,8 +1623,8 @@ export const getTokenPrintBillsService = async (order_id: string) => {
             price_before_discount: data_sku.price_before_discount,
             price_discount_percent: data_sku.price_discount_percent,
             image: data_sku.image,
-            quantity: item.quantity,
-            total_money: item.total_money,
+            quantity: item.products[0].quantity,
+            total_money: item.products[0].total_money,
           };
         }),
       ),

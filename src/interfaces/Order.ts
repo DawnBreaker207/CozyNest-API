@@ -45,14 +45,19 @@ export interface ShipmentType {
   // Items: ProductItem[];
 }
 
-export interface OrderItemType extends Document {
+export interface OrderDetailType extends Document {
   order_id?: Types.ObjectId;
-  sku_id: Types.ObjectId;
-  quantity: number;
-  price: number;
-  price_before_discount?: number;
-  price_discount_percent?: number;
-  total_money?: number;
+  total: number;
+  coupon: string;
+  installation_fee: number;
+  products: {
+    sku_id: Types.ObjectId;
+    quantity: number;
+    price: number;
+    price_before_discount?: number;
+    price_discount_percent?: number;
+    total_money?: number;
+  }[];
 }
 
 export interface ShippingInfoType extends Document {
@@ -70,6 +75,7 @@ export interface OrderType extends Document {
   total_amount: number;
   user_id?: Types.ObjectId;
   coupon_id?: Types.ObjectId;
+  address: string;
   email?: string;
   shop_address?: string;
   phone_number: string;
@@ -92,6 +98,6 @@ export interface OrderType extends Document {
   //   thumbnail: string;
   //   price: number;
   // }[];
-  order_details: OrderItemType[];
+  order_details: OrderDetailType;
   billTotals?: number;
 }

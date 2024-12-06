@@ -704,8 +704,6 @@ const updateVariantService = async (
   options: any[],
   input: any,
 ) => {
-  console.log(input);
-
   const session = await mongoose.startSession();
   session.startTransaction();
   try {

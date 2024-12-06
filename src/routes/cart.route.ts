@@ -3,6 +3,7 @@ import {
   decreaseQuantity,
   GetCartById,
   increaseQuantity,
+  removeAllFromCart,
   RemoveCart,
   RemoveFromCart,
 } from '@/controllers/cart.controller';
@@ -41,6 +42,10 @@ routeCart.post(
   // #swagger.tags = ['Cart']
   decreaseQuantity,
 );
+
+//* Remove Allproduct from cart
+
+routeCart.delete('/remove-allproducts-cart/:userId', removeAllFromCart);
 
 //* Remove product from cart
 routeCart.post(
