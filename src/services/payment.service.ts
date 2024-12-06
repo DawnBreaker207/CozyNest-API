@@ -153,7 +153,7 @@ const createMomoService = async (paymentData: MomoPaymentInput) => {
     secretKey = MOMO_SECRET_KEY || '',
     partnerCode = 'MOMO',
     redirectUrl = MOMO_REDIRECT_URL,
-    ipnUrl = MOMO_IPN_URL ,
+    ipnUrl = MOMO_IPN_URL,
     requestType = 'payWithMethod',
     amount = paymentData.total_amount || '1000',
     orderInfo = paymentData.info || 'pay with MoMo',
@@ -245,24 +245,24 @@ const createZaloPayService = async ({
   total_amount = 50000,
 }: ZaloPayCreateInput) => {
   const embed_data = {
-      redirecturl: '/',
+      redirecturl: '/http://localhost:5173/paymentresult',
     },
     items: { id: number; name: string; price: number }[] = [],
     transID = Math.floor(Math.random() * 1000000),
     order = {
-      app_id:ZALO_PAY_APP_ID,
+      app_id: ZALO_PAY_APP_ID,
       app_trans_id: `${moment().format('YYMMDD')}_${transID}`,
       app_user: user,
       app_time: Date.now(),
-      item: JSON.stringify(items),
+      item: JSON.stringify(items) || [],
       embed_data: JSON.stringify(embed_data),
-      total_amount,
+      amount: total_amount,
       callback_url:
         'https://f396-2402-800-61ae-ad78-ac2c-6cfa-4402-79e0.ngrok-free.app/callback',
-      description: `Lazada - Payment for the order #${transID}`,
+      description: `Payment for the order #${transID}`,
       bank_code: '',
     },
-    data = `${order.app_id}|${order.app_trans_id}|${order.app_user}|${order.total_amount}|${order.app_time}|${order.embed_data}|${order.item}`,
+    data = `${order.app_id}|${order.app_trans_id}|${order.app_user}|${order.amount}|${order.app_time}|${order.embed_data}|${order.item}`,
     mac = crypto
       .createHmac('sha256', ZALO_PAY_KEY_1 || '')
       .update(data)
