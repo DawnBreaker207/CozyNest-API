@@ -234,7 +234,6 @@ export const checkPaymentMethod = async (
 ) => {
   // Tùy theo phương thức thanh toán (`momo`, `zalopay`, `vnpay`), gọi hàm tạo liên kết thanh toán và lưu liên kết vào `payUrl`
   let payUrl: string | undefined;
-  console.log(inputData);
 
   try {
     switch (paymentMethod.method) {
@@ -324,6 +323,7 @@ export const createNewOrderService = async (
       total_amount: Number(total_amount),
       payment_method: paymentMethod,
       payment_url: payUrl,
+      status: input.status,
     });
     if (!order) {
       logger.log('error', 'Order create error in create order');
@@ -347,7 +347,6 @@ export const createNewOrderService = async (
           `Sản phẩm ${skuInfo.name} không đủ số lượng trong kho`,
         );
       }
-      console.log(input);
       const new_item = await Order_Detail.create({
         order_id: order._id,
         installation_fee: installation_fee,
@@ -559,20 +558,20 @@ export const updateStatusOrderService = async (id: string, status: string) => {
 
   // const statusCondition: { [key: string]: () => void } = {
   //   cancelled: () => {
-  //     if (ordered?.status === 'cancelled') {
+  //     if (ordered?.status === 'Cancelled') {
   //       logger.log('error', 'Order was cancelled update status order');
   //       throw new AppError(StatusCodes.BAD_REQUEST, 'Đơn hàng đã được hủy');
   //     }
   //   },
   //   delivered: () => {
-  //     if (ordered.status === 'delivered') {
+  //     if (ordered.status === 'Delivered') {
   //       logger.log('error', 'Order was complete in update status order');
   //       throw new AppError(
   //         StatusCodes.BAD_REQUEST,
   //         'Đơn hàng đã được hoàn thành',
   //       );
   //     }
-  //     if (ordered.status !== 'confirmed') {
+  //     if (ordered.status !== 'Confirmed') {
   //       logger.log(
   //         'error',
   //         'Need confirm from customer to complete in update status order',
@@ -584,7 +583,7 @@ export const updateStatusOrderService = async (id: string, status: string) => {
   //     }
   //   },
   //   returned: () => {
-  //     if (ordered?.status === 'delivered') {
+  //     if (ordered?.status === 'Returned') {
   //       logger.log(
   //         'error',
   //         'Can not cancel order returned in update status order',
@@ -599,7 +598,7 @@ export const updateStatusOrderService = async (id: string, status: string) => {
 
   // statusCondition[status]?.();
 
-  // if (status === 'confirmed' && ordered.shipping_method === 'Shipping') {
+  // if (status === 'Confirmed' && ordered.shipping_method === 'Shipping') {
   //   const shipping = await Shipping.findOne({ _id: ordered.shipping_info });
   //   if (!shipping) {
   //     logger.log(
@@ -723,8 +722,10 @@ export const updateStatusOrderService = async (id: string, status: string) => {
   // await sendOrderMail(updateOrder.email, updateOrder, ordered.total_amount);
   return updateOrder;
 };
-export const updatePaymentStatusOrderService = async (id: string, payment_status: string) => {
-
+export const updatePaymentStatusOrderService = async (
+  id: string,
+  payment_status: string,
+) => {
   // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
   const updateOrder = await Order.findByIdAndUpdate(
     { _id: id },

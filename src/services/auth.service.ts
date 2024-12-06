@@ -30,7 +30,6 @@ const registerService = async (
     password: hashPass,
     role: userRole,
   });
-  console.log(newUser);
   if (!newUser) {
     logger.log('error', 'User is not unauthorized in register');
     throw new AppError(StatusCodes.UNAUTHORIZED, messagesError.UNAUTHORIZED);

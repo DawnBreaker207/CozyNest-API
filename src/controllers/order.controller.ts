@@ -44,8 +44,6 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
     ...body
   } = req.body;
   try {
-    console.log(req.body);
-
     //* Find cart exists
     const { order, new_order_details } = await createNewOrderService(
       cart_id,
