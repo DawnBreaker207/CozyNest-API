@@ -1,7 +1,7 @@
 import { configSendMail } from '@/configs/configMail';
 import { timeCounts } from '@/constants/initialValue';
 import { messagesSuccess } from '@/constants/messages';
-import { ProductCart } from '@/interfaces/Cart';
+import { CartType, ProductCart } from '@/interfaces/Cart';
 import { OrderType } from '@/interfaces/Order';
 import Cart from '@/models/Cart';
 import { Order, Order_Detail, Shipping } from '@/models/Order';
@@ -331,28 +331,31 @@ export const createNewOrderService = async (
     }
 
     // Tạo chi tiết sản phẩm trong đơn hàng
-    const addProductItem = async (product: ProductCart) => {
-      const skuInfo = await Sku.findById(product.sku_id);
-      if (!skuInfo) {
-        logger.log('error', 'SKU not found in create order');
-        throw new AppError(StatusCodes.NOT_FOUND, 'SKU not exist');
-      }
-      if (product.quantity > skuInfo.stock) {
-        logger.log(
-          'error',
-          `Not enough stock for SKU in create new order service`,
-        );
-        throw new AppError(
-          StatusCodes.BAD_REQUEST,
-          `Sản phẩm ${skuInfo.name} không đủ số lượng trong kho`,
-        );
-      }
-      const new_item = await Order_Detail.create({
-        order_id: order._id,
-        installation_fee: installation_fee,
-        // coupon: input.order_details.coupon,
-        products: [
-          {
+    const addProductItem = async (cart: CartType, order_id: any) => {
+      const products = await Promise.all(
+        cart.products.map(async (product) => {
+          const skuInfo = await Sku.findById(product.sku_id);
+          if (!skuInfo) {
+            logger.log('error', 'SKU not found in create order');
+            throw new AppError(StatusCodes.NOT_FOUND, 'SKU không tồn tại');
+          }
+          if (product.quantity > skuInfo.stock) {
+            logger.log(
+              'error',
+              `Không đủ hàng tồn kho cho SKU: ${skuInfo._id}`,
+            );
+            throw new AppError(
+              StatusCodes.BAD_REQUEST,
+              `Sản phẩm ${skuInfo.name} không đủ số lượng trong kho`,
+            );
+          }
+
+          // Cập nhật số lượng tồn kho của SKU
+          await Sku.findByIdAndUpdate(product.sku_id, {
+            $inc: { stock: -product.quantity },
+          });
+
+          return {
             sku_id: product.sku_id,
             price: product.price,
             quantity: product.quantity,
@@ -360,26 +363,32 @@ export const createNewOrderService = async (
             price_before_discount: product.price_before_discount,
             price_discount_percent: product.price_discount_percent,
             total_money: product.quantity * product.price,
-          },
-        ],
+          };
+        }),
+      );
+
+      // Tạo một OrderDetail duy nhất chứa tất cả sản phẩm
+      const newOrderDetail = await Order_Detail.create({
+        order_id,
+        installation_fee: installation_fee || 0, // Nếu có phí lắp đặt
+        products,
       });
 
-      await Sku.findByIdAndUpdate(product.sku_id, {
-        $inc: { stock: -product.quantity },
-      });
-      return new_item;
+      return newOrderDetail;
     };
-
     // Tạo chi tiết sản phẩm từ giỏ hàng
-    const order_details = await Promise.all(
-      cart!.products.map((item) => addProductItem(item)),
-    );
+    const order_detail = await addProductItem(cart, order._id);
 
     // Đảm bảo trả lại order_details, không cần phải gọi lại addProductItem
-    const new_order_details = order_details;
+    const new_order_details = order_detail;
 
-    const orderDetailIds = order_details.map((detail) => detail._id);
-    await Order.findByIdAndUpdate(order._id, { order_details: orderDetailIds });
+    await Order.findByIdAndUpdate(
+      order._id,
+      {
+        $set: { order_details: order_detail._id },
+      },
+      { new: true },
+    );
 
     // Nếu đơn hàng có phương thức giao hàng, cập nhật thông tin giao hàng
     if (order.shipping_method === 'Shipping') {
