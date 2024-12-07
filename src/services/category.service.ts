@@ -7,6 +7,7 @@ import logger from '@/utils/logger';
 
 const GetAllCategoriesService = async (query: object) => {
     const category = await Category.find({
+      isHidden: false,
       name: {
         $regex: (query as { _q?: string })?._q || '',
         $options: 'i',

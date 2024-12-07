@@ -8,7 +8,10 @@ import logger from '@/utils/logger';
 import { StatusCodes } from 'http-status-codes';
 
 const getAllProductsService = async (query: object, options: object) => {
-  const products = await Product.paginate(query, options);
+  // Thêm điều kiện lọc is_hidden: false vào query
+  const finalQuery = { ...query,};
+
+  const products = await Product.paginate(finalQuery, options);
   if (!products || products.docs.length === 0) {
     logger.log('error', 'Product not found in get all products');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
@@ -34,8 +37,10 @@ const getAllProductsService = async (query: object, options: object) => {
       minPrice = Math.min(minPrice, price);
     }
   });
+
   return products;
 };
+
 
 const getOneProductService = async (id: string): Promise<ProductType> => {
   const data = await Product.findById(id).populate([
