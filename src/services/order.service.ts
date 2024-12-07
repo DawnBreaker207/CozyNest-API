@@ -290,6 +290,8 @@ export const createNewOrderService = async (
   total_amount: number,
   transportation_fee: number = 3000,
   installation_fee: number,
+  total: number,
+  coupon: string,
   input: OrderType,
 ) => {
   try {
@@ -371,6 +373,8 @@ export const createNewOrderService = async (
       const newOrderDetail = await Order_Detail.create({
         order_id,
         installation_fee: installation_fee || 0, // Nếu có phí lắp đặt
+        total: total || 0, // Thêm trường total vào đây
+        coupon: coupon || '', // Thêm trường coupon vào đây
         products,
       });
 

@@ -39,6 +39,8 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
     phone_number,
     customer_name,
     installation_fee,
+    total,
+    coupon,
     // GuestId,
     cart_id,
     ...body
@@ -55,6 +57,8 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
       total_amount,
       transportation_fee,
       installation_fee,
+      total,
+      coupon,
       body,
     );
 
