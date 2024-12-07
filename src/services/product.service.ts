@@ -144,7 +144,7 @@ const hideProductService = async (id: string): Promise<ProductType> => {
   const data = await Product.findByIdAndUpdate(
     id,
     {
-      isHidden: true,
+      is_hidden: true,
     },
     { new: true },
   );
