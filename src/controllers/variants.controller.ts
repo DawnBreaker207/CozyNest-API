@@ -312,10 +312,8 @@ export const updateVariant: RequestHandler = async (req, res, next) => {
    * @param {object} req.body Param body input
    */
   const { sku_id } = req.params;
-  const { options, ...payload } = req.body;
-
   try {
-    const doc = await updateVariantService(sku_id, options, payload);
+    const doc = await updateVariantService(sku_id, req.body);
 
     return res.status(StatusCodes.OK).json({
       message: messagesSuccess.UPDATE_VARIANT_SUCCESS,

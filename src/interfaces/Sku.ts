@@ -15,10 +15,7 @@ export interface SkuType extends Document {
   sold: number;
   price_before_discount?: number;
   price_discount_percent?: number;
-  image?: {
-    id: string;
-    url: string;
-  };
+  image?: string;
   // assets: {
   //   id: string;
   //   url: string;

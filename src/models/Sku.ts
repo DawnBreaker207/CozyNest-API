@@ -21,10 +21,7 @@ const skuSchema = new mongoose.Schema<SkuType>(
     sold: { type: Number, default: 0 },
     price_before_discount: { type: Number, default: 0 },
     price_discount_percent: { type: Number, default: 0 },
-    image: {
-      id: { type: String },
-      url: { type: String },
-    },
+    image: {type: String},
     // assets: [
     //   {
     //     id: { type: String },
