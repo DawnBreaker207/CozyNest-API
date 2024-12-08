@@ -10,7 +10,7 @@ const skuSchema = new mongoose.Schema<SkuType>(
       ref: 'Product',
       required: true,
     },
-    SKU: {type: String},
+    SKU: { type: String },
     slug: {
       type: String,
       unique: true,
@@ -21,7 +21,7 @@ const skuSchema = new mongoose.Schema<SkuType>(
     sold: { type: Number, default: 0 },
     price_before_discount: { type: Number, default: 0 },
     price_discount_percent: { type: Number, default: 0 },
-    image: {type: String},
+    image: { type: [String] },
     // assets: [
     //   {
     //     id: { type: String },
