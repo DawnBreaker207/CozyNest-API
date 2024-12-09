@@ -244,7 +244,7 @@ export const getOrderByUserId: RequestHandler = async (req, res, next) => {
       _page = 1,
       _sort = 'created_at',
       _order = 'desc',
-      _limit = 10,
+      _limit = 100,
       status,
       id,
     } = req.query,
