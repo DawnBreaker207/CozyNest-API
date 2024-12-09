@@ -14,12 +14,12 @@ export const checkStockBeforePayment: RequestHandler = async (req, res, next) =>
           {
             path: 'sku_id',
             model: 'SKU',
-            select: 'stock price',
+            select: 'stock price image',
           },
           {
             path: 'option_value_id',
             model: 'Option_Value',
-            select: 'value',
+            select: 'label',
           },
         ],
       });
@@ -46,7 +46,8 @@ export const checkStockBeforePayment: RequestHandler = async (req, res, next) =>
         return {
           skuId: item.skuId,
           productName: product.name,
-          color: variant.option_value_id?.value || 'Không xác định',
+          image: variant?.sku_id?.image?.[0],
+          color: variant.option_value_id?.label || 'Không xác định',
           quantity: item.quantity,
           stock: variant.sku_id.stock,
           priceStock: variant.sku_id.price * variant.sku_id.stock,
