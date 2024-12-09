@@ -29,7 +29,7 @@ routeArticle.post(
   '/',
   // checkAuth,
   // checkPermission,
-  validBodyRequest(articleSchema),
+  // validBodyRequest(articleSchema),
   // #swagger.tags = ['Articles']
   createArticle,
 );
