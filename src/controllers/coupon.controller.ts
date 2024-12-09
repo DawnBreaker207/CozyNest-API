@@ -97,8 +97,8 @@ export const updateCoupon: RequestHandler = async (req, res, next) => {
    * @param {string} req.params.id Param id input
    * @param {string} req.user._id Param _id input
    */
-  const { id } = req.params,
-    { _id } = req.user;
+  const { id, _id } = req.params;
+  // const { _id } = req.user;
   try {
     const updateCoupon = await updateCouponService(id, _id, req.body);
     res.status(StatusCodes.OK).json({

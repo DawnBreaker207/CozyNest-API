@@ -245,7 +245,7 @@ const createZaloPayService = async ({
   total_amount = 50000,
 }: ZaloPayCreateInput) => {
   const embed_data = {
-      redirecturl: '/http://localhost:5173/paymentresult',
+      redirecturl: 'http://localhost:5173/paymentresult',
     },
     items: { id: number; name: string; price: number }[] = [],
     transID = Math.floor(Math.random() * 1000000),
