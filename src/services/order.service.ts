@@ -1078,9 +1078,11 @@ export const getOrderByUserIdService = async (
   conditions: object,
   options: object,
 ) => {
+  console.log(conditions, options);
+
   // Tìm kiếm đơn hàng
   const order = await Order.paginate(conditions, options);
-  if (!order.length) {
+  if (!order || order.length === 0) {
     logger.log('error', 'Order not found in get one by user id order');
     throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
   }

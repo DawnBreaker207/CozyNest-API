@@ -253,7 +253,7 @@ export const getOrderByUserId: RequestHandler = async (req, res, next) => {
     conditions.status = status;
   }
   if (id) {
-    conditions.userId = id;
+    conditions.user_id = id;
   }
 
   // Thiết lập tùy chọn cho phân trang
