@@ -9,7 +9,7 @@ import { StatusCodes } from 'http-status-codes';
 
 const getAllProductsService = async (query: object, options: object) => {
   // Thêm điều kiện lọc is_hidden: false vào query
-  const finalQuery = { ...query,};
+  const finalQuery = { ...query };
 
   const products = await Product.paginate(finalQuery, options);
   if (!products || products.docs.length === 0) {
@@ -41,7 +41,6 @@ const getAllProductsService = async (query: object, options: object) => {
   return products;
 };
 
-
 const getOneProductService = async (id: string): Promise<ProductType> => {
   const data = await Product.findById(id).populate([
     { path: 'category_id', select: 'name' },
@@ -51,7 +50,7 @@ const getOneProductService = async (id: string): Promise<ProductType> => {
       populate: [
         {
           path: 'sku_id',
-          select: 'image name price stock sold price_discount_percent',
+          select: 'image name SKU price stock sold price_discount_percent',
         },
         { path: 'option_id', select: 'name position' },
         {

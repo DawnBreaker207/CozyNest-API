@@ -622,6 +622,7 @@ const deleteVariantService = async (sku_id: string) => {
     );
   }
   // Đánh dấu SKU là đã xóa
+  sku.deleted = true;
   sku.deleted_at = new Date();
   await sku.save();
 
