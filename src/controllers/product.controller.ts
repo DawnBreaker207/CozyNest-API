@@ -55,7 +55,7 @@ export const getAllProducts: RequestHandler = async (req, res, next) => {
             populate: [
               {
                 path: 'sku_id',
-                select: 'name price image sold stock price_discount_percent',
+                select: 'name price SKU image sold stock price_discount_percent',
               },
               { path: 'option_id', select: 'name position' },
               {

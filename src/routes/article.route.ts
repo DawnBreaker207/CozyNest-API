@@ -29,7 +29,7 @@ routeArticle.post(
   '/',
   // checkAuth,
   // checkPermission,
-  validBodyRequest(articleSchema),
+  // validBodyRequest(articleSchema),
   // #swagger.tags = ['Articles']
   createArticle,
 );
@@ -39,7 +39,7 @@ routeArticle.put(
   '/:id',
   // checkAuth,
   // checkPermission,
-  validBodyRequest(articleSchema),
+  // validBodyRequest(articleSchema),
   // #swagger.tags = ['Articles']
   updateArticle,
 );

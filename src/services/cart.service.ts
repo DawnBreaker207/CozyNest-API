@@ -133,17 +133,24 @@ const AddToCartService = async (
   sku_id: string,
   quantity: number,
 ) => {
-  // Check if cart exist by userId
-  let cart = await Cart.findOne({
-    $or: [{ user_id: userId }, { guestId }],
-  }).select('-deleted_at -deleted -created_at -updated_at -createdAt -__v');
+  // Check if cart exists by userId or guestId
+  let cart;
+  if (userId) {
+    cart = await Cart.findOne({ user_id: userId }).select(
+      '-deleted_at -deleted -created_at -updated_at -createdAt -__v',
+    );
+  } else if (guestId) {
+    cart = await Cart.findOne({ guestId }).select(
+      '-deleted_at -deleted -created_at -updated_at -createdAt -__v',
+    );
+  }
 
-  // If cart not exist create new one
+  // If no cart exists, create a new cart
   if (!cart) {
     cart = new Cart({ user_id: userId, guestId, products: [] });
   }
 
-  // Check variant exist in database
+  // Check if the variant exists in the database
   const variant = await Variant.findOne({ sku_id });
   if (!variant) {
     logger.log('error', 'Variant is not exist in add to cart');
@@ -156,23 +163,22 @@ const AddToCartService = async (
     throw new AppError(StatusCodes.NOT_FOUND, 'SKU not found');
   }
 
-  // Find product match with product id in variant
+  // Find the product that matches the variant
   const product = await Product.findById(variant.product_id);
   if (!product) {
     logger.log('error', 'Product is not found in add to cart');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
   }
 
-  // Find product exist in cart
+  // Check if the product already exists in the cart
   const existProductIndex = cart.products.findIndex(
     (item) => item.sku_id.toString() === sku_id,
   );
 
-  // Check product exist in cart, if exist update quantity
+  // If the product exists, update the quantity, else add the new product
   if (existProductIndex !== -1) {
     cart.products[existProductIndex].quantity += quantity;
   } else {
-    // If not create new
     cart.products.push({
       sku_id: sku._id,
       price: sku.price,
@@ -180,15 +186,15 @@ const AddToCartService = async (
     });
   }
 
-  // Count price in cart
+  // Recalculate the total price of the cart
   cart.totalPrice = countTotal(cart.products);
 
-  // Check if user info have
+  // Update user_id if available
   if (userId) {
     cart.user_id = userId as unknown as Types.ObjectId;
   }
 
-  // Save cart
+  // Save the updated cart
   await cart.save();
   return cart;
 };

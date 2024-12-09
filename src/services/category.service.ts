@@ -4,9 +4,45 @@ import Category from '@/models/Category';
 import { Product } from '@/models/Product';
 import { AppError } from '@/utils/errorHandle';
 import logger from '@/utils/logger';
+import { Variant } from '@/models/Variant';
+const getOneCategoryService = async (id: string) => {
+  // Tìm kiếm category và lấy danh sách product_ids
+  const category = await Category.findById(id).populate('products');
+
+  if (!category || !category.products || category.products.length === 0) {
+    logger.log('error', 'Category is not found in get one category');
+    throw new AppError(StatusCodes.NOT_FOUND, 'Category not found');
+  }
+
+  // Lấy danh sách product_ids
+  const productIds = category.products.map((product: any) => product._id);
+
+  // Lấy thông tin chi tiết variants của tất cả products trong category
+  const variants = await Variant.find({
+    product_id: { $in: productIds },
+  })
+    .populate('sku_id') // Lấy thông tin chi tiết của SKU
+    .populate('option_id') // Lấy thông tin chi tiết của Option
+    .populate('option_value_id') // Lấy thông tin chi tiết của OptionValue
+    .exec();
+
+  // Gắn variants vào từng product
+  const productsWithVariants = category.products.map((product: any) => {
+    return {
+      ...product._doc,
+      variants: variants.filter((variant) => variant.product_id.toString() === product._id.toString()),
+    };
+  });
+
+  return {
+    ...category.toObject(),
+    products: productsWithVariants,
+  };
+};
 
 const GetAllCategoriesService = async (query: object) => {
     const category = await Category.find({
+      isHidden: false,
       name: {
         $regex: (query as { _q?: string })?._q || '',
         $options: 'i',
@@ -18,14 +54,7 @@ const GetAllCategoriesService = async (query: object) => {
     }
     return category;
   },
-  getOneCategoryService = async (id: string) => {
-    const category = await Category.findById(id).populate('products');
-    if (!category) {
-      logger.log('error', 'Category is not found in get one category');
-      throw new AppError(StatusCodes.NOT_FOUND, 'Not found category');
-    }
-    return category;
-  },
+
   createCategoryService = async (
     type: string,
     input: CategoryType,

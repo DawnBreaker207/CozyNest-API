@@ -1,4 +1,5 @@
 import { ProductType } from '@/interfaces/Product';
+import Cart from '@/models/Cart';
 import Category from '@/models/Category';
 import { Product } from '@/models/Product';
 import { Sku } from '@/models/Sku';
@@ -8,7 +9,10 @@ import logger from '@/utils/logger';
 import { StatusCodes } from 'http-status-codes';
 
 const getAllProductsService = async (query: object, options: object) => {
-  const products = await Product.paginate(query, options);
+  // Thêm điều kiện lọc is_hidden: false vào query
+  const finalQuery = { ...query };
+
+  const products = await Product.paginate(finalQuery, options);
   if (!products || products.docs.length === 0) {
     logger.log('error', 'Product not found in get all products');
     throw new AppError(StatusCodes.NOT_FOUND, 'Product not found');
@@ -34,6 +38,7 @@ const getAllProductsService = async (query: object, options: object) => {
       minPrice = Math.min(minPrice, price);
     }
   });
+
   return products;
 };
 
@@ -46,7 +51,7 @@ const getOneProductService = async (id: string): Promise<ProductType> => {
       populate: [
         {
           path: 'sku_id',
-          select: 'name price stock sold price_discount_percent',
+          select: 'image name SKU price stock sold price_discount_percent',
         },
         { path: 'option_id', select: 'name position' },
         {
@@ -144,15 +149,28 @@ const hideProductService = async (id: string): Promise<ProductType> => {
   const data = await Product.findByIdAndUpdate(
     id,
     {
-      isHidden: true,
+      is_hidden: true,
     },
     { new: true },
   );
-
   if (!data) {
     logger.log('error', 'Product not found in hide product');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Some thing is wrong');
   }
+  const variants = await Variant.find({ product_id: id }, 'sku_id');
+  const skuIds = variants.map((variant) => variant.sku_id);
+  if (skuIds.length > 0) {
+    // Xóa các sản phẩm liên quan trong carts
+    await Cart.updateMany(
+      { 'products.sku_id': { $in: skuIds } }, // Tìm cart chứa các SKU
+      {
+        $pull: { products: { sku_id: { $in: skuIds } } }, // Xóa các SKU đó
+      },
+    );
+
+    logger.log('info', `Removed SKUs from carts: ${skuIds}`);
+  }
+
   return data;
 };
 const deleteProductService = async (id: string): Promise<ProductType> => {

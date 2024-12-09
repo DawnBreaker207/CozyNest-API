@@ -39,6 +39,8 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
     phone_number,
     customer_name,
     installation_fee,
+    total,
+    coupon,
     // GuestId,
     cart_id,
     ...body
@@ -55,6 +57,8 @@ export const createNewOrder: RequestHandler = async (req, res, next) => {
       total_amount,
       transportation_fee,
       installation_fee,
+      total,
+      coupon,
       body,
     );
 
@@ -90,11 +94,18 @@ export const updateStatusOrder: RequestHandler = async (req, res, next) => {
   }
 };
 // Cập nhật trạng  thanh toán của một đơn hàng
-export const updatePaymentStatusOrder: RequestHandler = async (req, res, next) => {
+export const updatePaymentStatusOrder: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
   const { id } = req.params;
   const { payment_status } = req.body;
   try {
-    const updateOrder = await updatePaymentStatusOrderService(id, payment_status);
+    const updateOrder = await updatePaymentStatusOrderService(
+      id,
+      payment_status,
+    );
     res.status(StatusCodes.CREATED).json({
       message: 'Order update successfully',
       res: updateOrder,
@@ -233,7 +244,7 @@ export const getOrderByUserId: RequestHandler = async (req, res, next) => {
       _page = 1,
       _sort = 'created_at',
       _order = 'desc',
-      _limit = 10,
+      _limit = 100,
       status,
       id,
     } = req.query,
@@ -242,7 +253,7 @@ export const getOrderByUserId: RequestHandler = async (req, res, next) => {
     conditions.status = status;
   }
   if (id) {
-    conditions.userId = id;
+    conditions.user_id = id;
   }
 
   // Thiết lập tùy chọn cho phân trang
@@ -276,34 +287,26 @@ export const getOrderByUserId: RequestHandler = async (req, res, next) => {
 // Lấy danh sách đơn hàng với các tùy chọn tìm kiếm, sắp xếp và phân trang.
 export const getAllOrders: RequestHandler = async (req, res, next) => {
   const {
-      // Trang mặc định là 1
-      _page = '1',
-      // Sắp xếp theo trường created_at mặc định
-      _sort = 'created_at',
-      // Thứ tự sắp xếp mặc định là giảm dần
-      _order = 'desc',
-      // Giới hạn số bản ghi trả về là 10
-      _limit = '10',
-      // Từ khóa tìm kiếm
-      search,
-      // Trạng thái đơn hàng
-      status,
-      // Ngày để lọc
-      date,
-      // Phương thức thanh toán
-      payment_method,
-      // Trạng thái thanh toán
-      payment_status,
-    } = req.query,
-    sortField = typeof _sort === 'string' ? _sort : 'created_at',
-    // Khởi tạo đối tượng điều kiện tìm kiếm
-    conditions: any = {};
+    _page = '1',
+    _sort = 'created_at',
+    _order = 'desc',
+    _limit = '100', // Giới hạn mặc định là 100
+    search,
+    status,
+    date,
+    payment_method,
+    payment_status,
+  } = req.query;
 
-  // Nếu có từ khóa tìm kiếm, thêm điều kiện vào đối tượng
+  // Chuyển đổi _limit thành số
+  const limit = typeof _limit === 'string' ? parseInt(_limit, 10) : 10; // Nếu _limit là chuỗi, chuyển thành số
+
+  const sortField = typeof _sort === 'string' ? _sort : 'created_at';
+  const conditions: any = {};
+
+  // Các điều kiện tìm kiếm
   if (search && typeof search === 'string') {
-    // Kiểm tra nếu search là chuỗi
     conditions.$or = [
-      // Sử dụng search khi chắc chắn là chuỗi
       { customer_name: { $regex: new RegExp(search, 'i') } },
       {
         _id: mongoose.Types.ObjectId.isValid(search)
@@ -313,48 +316,24 @@ export const getAllOrders: RequestHandler = async (req, res, next) => {
     ];
   }
 
-  // Thêm điều kiện trạng thái nếu có
-  if (status) {
-    conditions.status = status;
-  }
-
-  // Thêm điều kiện trạng thái thanh toán nếu có
-  if (payment_status) {
-    conditions.payment_status = payment_status;
-  }
-
-  // Nếu có tham số ngày, thiết lập điều kiện cho ngày tạo
+  if (status) conditions.status = status;
+  if (payment_status) conditions.payment_status = payment_status;
   if (date && typeof date === 'string') {
     const { years, months, date: day } = moment(date).toObject();
-
-    // Thiết lập điều kiện để tìm các đơn hàng được tạo trong ngày đó
     conditions.created_at = {
-      // Ngày lớn hơn hoặc bằng
       $gte: new Date(years, months + 1, day),
-      // Ngày nhỏ hơn ngày hôm sau
       $lt: new Date(years, months + 1, day + 1),
     };
   }
 
-  // Thêm điều kiện phương thức thanh toán nếu có
-  if (payment_method) {
-    // Tìm theo partnerCode
-    conditions['payment_method.partnerCode'] = payment_method;
-  }
+  if (payment_method) conditions['payment_method.partnerCode'] = payment_method;
 
-  // Thiết lập tùy chọn cho truy vấn
+  // Cập nhật options cho truy vấn
   const options = {
-    // Trang hiện tại
-    _page,
-    // Giới hạn số bản ghi
-    _limit,
-    // Thiết lập sắp xếp
-    sort: {
-      // Nếu _order là 'desc', sắp xếp giảm dần, ngược lại sắp xếp tăng dần
-      [sortField]: _order === 'desc' ? -1 : 1,
-    },
-    // Loại bỏ các trường không cần thiết
-    select: ['-deleted', '-deleted_at'],
+    page: _page, // Trang hiện tại
+    limit: limit, // Giới hạn hoặc số lượng bản ghi cần lấy
+    sort: { [sortField]: _order === 'desc' ? -1 : 1 },
+    select: ['-deleted', '-deleted_at'], // Lọc các trường không cần thiết
   };
 
   try {
