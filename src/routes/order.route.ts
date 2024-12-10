@@ -18,7 +18,7 @@ import {
   updatePaymentStatus,
   updatePaymentStatusOrder,
   updateStatusDelivered,
-  updateStatusOrder
+  updateStatusOrder,
 } from '@/controllers/order.controller';
 import { Router } from 'express';
 
@@ -43,7 +43,8 @@ routeOrder.get('/statistical', getAllUserOrders);
 routeOrder.get('/shipping', getAllShipping);
 //* Get order by order id
 routeOrder.get('/:id', getOneOrder);
-routeOrder.delete('/cancel/:id', cancelOrder);
+//* Cancel order by id
+routeOrder.patch('/cancel/:id', cancelOrder);
 //* Update order status
 routeOrder.put('/updateStatusPayment/:id', updatePaymentStatusOrder);
 routeOrder.put('/updateStatusOrder/:id', updateStatusOrder);
