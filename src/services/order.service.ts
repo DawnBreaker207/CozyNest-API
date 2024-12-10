@@ -721,7 +721,15 @@ export const updateStatusOrderService = async (id: string, status: string) => {
   // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
   const updateOrder = await Order.findByIdAndUpdate(
     { _id: id },
-    { status: status }, // Chỉ truyền chuỗi, không phải đối tượng
+    {
+      $set: { status: status }, // Cập nhật trạng thái đơn hàng
+      $push: {
+        status_detail: {
+          status: status, // Thêm trạng thái vào danh sách status_detail
+          updatedAt: new Date(), // Thêm thời gian cập nhật vào status_detail
+        },
+      },
+    },
     { new: true }, // Để trả về tài liệu đã được cập nhật
   ).populate([
     {
@@ -1301,11 +1309,11 @@ export const getReturnedOrderService = async (
   // Trang hiện tại (mặc định là 1)
   _page: number | string = 1,
   // Trường để sắp xếp (mặc định là created_at)
-  _sort: string = 'created_at',
+  _sort: string = 'createdAt',
   // Thứ tự sắp xếp (mặc định là giảm dần)
   _order: string = 'desc',
   // Số lượng yêu cầu trả về trên một trang (mặc định là 10)
-  _limit: number | string = 10,
+  _limit: number | string = 100,
   // Tìm kiếm theo tên khách hàng
   search: string | undefined,
   // Tình trạng xác nhận
@@ -1317,8 +1325,10 @@ export const getReturnedOrderService = async (
 
   // Thêm điều kiện tìm kiếm theo tên khách hàng
   if (search) {
-    // Tìm kiếm không phân biệt hoa thường
-    conditions.customer_name = { $regex: new RegExp(search, 'i') };
+    conditions.$or = [
+      { customer_name: { $regex: new RegExp(search, 'i') } },
+      { order_id: search }, // Tìm kiếm chính xác theo `order_id`
+    ];
   }
 
   // Thêm điều kiện xác nhận
@@ -1412,10 +1422,10 @@ export const confirmReturnedOrderService = async (id: string) => {
   const orderUpdate = await Order.findByIdAndUpdate(
     returned.order_id,
     {
-      $set: { status: 'returned' },
+      $set: { status: 'Returned' },
       $push: {
         status_detail: {
-          status: 'returned',
+          status: 'Returned',
         },
       },
     },
@@ -1427,27 +1437,38 @@ export const confirmReturnedOrderService = async (id: string) => {
   }
 
   const checkSKUStock = async (product: {
-      sku_id: string;
-      quantity: number;
-    }) => {
-      const SKU = await Sku.findById(product.sku_id);
-      if (!SKU) {
-        logger.log('error', 'SKU not found in confirm return order');
-        throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy SKU');
-      }
-      // Tăng số lượng tồn kho cho sản phẩm
-      const new_stock = SKU.stock + product.quantity;
-      await Sku.findByIdAndUpdate(product.sku_id, {
-        $set: {
-          stock: new_stock,
-        },
-      });
-    },
-    orderItems = await Order_Detail.find({
-      order_id: returned.order_id,
-    }).select('sku_id quantity');
-  if (!orderItems) {
-    logger.log('error', 'Order detail not found in confirm return order');
+    sku_id: string;
+    quantity: number;
+  }) => {
+    const SKU = await Sku.findById(product.sku_id);
+    if (!SKU) {
+      logger.log(
+        'error',
+        `SKU not found in confirm return order for sku_id: ${product.sku_id}`,
+      );
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        `Không tìm thấy SKU với ID: ${product.sku_id}`,
+      );
+    }
+    // Tăng số lượng tồn kho cho sản phẩm
+    const new_stock = SKU.stock + product.quantity;
+    await Sku.findByIdAndUpdate(product.sku_id, {
+      $set: {
+        stock: new_stock,
+      },
+    });
+  };
+
+  const orderItems = await Order_Detail.find({
+    order_id: returned.order_id,
+  }).select('sku_id quantity products');
+  console.log('Order Items:', orderItems);
+  if (!orderItems || !Array.isArray(orderItems)) {
+    logger.log(
+      'error',
+      'Order detail not found or not an array in confirm return order',
+    );
     throw new AppError(
       StatusCodes.NOT_FOUND,
       'Không tìm thấy đơn hàng chi tiết',
@@ -1456,14 +1477,27 @@ export const confirmReturnedOrderService = async (id: string) => {
 
   await Promise.all(
     orderItems.map((item) => {
-      item.products.map((product) => {
-        checkSKUStock({
-          sku_id: product.sku_id.toString(),
-          quantity: product.quantity,
-        });
-      });
+      // Kiểm tra item.products có phải là mảng không trước khi gọi map
+      if (item.products && Array.isArray(item.products)) {
+        return Promise.all(
+          item.products.map((product) => {
+            return checkSKUStock({
+              sku_id: product.sku_id.toString(),
+              quantity: product.quantity,
+            });
+          }),
+        );
+      } else {
+        // Nếu item.products không phải là mảng hoặc bị thiếu
+        logger.log('error', 'Item products is not an array or is missing');
+        throw new AppError(
+          StatusCodes.BAD_REQUEST,
+          'Dữ liệu sản phẩm không hợp lệ trong đơn hàng chi tiết',
+        );
+      }
     }),
   );
+
   return;
 };
 
