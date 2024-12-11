@@ -1182,7 +1182,7 @@ export const getAllOrdersService = async (
           order_id: item._id,
         }).populate({
           path: 'products.sku_id',
-          select: 'name image',
+          select: 'name image SKU',
         }), // Lấy chi tiết sản phẩm của đơn hàng
         // Chuyển đổi đơn hàng sang đối tượng
         orders = item.toObject();
@@ -1215,7 +1215,7 @@ export const getAllUserOrdersService = async () => {
             order_id: item._id,
           }).populate({
             path: 'products.sku_id',
-            select: 'name image',
+            select: 'name image SKU',
           }),
           // Chuyển đổi đơn hàng sang đối tượng thông thường
           order = item.toObject();
