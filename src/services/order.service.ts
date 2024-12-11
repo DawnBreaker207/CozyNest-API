@@ -1178,7 +1178,12 @@ export const getAllOrdersService = async (
   // Lấy chi tiết cho từng đơn hàng
   const new_docs = await Promise.all(
     orders.docs.map(async (item: OrderType) => {
-      const order_details = await Order_Detail.find({ order_id: item._id }), // Lấy chi tiết sản phẩm của đơn hàng
+      const order_details = await Order_Detail.find({
+          order_id: item._id,
+        }).populate({
+          path: 'products.sku_id',
+          select: 'name image',
+        }), // Lấy chi tiết sản phẩm của đơn hàng
         // Chuyển đổi đơn hàng sang đối tượng
         orders = item.toObject();
       return {
@@ -1206,7 +1211,12 @@ export const getAllUserOrdersService = async () => {
   const new_docs = await Promise.all(
       orders.map(async (item) => {
         // Tìm chi tiết sản phẩm dựa trên order_id
-        const order_details = await Order_Detail.find({ order_id: item._id }),
+        const order_details = await Order_Detail.find({
+            order_id: item._id,
+          }).populate({
+            path: 'products.sku_id',
+            select: 'name image',
+          }),
           // Chuyển đổi đơn hàng sang đối tượng thông thường
           order = item.toObject();
         // Trả về đơn hàng cùng với thông tin sản phẩm
