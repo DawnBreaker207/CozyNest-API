@@ -18,12 +18,12 @@ export const Register: RequestHandler = async (req, res, next) => {
    */
   const { email, password } = req.body;
   try {
-    const newUser = await registerService(email, password, req.body),
-      accessToken = createToken(
-        { _id: newUser._id },
-        SECRET_ACCESS_TOKEN as string,
-        '1h',
-      );
+    const newUser = await registerService(email, password, req.body);
+    const accessToken = createToken(
+      { _id: newUser._id, status: newUser.status },
+      SECRET_ACCESS_TOKEN as string,
+      '1h',
+    );
 
     // Save access token in cookie
     res.cookie('accessToken', accessToken, {
@@ -34,7 +34,11 @@ export const Register: RequestHandler = async (req, res, next) => {
     // Create refresh token and save in cookie
     res.cookie(
       'refreshToken',
-      createToken({ _id: newUser._id }, SECRET_REFRESH_TOKEN as string, '1d'),
+      createToken(
+        { _id: newUser._id, status: newUser.status },
+        SECRET_REFRESH_TOKEN as string,
+        '1d',
+      ),
       {
         expires: new Date(
           Date.now() + (timeCounts.hours_24 || 24 * 60 * 60 * 1000),
@@ -65,7 +69,7 @@ export const Login: RequestHandler = async (req, res, next) => {
     const userExist = await loginService(email, password),
       // Create access token
       accessToken = createToken(
-        { _id: userExist._id },
+        { _id: userExist._id, status: userExist.status },
         SECRET_ACCESS_TOKEN as string,
         '1h',
       );
@@ -79,7 +83,11 @@ export const Login: RequestHandler = async (req, res, next) => {
     // Create refresh token and save to cookie
     res.cookie(
       'refreshToken',
-      createToken({ _id: userExist._id }, SECRET_REFRESH_TOKEN as string, '1d'),
+      createToken(
+        { _id: userExist._id, status: userExist.status },
+        SECRET_REFRESH_TOKEN as string,
+        '1d',
+      ),
       {
         expires: new Date(
           Date.now() + (timeCounts.hours_24 || 24 * 60 * 60 * 1000),
@@ -116,7 +124,7 @@ export const checkRefreshToken: RequestHandler = async (req, res, next) => {
     const checkToken = await checkTokenService(refreshToken),
       // If exist create new access token and refresh token
       accessToken = createToken(
-        { _id: checkToken._id },
+        { _id: checkToken._id, status: checkToken.status },
         SECRET_ACCESS_TOKEN as string,
         '1h',
       );

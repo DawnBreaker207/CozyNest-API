@@ -1,23 +1,23 @@
-
 extends baseEmail
 
 block content
   p(style="color: #2986cc;") Kính gửi Anh/chị: #{customerName}
-    p Xin cảm ơn quý khách đã mua hàng tại CozyNest.
-    p(style="font-weight: bold;") Hóa đơn được tạo lúc: #{orderDate}
+  p Xin cảm ơn quý khách đã mua hàng tại CozyNest.
+  p(style="font-weight: bold;") Hóa đơn được tạo lúc: #{orderDate}
 
-    .invoice-details(style="border: 1px solid #ccc; border-radius: 10px; padding: 10px 20px; margin-top: 20px;")
-      p Mã hóa đơn: #{orderId}
+  .invoice-details(style="border: 1px solid #ccc; border-radius: 10px; padding: 10px 20px; margin-top: 20px;")
+    p Mã hóa đơn: #{orderId}
     p Khách hàng: #{customerName}
     p Điện thoại: #{customerPhone}
     p Địa chỉ nhận hàng: #{customerAddress}
 
-      table(style="width: 100%; border-collapse: collapse; margin-top: 20px;")
+  if products.length
+    table(style="width: 100%; border-collapse: collapse; margin-top: 20px;")
       thead
         tr(style="background-color: #cfe2f3;")
           th(style="padding: 10px; border: 1px solid black;") STT
           th(style="padding: 10px; border: 1px solid black;") Sản phẩm
-          th(style="padding: 10px; border: 1px solid black;") Cân nặng
+          th(style="padding: 10px; border: 1px solid black;") Số lượng
           th(style="padding: 10px; border: 1px solid black;") Đơn giá
       tbody
         each product, index in products
@@ -26,10 +26,10 @@ block content
             td(style="padding: 10px; border: 1px solid black; text-align: center;")
               img(src=product.image alt=product.name style="width: 80px; height: 80px; border-radius: 5px;")
               p #{product.name}
-            td(style="padding: 10px; border: 1px solid black; text-align: center;") #{product.weight}
+            td(style="padding: 10px; border: 1px solid black; text-align: center;") #{product.quantity}
             td(style="padding: 10px; border: 1px solid black; text-align: center;") #{product.price}
 
-    h4(style="margin: 20px 0;") Tổng cộng: #{totalAmount}
-    h3(style="color: red; font-weight: bold; margin-top: 20px;") Tổng tiền thanh toán: #{totalAmount}
-    p Thanh toán: #{paymentMethod}
-    p Trạng thái đơn hàng: #{paymentStatus}
+  h4(style="margin: 20px 0;") Tổng cộng: #{totalAmount}
+  h3(style="color: red; font-weight: bold; margin-top: 20px;") Tổng tiền thanh toán: #{totalAmount}
+  p Thanh toán: #{paymentMethod}
+  p Trạng thái đơn hàng: #{paymentStatus}

@@ -18,8 +18,9 @@ import {
   updatePaymentStatus,
   updatePaymentStatusOrder,
   updateStatusDelivered,
-  updateStatusOrder
+  updateStatusOrder,
 } from '@/controllers/order.controller';
+import { checkAuth } from '@/middlewares/checkAuth';
 import { Router } from 'express';
 
 const routeOrder = Router();
@@ -36,17 +37,18 @@ routeOrder.get('/return', getReturnedOrder);
 routeOrder.put('/return/:id', confirmReturnedOrder);
 routeOrder.put('/confirm-completed/:id', updateStatusDelivered);
 //* Create new order
-routeOrder.post('/', createNewOrder);
-routeOrder.get('/', getAllOrders);
+routeOrder.post('/', checkAuth, createNewOrder);
+routeOrder.get('/', checkAuth, getAllOrders);
 //* Get all orders exist
 routeOrder.get('/statistical', getAllUserOrders);
 routeOrder.get('/shipping', getAllShipping);
 //* Get order by order id
 routeOrder.get('/:id', getOneOrder);
-routeOrder.delete('/cancel/:id', cancelOrder);
+//* Cancel order by id
+routeOrder.patch('/cancel/:id', checkAuth, cancelOrder);
 //* Update order status
-routeOrder.put('/updateStatusPayment/:id', updatePaymentStatusOrder);
-routeOrder.put('/updateStatusOrder/:id', updateStatusOrder);
+routeOrder.put('/updateStatusPayment/:id', checkAuth, updatePaymentStatusOrder);
+routeOrder.put('/updateStatusOrder/:id', checkAuth, updateStatusOrder);
 routeOrder.put('/updateInfoCustomer/:id', updateInfoCustomer);
 
 export default routeOrder;

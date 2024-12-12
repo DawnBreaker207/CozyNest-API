@@ -6,6 +6,8 @@ import {
   updateCoupon,
   getValueCoupon,
 } from '@/controllers/coupon.controller';
+import { checkAuth } from '@/middlewares/checkAuth';
+import { checkPermission } from '@/middlewares/checkPermission';
 import { Router } from 'express';
 
 const routeCoupon = Router();
@@ -33,7 +35,7 @@ routeCoupon.get(
 // Create new coupon
 routeCoupon.post(
   '/',
-  // checkAuth,
+  [checkAuth, checkPermission],
   // #swagger.tags = ['Coupon']
   createCoupon,
 );
@@ -41,7 +43,7 @@ routeCoupon.post(
 // Update coupon
 routeCoupon.patch(
   '/:id',
-  // checkAuth,p
+  [checkAuth, checkPermission],
   // #swagger.tags = ['Coupon']
   updateCoupon,
 );
@@ -49,8 +51,7 @@ routeCoupon.patch(
 // Soft delete coupon
 routeCoupon.delete(
   '/:id',
-  // checkAuth,
-  // checkPermission,
+  [checkAuth, checkPermission],
   // #swagger.tags = ['Coupon']
   deleteCoupon,
 );

@@ -47,7 +47,7 @@ const getOneProductService = async (id: string): Promise<ProductType> => {
     { path: 'category_id', select: 'name' },
     {
       path: 'variants',
-      select: 'sku_id images ',
+      select: 'sku_id ',
       populate: [
         {
           path: 'sku_id',

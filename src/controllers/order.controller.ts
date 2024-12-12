@@ -469,7 +469,7 @@ export const getReturnedOrder: RequestHandler = async (req, res, next) => {
     // Thứ tự sắp xếp (mặc định là giảm dần)
     _order = 'desc',
     // Số lượng yêu cầu trả về trên một trang (mặc định là 10)
-    _limit = 10,
+    _limit = 100,
     // Tìm kiếm theo tên khách hàng
     search,
     // Tình trạng xác nhận
@@ -506,7 +506,7 @@ export const getReturnedOrder: RequestHandler = async (req, res, next) => {
       message: 'Thành công',
       res: {
         items: orders.docs,
-        paginate: orders,
+        // paginate: orders,
       },
     });
   } catch (error) {
