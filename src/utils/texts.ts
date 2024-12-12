@@ -47,6 +47,8 @@ export const sendResetMail = (subject?: string, content?: string): string => {
  * @param formattedTotalPayment
  * @returns
  */
+
+// TODO: Update this logic
 export const sendOrder = (data: any): string => {
   const {
     customer_name,

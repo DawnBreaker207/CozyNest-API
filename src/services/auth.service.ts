@@ -22,7 +22,7 @@ const registerService = async (
   }
 
   const userCount = await User.countDocuments();
-  const userRole = userCount === 0 ? 'admin' : 'member';
+  const userRole = userCount === 0 ? 'superAdmin' : 'member';
 
   const hashPass = await hashPassword(password as string);
   const newUser = await User.create({

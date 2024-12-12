@@ -5,6 +5,8 @@ import {
   getSingleOptionValue,
   updateOptionValue,
 } from '@/controllers/variants.controller';
+import { checkAuth } from '@/middlewares/checkAuth';
+import { checkPermission } from '@/middlewares/checkPermission';
 import validBodyRequest from '@/middlewares/validBodyRequest';
 import { optionValuesSchema } from '@/validations/variant.validation';
 import { Router } from 'express';
@@ -29,8 +31,7 @@ routeOptionValue.get(
 //* Create option value depend option model
 routeOptionValue.post(
   '/:product_id/options/:option_id/values',
-  // [ checkAuth,
-  // checkPermission,]
+  [checkAuth, checkPermission],
   validBodyRequest(optionValuesSchema),
   // #swagger.tags = ['OptionValue']
   createOptionValue,
@@ -39,8 +40,7 @@ routeOptionValue.post(
 //* Update option value depend option model
 routeOptionValue.put(
   '/:product_id/options/:option_id/values/:value_id',
-  // [ checkAuth,
-  // checkPermission,]
+  [checkAuth, checkPermission],
   validBodyRequest(optionValuesSchema),
   // #swagger.tags = ['OptionValue']
   updateOptionValue,
@@ -49,8 +49,7 @@ routeOptionValue.put(
 //* Delete option value depend option model
 routeOptionValue.delete(
   '/:product_id/options/:option_id/:value_id/values',
-  // [ checkAuth,
-  // checkPermission,]
+  [checkAuth, checkPermission],
   // #swagger.tags = ['OptionValue']
   deleteOptionValue,
 );

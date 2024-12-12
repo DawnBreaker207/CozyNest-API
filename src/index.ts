@@ -74,3 +74,4 @@ app.use(errorHandleNotFound, errorHandle);
 server.listen(PORT, () => {
   logger.log('info', `Listen on port ${PORT}`);
 });
+// TODO: Update realtime notification order 

@@ -125,7 +125,6 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
       status: {
         type: String,
         default: 'Processing',
-        //TODO: Update
         enum: [
           //Đang xử lý
           'Processing',
@@ -154,7 +153,6 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
           status: {
             type: String,
             default: 'Processing',
-            //TODO: Update
             enum: [
               //Đang xử lý
               'Processing',

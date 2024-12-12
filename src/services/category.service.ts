@@ -105,6 +105,7 @@ const updateCategoryService = async (id: string, input: CategoryType) => {
   });
   return category;
 };
+// TODO: Update logic 
 const hideCategoryService = async (id: string): Promise<CategoryType> => {
   const data = await Category.findByIdAndUpdate(
     `${id}`,

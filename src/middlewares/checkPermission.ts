@@ -40,7 +40,11 @@ const checkPermission: RequestHandler = async (req, res, next) => {
     }
 
     // Check user was admin
-    if (user.role !== 'admin' && user.role !== 'manager') {
+    if (
+      user.role !== 'admin' &&
+      user.role !== 'shipper' &&
+      user.role !== 'superAdmin'
+    ) {
       logger.log('error', 'Check permission error: Permission access denied');
       return res.status(StatusCodes.FORBIDDEN).json({
         message: messagesError.FORBIDDEN,

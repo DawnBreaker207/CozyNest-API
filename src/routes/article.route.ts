@@ -5,8 +5,8 @@ import {
   getArticleDetail,
   updateArticle,
 } from '@/controllers/article.controller';
-import validBodyRequest from '@/middlewares/validBodyRequest';
-import { articleSchema } from '@/validations/article.validation';
+import { checkAuth } from '@/middlewares/checkAuth';
+import { checkPermission } from '@/middlewares/checkPermission';
 import { Router } from 'express';
 
 const routeArticle = Router();
@@ -27,8 +27,7 @@ routeArticle.get(
 //*create
 routeArticle.post(
   '/',
-  // checkAuth,
-  // checkPermission,
+  [checkAuth, checkPermission],
   // validBodyRequest(articleSchema),
   // #swagger.tags = ['Articles']
   createArticle,
@@ -37,8 +36,7 @@ routeArticle.post(
 //*update
 routeArticle.put(
   '/:id',
-  // checkAuth,
-  // checkPermission,
+  [checkAuth, checkPermission],
   // validBodyRequest(articleSchema),
   // #swagger.tags = ['Articles']
   updateArticle,
@@ -47,8 +45,7 @@ routeArticle.put(
 //*delete
 routeArticle.delete(
   '/:id',
-  // checkAuth,
-  // checkPermission,
+  [checkAuth, checkPermission],
   // #swagger.tags = ['Articles']
   deleteArticle,
 );

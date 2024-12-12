@@ -483,6 +483,7 @@ const getAllVariantsService = async (product_id: string) => {
   return data;
 };
 
+// TODO: Update logic 
 const createVariantService = async (product_id: string) => {
   // Check product exist
   const product = await Product.findById(product_id).select(

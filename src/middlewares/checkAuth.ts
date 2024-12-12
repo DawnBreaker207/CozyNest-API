@@ -12,9 +12,6 @@ export const checkAuth: RequestHandler = async (req, res, next) => {
   //* Check access and refresh token exist
   const { accessToken, refreshToken } = req.cookies;
   try {
-    // TODO: update feature
-    // const token = req.headers?.authorization?.split(' ')[1];
-
     if (accessToken) {
       //* Check access token expired
       const decode = verifyToken(accessToken);
@@ -49,13 +46,19 @@ export const checkAuth: RequestHandler = async (req, res, next) => {
     });
 
     //* Check user exist, decoded token from access
-    const decodeAccess = verifyToken(newAccess, SECRET_ACCESS_TOKEN);
-
-    const user: UserType | null = await User.findById(decodeAccess.payload._id);
+    const decodeToken = verifyToken(newAccess, SECRET_ACCESS_TOKEN);
+    const user: UserType | null = await User.findById(decodeToken.payload._id);
     if (!user) {
       logger.log('error', 'Check auth error: User not exist');
       throw new AppError(StatusCodes.NOT_FOUND, 'User not exist');
     }
+
+    //* Check user valid, compare status
+    if (user.status !== decodeToken.payload.status) {
+      logger.log('error', 'Check auth error: Status compare not valid');
+      throw new AppError(StatusCodes.FORBIDDEN, 'Status compare not valid');
+    }
+
     req.user = user;
     next();
   } catch (error) {

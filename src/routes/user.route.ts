@@ -7,13 +7,14 @@ import {
   updateUser,
   verifyEmailToken,
 } from '@/controllers/user.controller';
+import { checkAuth } from '@/middlewares/checkAuth';
 import { Router } from 'express';
 
 const routeUser = Router();
 //* Get all users exist
 routeUser.get(
   '/',
-  // checkAuth,
+  checkAuth,
   // checkPermission,
   // #swagger.tags = ['User']
   getAllUser,
