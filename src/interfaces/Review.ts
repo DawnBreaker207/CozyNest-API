@@ -5,8 +5,5 @@ export interface ReviewType extends Document {
   user_id: Types.ObjectId;
   rating: number;
   comment: string;
-  image?: {
-    id: string;
-    url: string;
-  };
+  image?: string;
 }
