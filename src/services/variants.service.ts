@@ -482,7 +482,7 @@ const getAllVariantsService = async (product_id: string) => {
   return data;
 };
 
-// TODO: Update logic 
+// TODO: Update logic
 const createVariantService = async (product_id: string) => {
   // Check product exist
   const product = await Product.findById(product_id).select(
@@ -543,7 +543,7 @@ const createVariantService = async (product_id: string) => {
       assets: [], // Giả sử chưa có assets
       SKU: `${product.SKU}-${index + 1}`, // SKU dựa trên index
       slug,
-      image: '',
+      image: [],
     };
   });
 
@@ -559,7 +559,7 @@ const createVariantService = async (product_id: string) => {
     arraySKUs.map(async (item) =>
       Sku.create({
         ...item,
-        image: '',
+        image: [],
       }),
     ),
   );
