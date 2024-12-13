@@ -3,6 +3,7 @@ import {
   deleteArticle,
   getAll,
   getArticleDetail,
+  softDeleteArticle,
   updateArticle,
 } from '@/controllers/article.controller';
 import { checkAuth } from '@/middlewares/checkAuth';
@@ -41,6 +42,12 @@ routeArticle.put(
   // #swagger.tags = ['Articles']
   updateArticle,
 );
+
+//* Soft delete
+routeArticle.patch(
+  '/:id', 
+  softDeleteArticle
+)
 
 //*delete
 routeArticle.delete(

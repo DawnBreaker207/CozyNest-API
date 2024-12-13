@@ -75,6 +75,27 @@ export const updateArticle: RequestHandler = async (req, res, next) => {
   }
 };
 
+export const softDeleteArticle: RequestHandler = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const deleteArticle = await Article.findByIdAndUpdate(id, {
+      isHidden: false,
+    });
+    if (!deleteArticle) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Article not found' });
+    }
+    res.status(StatusCodes.OK).json({
+      message: messagesSuccess.UPDATE_ARTICLE_SUCCESS,
+      res: deleteArticle,
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in delete article: ${error}`);
+    next(error);
+  }
+}
+
 //DELETE /articles/:id
 // TODO: Update logic 
 export const deleteArticle: RequestHandler = async (req, res, next) => {
