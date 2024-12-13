@@ -43,7 +43,7 @@ const GetCartService = async (cart_id: string) => {
     populate: [
       {
         path: 'product_id',
-        select: 'name thumbnail images',
+        select: 'name thumbnail images is_hidden',
       },
       {
         path: 'variants',
@@ -98,7 +98,7 @@ const GetByIdService = async (userId: string) => {
     populate: [
       {
         path: 'product_id',
-        select: 'name images',
+        select: 'name images is_hidden',
         populate: {
           path: 'variants',
           populate: {

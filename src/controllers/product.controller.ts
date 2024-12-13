@@ -10,8 +10,8 @@ import {
 } from '@/services/product.service';
 import logger from '@/utils/logger';
 import { RequestHandler } from 'express';
+import { Server } from 'http';
 import { StatusCodes } from 'http-status-codes';
-
 //* Products
 
 export const getAllProducts: RequestHandler = async (req, res, next) => {
@@ -55,7 +55,8 @@ export const getAllProducts: RequestHandler = async (req, res, next) => {
             populate: [
               {
                 path: 'sku_id',
-                select: 'name price SKU image sold stock price_discount_percent',
+                select:
+                  'name price SKU image sold stock price_discount_percent',
               },
               { path: 'option_id', select: 'name position' },
               {
@@ -140,8 +141,15 @@ export const updateProduct: RequestHandler = async (req, res, next) => {
    * @param {ProductType} req.body Param body input
    */
   const { id } = req.params;
+
   try {
     const data = await updateProductService(id, req.body);
+
+    // Lấy instance của server Socket.IO (nếu bạn có sẵn io instance ở đâu đó, ví dụ trong app.js hoặc server.ts)
+    const io: Server = req.app.get('io'); // Hoặc bạn có thể truyền io vào controller qua middleware nếu cần
+
+    // Phát sự kiện cập nhật sản phẩm tới tất cả các client trong room "product_{id}"
+    io.emit('productUpdated', { productId: id, updatedData: data }); // Phát sự kiện đến tất cả client
 
     res.status(StatusCodes.CREATED).json({
       message: messagesSuccess.UPDATE_PRODUCT_SUCCESS,
@@ -161,6 +169,11 @@ export const softDeleteProduct: RequestHandler = async (req, res, next) => {
   try {
     // Find product exist and hidden
     const data = await hideProductService(id);
+       // Lấy instance của server Socket.IO (nếu bạn có sẵn io instance ở đâu đó, ví dụ trong app.js hoặc server.ts)
+       const io: Server = req.app.get('io'); // Hoặc bạn có thể truyền io vào controller qua middleware nếu cần
+
+       // Phát sự kiện cập nhật sản phẩm tới tất cả các client trong room "product_{id}"
+       io.emit('productUpdated', { productId: id, updatedData: data }); // Phát sự kiện đến tất cả client
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
       res: data,
