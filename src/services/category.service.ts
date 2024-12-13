@@ -5,6 +5,7 @@ import { Variant } from '@/models/Variant';
 import { AppError } from '@/utils/errorHandle';
 import logger from '@/utils/logger';
 import { StatusCodes } from 'http-status-codes';
+import mongoose from 'mongoose';
 const getOneCategoryService = async (id: string) => {
   // Tìm kiếm category và lấy danh sách product_ids
   const category = await Category.findById(id).populate({
@@ -53,7 +54,6 @@ const getOneCategoryService = async (id: string) => {
 
 const GetAllCategoriesService = async (query: object) => {
   const category = await Category.find({
-    isHidden: false,
     name: {
       $regex: (query as { _q?: string })?._q || '',
       $options: 'i',
@@ -105,71 +105,147 @@ const updateCategoryService = async (id: string, input: CategoryType) => {
   });
   return category;
 };
-// TODO: Update logic 
 const hideCategoryService = async (id: string): Promise<CategoryType> => {
-  const data = await Category.findByIdAndUpdate(
-    `${id}`,
-    {
-      isHidden: true,
-    },
-    { new: true },
-  );
-  if (!data) {
-    logger.log('error', 'Category is error when soft delete in hide category');
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      'Something is wrong when soft delete',
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const category = await Category.findOne({ _id: id }).session(session);
+    console.log(category?.products);
+
+    if (!category) {
+      logger.log('error', 'Category is not found in delete category');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Not found category');
+    }
+    if (category?.type === 'default') {
+      logger.log('error', 'Category default can not delete in delete category');
+      throw new AppError(StatusCodes.BAD_REQUEST, 'This is a default category');
+    }
+
+    // Can't delete default category
+    const defaultCategory = await Category.findOne({ type: 'default' }).session(
+      session,
     );
-  }
-  return data;
-};
-const deleteCategoryService = async (id: string): Promise<CategoryType> => {
-  const category = await Category.findOne({ _id: id });
-  if (!category) {
-    logger.log('error', 'Category is not found in delete category');
-    throw new AppError(StatusCodes.NOT_FOUND, 'Not found category');
-  }
 
-  // Can't delete default category
-  const defaultCategory = await Category.findOne({ type: 'default' });
+    if (defaultCategory) {
+      // Update multiple products
+      const defaultCategoryId = defaultCategory._id;
 
-  if (category?.type === 'default') {
-    logger.log('error', 'Category default can not delete in delete category');
-    throw new AppError(StatusCodes.BAD_REQUEST, 'This is a default category');
-  }
-
-  if (defaultCategory) {
-    // Update multiple products
-    const defaultCategoryId = defaultCategory._id;
-    if (category._id) {
       await Product.updateMany(
-        { category: category._id },
-        { $set: { category: defaultCategoryId } },
+        { category_id: category._id },
+        { $set: { category_id: defaultCategoryId } },
+        { session: session },
       );
 
       // Add product Id to default category
       if (category.products && category.products.length > 0) {
-        await Category.findByIdAndUpdate(
-          defaultCategoryId,
+        const test = await Category.findByIdAndUpdate(
+          { _id: defaultCategoryId },
           {
-            $push: { products: { $each: category?.products } },
+            $addToSet: { products: { $each: category?.products } },
           },
-          { new: true },
+          { session: session },
         );
+        console.log(test);
       }
     }
-  }
+    const data = await Category.findByIdAndUpdate(
+      { _id: id },
+      {
+        isHidden: true,
+      },
+      { new: true, session: session },
+    );
+    if (!data) {
+      logger.log(
+        'error',
+        'Category is error when soft delete in hide category',
+      );
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'Something is wrong when soft delete',
+      );
+    }
+    await session.commitTransaction();
+    session.endSession();
 
-  // Remove category with id
-  const removeCategory = await Category.findByIdAndDelete({
-    _id: id,
-  });
-
-  if (!removeCategory) {
-    logger.log('error', 'Category is not found in remove category');
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Remove category failed');
+    return category;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    logger.log('Error', 'Catch error in soft delete category');
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Error in soft delete category:${error}`,
+    );
   }
-  return removeCategory;
+};
+
+const deleteCategoryService = async (id: string): Promise<CategoryType> => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const category = await Category.findOne({ _id: id }).session(session);
+    if (!category) {
+      logger.log('error', 'Category is not found in delete category');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Not found category');
+    }
+
+    // Can't delete default category
+    const defaultCategory = await Category.findOne({ type: 'default' }).session(
+      session,
+    );
+
+    if (category?.type === 'default') {
+      logger.log('error', 'Category default can not delete in delete category');
+      throw new AppError(StatusCodes.BAD_REQUEST, 'This is a default category');
+    }
+
+    if (defaultCategory) {
+      // Update multiple products
+      const defaultCategoryId = defaultCategory._id;
+      if (category._id) {
+        await Product.updateMany(
+          { category_id: category._id },
+          { $set: { category_id: defaultCategoryId } },
+          { session: session },
+        );
+
+        // Add product Id to default category
+        if (category.products && category.products.length > 0) {
+          await Category.findByIdAndUpdate(
+            defaultCategoryId,
+            {
+              $push: { products: { $each: category?.products } },
+            },
+            { new: true, session: session },
+          );
+        }
+      }
+    }
+
+    // Remove category with id
+    const removeCategory = await Category.findByIdAndDelete({
+      _id: id,
+    });
+
+    if (!removeCategory) {
+      logger.log('error', 'Category is not found in remove category');
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Remove category failed');
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return removeCategory;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    logger.log('Error', 'Catch error in hard delete category');
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Error in hard delete category:${error}`,
+    );
+  }
 };
 export {
   createCategoryService,

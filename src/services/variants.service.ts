@@ -83,7 +83,6 @@ const getVariants = async (
   //   logger.log('error', 'Not variant found in get variants');
   //   throw new AppError(StatusCodes.BAD_REQUEST, 'No variants found');
   // }
-  // TODO: Understand this shit
   const optionFilter = await Promise.all(
     variants.map(async (variant) => {
       const optionValues = await OptionValue.find({
