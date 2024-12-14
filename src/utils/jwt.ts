@@ -11,21 +11,24 @@ import logger from './logger';
  * @returns
  */
 const createToken = (
-  payload: Object,
+  payload: Record<string, unknown>,
   SECRET_CODE: string,
   expiresIn = '5m',
 ) => {
-  const token = jwt.sign(payload, SECRET_CODE, {
-    expiresIn,
-  });
-  if (!token) {
-    logger.log('error', `Create token error `);
+  try {
+    const sanitizedPayload = { ...payload };
+    delete sanitizedPayload['exp']; // Loại bỏ trường exp nếu có
+
+    return jwt.sign(sanitizedPayload, SECRET_CODE, {
+      expiresIn,
+    });
+  } catch (error) {
+    logger.log('error', `Create token error . Error ${error} `);
     throw new AppError(
       StatusCodes.INTERNAL_SERVER_ERROR,
       'Error in create token',
     );
   }
-  return token;
 };
 /**
  *
@@ -40,10 +43,17 @@ const verifyToken = (
     JWT ||
     (SECRET_REFRESH_TOKEN as string),
   options?: jwt.SignOptions | undefined,
-) => <jwt.JwtPayload>jwt.verify(token, SECRET_CODE, options);
+) => {
+  try {
+    return <jwt.JwtPayload>jwt.verify(token, SECRET_CODE, options);
+  } catch (error) {
+    logger.log('error', `Verify token error . Error ${error} `);
+    throw new AppError(StatusCodes.UNAUTHORIZED, 'Error in verify token');
+  }
+};
 
 // Decode token and take payload
-const decodedToken = async (token: string) => {
+const decodedToken = (token: string) => {
   const decoded = <jwt.Jwt>jwt.decode(token, { complete: true });
   if (!decoded) {
     logger.log('error', 'Verify token failed or error');
@@ -52,24 +62,23 @@ const decodedToken = async (token: string) => {
       'Error in verify token',
     );
   }
-  return decoded as jwt.JwtPayload;
+  return decoded.payload as jwt.JwtPayload;
 };
 
-const checkExpiredToken = async (token: string) => {
-  // Decode token and take payload
-  const checkToken = await decodedToken(token);
-  if (!checkToken) {
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid token');
-  }
+// const checkExpiredToken = async (token: string) => {
+//   // Decode token and take payload
+//   const checkToken = await decodedToken(token);
+//   if (!checkToken) {
+//     throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid token');
+//   }
 
-  const tokenTimes = new Date((checkToken.exp as number) * 1000),
-    now = new Date();
-  // Check token expired
-  if (tokenTimes < now) {
-    // TODO: check if have refresh token, return new access token
-    return createToken(checkToken.sub as string, SECRET_ACCESS_TOKEN as string);
-  }
-  // if (tokenTimes > now) {
-  // }
-};
-export { checkExpiredToken, createToken, decodedToken, verifyToken };
+//   const tokenTimes = new Date((checkToken.exp as number) * 1000),
+//     now = new Date();
+//   // Check token expired
+//   if (tokenTimes < now) {
+//     return createToken(checkToken.sub as string, SECRET_ACCESS_TOKEN as string);
+//   }
+//   // if (tokenTimes > now) {
+//   // }
+// };
+export { createToken, decodedToken, verifyToken };

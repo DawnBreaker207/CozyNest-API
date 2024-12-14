@@ -29,7 +29,23 @@ block content
             td(style="padding: 10px; border: 1px solid black; text-align: center;") #{product.quantity}
             td(style="padding: 10px; border: 1px solid black; text-align: center;") #{product.price}
 
-  h4(style="margin: 20px 0;") Tổng cộng: #{totalAmount}
-  h3(style="color: red; font-weight: bold; margin-top: 20px;") Tổng tiền thanh toán: #{totalAmount}
+  .summary(style="margin-top: 20px; border-top: 2px solid #000; padding-top: 20px;")
+    h4(style="margin: 10px 0; display: flex; justify-content: space-between;")
+      span(style="margin-right: 5px;") Tổng cộng:
+      span #{totalProduct}
+    h4(style="margin: 10px 0; display: flex; justify-content: space-between;")
+      span(style="margin-right: 5px;") Phí vận chuyển:
+      span #{shippingFee}
+    h4(style="margin: 10px 0; display: flex; justify-content: space-between;")
+      span(style="margin-right: 5px;") Phí lắp đặt:
+      span #{installationFee}
+    h4(style="margin: 10px 0; display: flex; justify-content: space-between; color: red;")
+      span(style="margin-right: 5px;") - Giảm giá:
+      span #{voucher}   
+    .total-amount(style="border-top: 2px dashed #000; margin-top: 20px; padding-top: 10px;")
+      h3(style="color: red; font-weight: bold; display: flex; justify-content: space-between;")
+        span(style="margin-right: 5px;") Tổng tiền thanh toán:
+        span #{totalAmount}
+
   p Thanh toán: #{paymentMethod}
   p Trạng thái đơn hàng: #{paymentStatus}

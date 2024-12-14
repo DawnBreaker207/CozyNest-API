@@ -1,16 +1,20 @@
 import { Server, Socket } from 'socket.io';
 import logger from './logger';
+
 export interface userRooms {
   roomName: string;
   message?: string;
   userId: string;
   role: string;
 }
+
 export const realTime = (io: Server) => {
   const userRooms: Record<string, userRooms> = {};
+
   // Connected event to server chat
   io.on('connection', (socket: Socket) => {
     logger.log('info', 'User connected');
+
     // Join room event
     socket.on(
       'joinRoom',
@@ -22,6 +26,7 @@ export const realTime = (io: Server) => {
         }
       },
     );
+
     // Send notification event
     socket.on(
       'sendNotification',
@@ -34,9 +39,30 @@ export const realTime = (io: Server) => {
         const { roomName, role } = data;
         if (role === 'user') {
           logger.log('info', 'Checking');
-
           io.to(roomName).emit('notification', data);
         }
+      },
+    );
+
+    // Event for product updates
+    socket.on(
+      'productUpdated',
+      (data: { productId: string; productData: any }) => {
+        const { productId, productData } = data;
+        logger.log('info', `Product updated: ${productId}`);
+        io.to(`product_${productId}`).emit('productUpdated', productData);
+      },
+    );
+
+    // Event for order updates
+    socket.on(
+      'orderUpdated',
+      (input: { orderId: string; role: string; orderData: any }) => {
+        const { role, orderId, orderData } = input;
+        // if (role === 'superAdmin' || role === 'admin' || role === 'shipper') {
+        logger.log('info', `Order updated ${orderId} `);
+        io.to(`order_${orderId}`).emit('orderUpdated', orderData);
+        // }
       },
     );
 

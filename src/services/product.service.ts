@@ -145,9 +145,10 @@ const updateProductService = async (
 
   return data;
 };
+
 const hideProductService = async (id: string): Promise<ProductType> => {
   const data = await Product.findByIdAndUpdate(
-    id,
+    { _id: id },
     {
       is_hidden: true,
     },
@@ -157,22 +158,9 @@ const hideProductService = async (id: string): Promise<ProductType> => {
     logger.log('error', 'Product not found in hide product');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Some thing is wrong');
   }
-  const variants = await Variant.find({ product_id: id }, 'sku_id');
-  const skuIds = variants.map((variant) => variant.sku_id);
-  if (skuIds.length > 0) {
-    // Xóa các sản phẩm liên quan trong carts
-    await Cart.updateMany(
-      { 'products.sku_id': { $in: skuIds } }, // Tìm cart chứa các SKU
-      {
-        $pull: { products: { sku_id: { $in: skuIds } } }, // Xóa các SKU đó
-      },
-    );
-
-    logger.log('info', `Removed SKUs from carts: ${skuIds}`);
-  }
-
   return data;
 };
+
 const deleteProductService = async (id: string): Promise<ProductType> => {
   const product = await Product.findById(id);
   if (!product) {

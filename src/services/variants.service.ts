@@ -83,7 +83,6 @@ const getVariants = async (
   //   logger.log('error', 'Not variant found in get variants');
   //   throw new AppError(StatusCodes.BAD_REQUEST, 'No variants found');
   // }
-  // TODO: Understand this shit
   const optionFilter = await Promise.all(
     variants.map(async (variant) => {
       const optionValues = await OptionValue.find({
@@ -483,7 +482,6 @@ const getAllVariantsService = async (product_id: string) => {
   return data;
 };
 
-// TODO: Update logic 
 const createVariantService = async (product_id: string) => {
   // Check product exist
   const product = await Product.findById(product_id).select(
@@ -532,7 +530,6 @@ const createVariantService = async (product_id: string) => {
       'There are some problems when create variants',
     );
   }
-  // TODO: Understand this
   // Create array of SKUs from variants
   const arraySKUs = variants.map((variant, index) => {
     const variantValues = variant.map((v) => v.label).join(' - '); // Kết hợp các giá trị của option
@@ -544,7 +541,7 @@ const createVariantService = async (product_id: string) => {
       assets: [], // Giả sử chưa có assets
       SKU: `${product.SKU}-${index + 1}`, // SKU dựa trên index
       slug,
-      image: '',
+      image: [],
     };
   });
 
@@ -560,7 +557,7 @@ const createVariantService = async (product_id: string) => {
     arraySKUs.map(async (item) =>
       Sku.create({
         ...item,
-        image: '',
+        image: [],
       }),
     ),
   );

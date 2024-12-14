@@ -79,6 +79,7 @@ export interface OrderType extends Document {
   email?: string;
   shop_address?: string;
   phone_number: string;
+  shipping_fee: number;
   payment_status?: PaymentStatusType;
   payment_method?: object;
   status?: string;

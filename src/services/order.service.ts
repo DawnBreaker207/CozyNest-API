@@ -42,7 +42,6 @@ export const formatDateTime = (date: Date): string =>
  * @param to
  * @returns
  */
-// TODO: Check this feature and fix
 export const filterOrderDay = async (
   data: any,
   day: number,
@@ -91,7 +90,6 @@ export const filterOrderDay = async (
  * @param data
  * @param amountReduced
  */
-// TODO: Check this feature and fix
 export const sendOrderMail = async (
   email?: string,
   data?: any,
@@ -367,11 +365,11 @@ export const createNewOrderService = async (
 
       // Tạo một OrderDetail duy nhất chứa tất cả sản phẩm
       const newOrderDetail = await Order_Detail.create({
-        order_id,
+        order_id: order_id,
         installation_fee: installation_fee || 0, // Nếu có phí lắp đặt
         total: total || 0, // Thêm trường total vào đây
         coupon: coupon || '', // Thêm trường coupon vào đây
-        products,
+        products: products,
       });
 
       return newOrderDetail;
@@ -1114,8 +1112,6 @@ export const getOrderByUserIdService = async (
   conditions: object,
   options: object,
 ) => {
-  console.log(conditions, options);
-
   // Tìm kiếm đơn hàng
   const order = await Order.paginate(conditions, options);
   if (!order || order.length === 0) {
@@ -1501,7 +1497,6 @@ export const confirmReturnedOrderService = async (id: string) => {
   const orderItems = await Order_Detail.find({
     order_id: returned.order_id,
   }).select('sku_id quantity products');
-  console.log('Order Items:', orderItems);
   if (!orderItems || !Array.isArray(orderItems)) {
     logger.log(
       'error',

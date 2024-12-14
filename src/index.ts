@@ -21,7 +21,8 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: ['http://localhost:5173'], // URL của frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
 //* Create custom logging
@@ -66,7 +67,7 @@ app.use('/api/v1', router);
 
 //* Init chat real time
 realTime(io);
-
+app.set('io', io);
 //* Error Handling
 app.use(redirectPath);
 app.use(errorHandleNotFound, errorHandle);
@@ -74,4 +75,3 @@ app.use(errorHandleNotFound, errorHandle);
 server.listen(PORT, () => {
   logger.log('info', `Listen on port ${PORT}`);
 });
-// TODO: Update realtime notification order 
