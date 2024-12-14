@@ -1110,8 +1110,6 @@ export const getOrderByUserIdService = async (
   conditions: object,
   options: object,
 ) => {
-  console.log(conditions, options);
-
   // Tìm kiếm đơn hàng
   const order = await Order.paginate(conditions, options);
   if (!order || order.length === 0) {
@@ -1121,37 +1119,46 @@ export const getOrderByUserIdService = async (
 
   // Tìm kiếm chi tiết đơn hàng
   const orderDetailsPromises = order.docs.map(async (item) => {
-      const orderDetails = await Order_Detail.find({
-        order_id: item._id,
-      });
-      if (!orderDetails) {
-        logger.log(
-          'error',
-          'Order detail not found in get one by user id order',
-        );
-        throw new AppError(
-          StatusCodes.NOT_FOUND,
-          'Không tìm thấy đơn hàng chi tiết',
-        );
-      }
-      const newOrderDetails = await Promise.all(
-        orderDetails.map(async (detail) => {
-          const sku = await Sku.findOne({
-            _id: detail.products[0].sku_id,
-          }).select('name image SKU price quantity');
-          return {
-            ...detail.toObject(),
-            ...(sku ? sku.toObject() : {}),
-          };
-        }),
-      );
+    const orderDetails = await Order_Detail.find({
+      order_id: item._id,
+    }).lean(); // Sử dụng lean() để trả về plain JavaScript objects
 
-      return {
-        ...item.toObject(),
-        order_details: newOrderDetails,
-      };
-    }),
-    ordersWithDetails = await Promise.all(orderDetailsPromises);
+    if (!orderDetails) {
+      logger.log('error', 'Order detail not found in get one by user id order');
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        'Không tìm thấy đơn hàng chi tiết',
+      );
+    }
+
+    // Lấy thông tin sản phẩm và chi tiết SKU
+    const updatedProducts = await Promise.all(
+      orderDetails.map(async (detail) => {
+        return {
+          ...detail,
+          products: await Promise.all(
+            detail.products.map(async (product) => {
+              // Lấy chi tiết SKU
+              const sku = await Sku.findOne({ _id: product.sku_id })
+                .select('name image')
+                .lean(); // Chuyển sang plain object
+              return {
+                ...product, // Thông tin sản phẩm hiện tại
+                sku_id: sku || {}, // Gắn thông tin chi tiết SKU (hoặc rỗng nếu không tìm thấy)
+              };
+            }),
+          ),
+        };
+      }),
+    );
+
+    return {
+      ...item.toObject(), // Chuyển đổi thông tin đơn hàng thành plain object
+      order_details: updatedProducts, // Đính kèm thông tin sản phẩm đã được cập nhật
+    };
+  });
+
+  const ordersWithDetails = await Promise.all(orderDetailsPromises);
   if (!ordersWithDetails) {
     logger.log('error', 'Order details error in get one by user id order');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Error when search detail');
