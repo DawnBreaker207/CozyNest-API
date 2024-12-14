@@ -42,7 +42,6 @@ export const formatDateTime = (date: Date): string =>
  * @param to
  * @returns
  */
-// TODO: Check this feature and fix
 export const filterOrderDay = async (
   data: any,
   day: number,
@@ -91,7 +90,6 @@ export const filterOrderDay = async (
  * @param data
  * @param amountReduced
  */
-// TODO: Check this feature and fix
 export const sendOrderMail = async (
   email?: string,
   data?: any,
