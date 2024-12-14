@@ -75,5 +75,4 @@ router.use('/search', routeSearch);
 
 router.use('/stock', routeStock);
 
-
 export default router;

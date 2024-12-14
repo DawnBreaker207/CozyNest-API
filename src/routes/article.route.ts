@@ -44,10 +44,7 @@ routeArticle.put(
 );
 
 //* Soft delete
-routeArticle.patch(
-  '/:id', 
-  softDeleteArticle
-)
+routeArticle.patch('/:id', softDeleteArticle);
 
 //*delete
 routeArticle.delete(

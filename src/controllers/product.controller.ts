@@ -169,11 +169,11 @@ export const softDeleteProduct: RequestHandler = async (req, res, next) => {
   try {
     // Find product exist and hidden
     const data = await hideProductService(id);
-       // Lấy instance của server Socket.IO (nếu bạn có sẵn io instance ở đâu đó, ví dụ trong app.js hoặc server.ts)
-       const io: Server = req.app.get('io'); // Hoặc bạn có thể truyền io vào controller qua middleware nếu cần
+    // Lấy instance của server Socket.IO (nếu bạn có sẵn io instance ở đâu đó, ví dụ trong app.js hoặc server.ts)
+    const io: Server = req.app.get('io'); // Hoặc bạn có thể truyền io vào controller qua middleware nếu cần
 
-       // Phát sự kiện cập nhật sản phẩm tới tất cả các client trong room "product_{id}"
-       io.emit('productUpdated', { productId: id, updatedData: data }); // Phát sự kiện đến tất cả client
+    // Phát sự kiện cập nhật sản phẩm tới tất cả các client trong room "product_{id}"
+    io.emit('productUpdated', { productId: id, updatedData: data }); // Phát sự kiện đến tất cả client
     res.status(StatusCodes.OK).json({
       message: messagesSuccess.DELETE_PRODUCT_SUCCESS,
       res: data,

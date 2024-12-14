@@ -42,7 +42,7 @@ export const formatDateTime = (date: Date): string =>
  * @param to
  * @returns
  */
-
+// TODO: Check this feature and fix
 export const filterOrderDay = async (
   data: any,
   day: number,
@@ -91,7 +91,7 @@ export const filterOrderDay = async (
  * @param data
  * @param amountReduced
  */
-
+// TODO: Check this feature and fix
 export const sendOrderMail = async (
   email?: string,
   data?: any,
@@ -284,7 +284,7 @@ export const createNewOrderService = async (
   address: string,
   payment_method: string,
   total_amount: number,
-  shipping_fee: number = 50000,
+  transportation_fee: number = 3000,
   installation_fee: number,
   total: number,
   coupon: string,
@@ -322,7 +322,6 @@ export const createNewOrderService = async (
       payment_method: paymentMethod,
       payment_url: payUrl,
       status: input.status,
-      shipping_fee: Number(shipping_fee),
     });
     if (!order) {
       logger.log('error', 'Order create error in create order');
@@ -393,7 +392,12 @@ export const createNewOrderService = async (
 
     // Nếu đơn hàng có phương thức giao hàng, cập nhật thông tin giao hàng
     if (order.shipping_method === 'Shipping') {
-      await createShippingInfo(order, address, shipping_address, shipping_fee);
+      await createShippingInfo(
+        order,
+        address,
+        shipping_address,
+        transportation_fee,
+      );
     }
 
     // Xóa sản phẩm trong giỏ hàng khi tạo đơn hàng thành công
@@ -1119,46 +1123,37 @@ export const getOrderByUserIdService = async (
 
   // Tìm kiếm chi tiết đơn hàng
   const orderDetailsPromises = order.docs.map(async (item) => {
-    const orderDetails = await Order_Detail.find({
-      order_id: item._id,
-    }).lean(); // Sử dụng lean() để trả về plain JavaScript objects
-
-    if (!orderDetails) {
-      logger.log('error', 'Order detail not found in get one by user id order');
-      throw new AppError(
-        StatusCodes.NOT_FOUND,
-        'Không tìm thấy đơn hàng chi tiết',
+      const orderDetails = await Order_Detail.find({
+        order_id: item._id,
+      });
+      if (!orderDetails) {
+        logger.log(
+          'error',
+          'Order detail not found in get one by user id order',
+        );
+        throw new AppError(
+          StatusCodes.NOT_FOUND,
+          'Không tìm thấy đơn hàng chi tiết',
+        );
+      }
+      const newOrderDetails = await Promise.all(
+        orderDetails.map(async (detail) => {
+          const sku = await Sku.findOne({
+            _id: detail.products[0].sku_id,
+          }).select('name image SKU price quantity');
+          return {
+            ...detail.toObject(),
+            ...(sku ? sku.toObject() : {}),
+          };
+        }),
       );
-    }
 
-    // Lấy thông tin sản phẩm và chi tiết SKU
-    const updatedProducts = await Promise.all(
-      orderDetails.map(async (detail) => {
-        return {
-          ...detail,
-          products: await Promise.all(
-            detail.products.map(async (product) => {
-              // Lấy chi tiết SKU
-              const sku = await Sku.findOne({ _id: product.sku_id })
-                .select('name image')
-                .lean(); // Chuyển sang plain object
-              return {
-                ...product, // Thông tin sản phẩm hiện tại
-                sku_id: sku || {}, // Gắn thông tin chi tiết SKU (hoặc rỗng nếu không tìm thấy)
-              };
-            }),
-          ),
-        };
-      }),
-    );
-
-    return {
-      ...item.toObject(), // Chuyển đổi thông tin đơn hàng thành plain object
-      order_details: updatedProducts, // Đính kèm thông tin sản phẩm đã được cập nhật
-    };
-  });
-
-  const ordersWithDetails = await Promise.all(orderDetailsPromises);
+      return {
+        ...item.toObject(),
+        order_details: newOrderDetails,
+      };
+    }),
+    ordersWithDetails = await Promise.all(orderDetailsPromises);
   if (!ordersWithDetails) {
     logger.log('error', 'Order details error in get one by user id order');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Error when search detail');
@@ -1504,7 +1499,6 @@ export const confirmReturnedOrderService = async (id: string) => {
   const orderItems = await Order_Detail.find({
     order_id: returned.order_id,
   }).select('sku_id quantity products');
-  console.log('Order Items:', orderItems);
   if (!orderItems || !Array.isArray(orderItems)) {
     logger.log(
       'error',

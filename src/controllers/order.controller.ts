@@ -27,6 +27,7 @@ import { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import moment from 'moment';
 import mongoose from 'mongoose';
+import { Server } from 'socket.io';
 
 // Controllers
 export const createNewOrder: RequestHandler = async (req, res, next) => {
@@ -84,6 +85,17 @@ export const updateStatusOrder: RequestHandler = async (req, res, next) => {
   const { status } = req.body;
   try {
     const updateOrder = await updateStatusOrderService(id, status);
+
+    const io: Server = req.app.get('io');
+    if (
+      updateOrder.status === 'Confirmed' ||
+      updateOrder.status === 'Completed' ||
+      updateOrder.status === 'Canceled' ||
+      updateOrder.status === 'Returned'
+    ) {
+      io.emit('orderUpdated', { orderId: id, orderData: updateOrder });
+    }
+
     res.status(StatusCodes.CREATED).json({
       message: 'Order update successfully',
       res: updateOrder,

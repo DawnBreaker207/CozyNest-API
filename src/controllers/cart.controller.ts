@@ -180,7 +180,7 @@ export const decreaseQuantity: RequestHandler = async (req, res, next) => {
    * @param {string} req.body.sku_id Param sku_id input
    * @param {string} req.body.quantity Param sku_id input
    */
-  const { userId, sku_id,quantity } = req.body;
+  const { userId, sku_id, quantity } = req.body;
   try {
     const cart = await decreaseQuantityService(userId, sku_id, quantity);
 

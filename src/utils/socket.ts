@@ -45,11 +45,26 @@ export const realTime = (io: Server) => {
     );
 
     // Event for product updates
-    socket.on('productUpdated', (data: { productId: string; productData: any }) => {
-      const { productId, productData } = data;
-      logger.log('info', `Product updated: ${productId}`);
-      io.to(`product_${productId}`).emit('productUpdated', productData);
-    });
+    socket.on(
+      'productUpdated',
+      (data: { productId: string; productData: any }) => {
+        const { productId, productData } = data;
+        logger.log('info', `Product updated: ${productId}`);
+        io.to(`product_${productId}`).emit('productUpdated', productData);
+      },
+    );
+
+    // Event for order updates
+    socket.on(
+      'orderUpdated',
+      (input: { orderId: string; role: string; orderData: any }) => {
+        const { role, orderId, orderData } = input;
+        // if (role === 'superAdmin' || role === 'admin' || role === 'shipper') {
+        logger.log('info', `Order updated ${orderId} `);
+        io.to(`order_${orderId}`).emit('orderUpdated', orderData);
+        // }
+      },
+    );
 
     // Disconnected event
     socket.on('disconnect', () => {
