@@ -482,7 +482,6 @@ const getAllVariantsService = async (product_id: string) => {
   return data;
 };
 
-// TODO: Update logic
 const createVariantService = async (product_id: string) => {
   // Check product exist
   const product = await Product.findById(product_id).select(
@@ -531,7 +530,6 @@ const createVariantService = async (product_id: string) => {
       'There are some problems when create variants',
     );
   }
-  // TODO: Understand this
   // Create array of SKUs from variants
   const arraySKUs = variants.map((variant, index) => {
     const variantValues = variant.map((v) => v.label).join(' - '); // Kết hợp các giá trị của option

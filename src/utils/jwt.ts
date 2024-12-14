@@ -76,7 +76,6 @@ const decodedToken = (token: string) => {
 //     now = new Date();
 //   // Check token expired
 //   if (tokenTimes < now) {
-//     // TODO: check if have refresh token, return new access token
 //     return createToken(checkToken.sub as string, SECRET_ACCESS_TOKEN as string);
 //   }
 //   // if (tokenTimes > now) {

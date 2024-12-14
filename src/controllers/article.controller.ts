@@ -97,7 +97,6 @@ export const softDeleteArticle: RequestHandler = async (req, res, next) => {
 }
 
 //DELETE /articles/:id
-// TODO: Update logic 
 export const deleteArticle: RequestHandler = async (req, res, next) => {
   try {
     const deleteArticle = await Article.findByIdAndDelete(req.params.id);

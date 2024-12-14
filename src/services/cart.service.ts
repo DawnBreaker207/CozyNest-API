@@ -9,7 +9,7 @@ import { StatusCodes } from 'http-status-codes';
 import mongoose, { Types } from 'mongoose';
 
 //* Cart
-// TODO: Update logic when delete product, product in cart instead of delete, it was lock of not available
+
 // Count total price
 const countTotal = (arr: { price: number; quantity: number }[]) =>
   arr.reduce(

@@ -36,7 +36,6 @@ export const createReviewService = async (reviewData: ReviewType) => {
   return await Review.create(reviewData);
 };
 
-// TODO: Update logic 
 // Xóa review theo ID
 export const deleteReviewService = async (id: string) => {
   if (!Types.ObjectId.isValid(id)) {

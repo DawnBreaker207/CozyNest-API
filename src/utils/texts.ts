@@ -48,7 +48,6 @@ export const sendResetMail = (subject?: string, content?: string): string => {
  * @returns
  */
 
-// TODO: Update this logic
 export const sendOrder = (data: any): string => {
   const {
     customer_name,
@@ -59,11 +58,18 @@ export const sendOrder = (data: any): string => {
     createdAt,
     _id,
     order_details,
+    shipping_fee,
   } = data._doc || {};
 
   // Trích xuất sản phẩm từ `order_details`
   const products = order_details?.products || [];
-  const totalAmount = order_details?.total || 0;
+  const voucher = order_details?.total || 0;
+  const totalAmount = order_details?.total_amount || 0;
+  const totalProduct = products.reduce((total: number, product: any) => {
+    const { price, quantity } = product._doc || {};
+    return total + price * quantity; // Nhân giá với số lượng và cộng dồn
+  }, 0);
+  const shippingFee = shipping_fee || 50000;
   const templatePath = path.resolve(__dirname, '../views/sendOrder.pug');
   const html = pug.renderFile(templatePath, {
     customerName: customer_name,
@@ -82,8 +88,13 @@ export const sendOrder = (data: any): string => {
         quantity: quantity,
       };
     }),
+    shippingFee: shippingFee.toLocaleString('vi-VN') + ' VND',
+    voucher: voucher.toLocaleString('vi-VN') + ' VND',
+    totalProduct: totalProduct.toLocaleString('vi-VN') + ' VND',
     totalAmount: totalAmount.toLocaleString('vi-VN') + ' VND', // Format tổng tiền
     paymentMethod: (payment_method[0]?.method || 'N/A').toUpperCase(),
+    installationFee:
+      order_details?.installation_fee.toLocaleString('vi-VN') + ' VND' || 0,
     paymentStatus: payment_status || 'Pending',
   });
 

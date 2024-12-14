@@ -42,7 +42,7 @@ export const formatDateTime = (date: Date): string =>
  * @param to
  * @returns
  */
-// TODO: Check this feature and fix
+
 export const filterOrderDay = async (
   data: any,
   day: number,
@@ -91,7 +91,7 @@ export const filterOrderDay = async (
  * @param data
  * @param amountReduced
  */
-// TODO: Check this feature and fix
+
 export const sendOrderMail = async (
   email?: string,
   data?: any,
@@ -284,7 +284,7 @@ export const createNewOrderService = async (
   address: string,
   payment_method: string,
   total_amount: number,
-  transportation_fee: number = 3000,
+  shipping_fee: number = 50000,
   installation_fee: number,
   total: number,
   coupon: string,
@@ -322,6 +322,7 @@ export const createNewOrderService = async (
       payment_method: paymentMethod,
       payment_url: payUrl,
       status: input.status,
+      shipping_fee: Number(shipping_fee),
     });
     if (!order) {
       logger.log('error', 'Order create error in create order');
@@ -392,12 +393,7 @@ export const createNewOrderService = async (
 
     // Nếu đơn hàng có phương thức giao hàng, cập nhật thông tin giao hàng
     if (order.shipping_method === 'Shipping') {
-      await createShippingInfo(
-        order,
-        address,
-        shipping_address,
-        transportation_fee,
-      );
+      await createShippingInfo(order, address, shipping_address, shipping_fee);
     }
 
     // Xóa sản phẩm trong giỏ hàng khi tạo đơn hàng thành công

@@ -105,6 +105,10 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
       phone_number: {
         type: String,
       },
+      shipping_fee: {
+        type: Number,
+        default: 0,
+      },
       address: {
         type: String,
       },
@@ -122,6 +126,7 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
           partnerCode: { type: String },
         },
       ],
+
       status: {
         type: String,
         default: 'Processing',
