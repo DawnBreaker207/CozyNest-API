@@ -493,10 +493,10 @@ const createVariantService = async (product_id: string) => {
   }
 
   // Delete all variant and SKU exist in product
-  await Promise.all([
-    Variant.deleteMany({ product_id }),
-    Sku.deleteMany({ product_id }),
-  ]);
+  // await Promise.all([
+  //   Variant.deleteMany({ product_id }),
+  //   Sku.deleteMany({ product_id }),
+  // ]);
 
   // Check options exist
   const options = await Option.find({ product_id: product_id }).select(
@@ -530,8 +530,30 @@ const createVariantService = async (product_id: string) => {
       'There are some problems when create variants',
     );
   }
+
+  const existingVariants = await Variant.find({ product_id }).select(
+    'option_id option_value_id',
+  );
+
+  // Lọc các biến thể chưa tồn tại
+  const newVariants = variants.filter((variant) => {
+    return !existingVariants.some((existing) =>
+      variant.every(
+        (v) =>
+          v.option_id.toString() === existing.option_id.toString() &&
+          v.option_value_id.toString() === existing.option_value_id.toString(),
+      ),
+    );
+  });
+
+  // Nếu không có biến thể mới, trả về
+  if (newVariants.length === 0) {
+    logger.log('error', 'No new variants to create');
+    return [];
+  }
+
   // Create array of SKUs from variants
-  const arraySKUs = variants.map((variant, index) => {
+  const arraySKUs = newVariants.map((variant, index) => {
     const variantValues = variant.map((v) => v.label).join(' - '); // Kết hợp các giá trị của option
     const slug = slugify(`${product.name}-${variantValues}`) || 'default-slug';
     return {
@@ -570,7 +592,7 @@ const createVariantService = async (product_id: string) => {
   }
 
   // Combining variant option with variant and SKUs
-  const data = await variantOptions(product_id, variants, SKUs);
+  const data = await variantOptions(product_id, newVariants, SKUs);
   if (!data || data.length === 0) {
     logger.log('error', 'Option values create failed in save variant');
     throw new AppError(
