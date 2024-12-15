@@ -27,6 +27,7 @@ export const searchProducts: RequestHandler = async (req, res, next) => {
   try {
     // Tìm kiếm sản phẩm với tên hoặc mô tả chứa từ khóa
     const products = await Product.find({
+      is_hidden: false,
       $or: [
         { name: { $regex: query, $options: 'i' } }, // 'i' là option không phân biệt chữ hoa chữ thường
         { description: { $regex: query, $options: 'i' } },
