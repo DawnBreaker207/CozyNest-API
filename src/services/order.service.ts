@@ -24,6 +24,7 @@ import {
   createZaloPayService,
 } from './payment.service';
 import { createDeliveryOrderService } from './shipment.service';
+import { Refunded } from '@/models/Refund';
 
 // Utils functions
 /**
@@ -432,7 +433,7 @@ export const cancelOrderService = async (id: string) => {
         }
       },
       delivered: () => {
-        if (ordered.status === 'delivered') {
+        if (ordered.status === 'Delivered') {
           logger.log(
             'error',
             'Order can not cancel when delivery in cancel order',
@@ -444,7 +445,7 @@ export const cancelOrderService = async (id: string) => {
         }
       },
       returned: () => {
-        if (ordered.status === 'returned') {
+        if (ordered.status === 'Returned') {
           logger.log(
             'error',
             ' Order can not cancel when returned in cancel order',
@@ -836,6 +837,66 @@ export const returnedOrderService = async (
     throw new AppError(StatusCodes.BAD_REQUEST, 'Hoàn hàng không thành công');
   }
   return returned;
+};
+
+export const refundedOrderService = async (
+  order_id: string,
+  bank_number: number,
+  bank_name: string,
+  customer_name: string,
+  phone_number: string,
+  images: string[],
+) => {
+  // Kiểm tra xem đã có yêu cầu hoàn tiền cho đơn hàng này chưa
+  const refunded_order = await Refunded.findOne({ order_id });
+  if (refunded_order) {
+    logger.log('error', 'Order has already been refunded');
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Đơn hàng đã được yêu cầu hoàn tiền',
+    );
+  }
+
+  // Tìm kiếm đơn hàng theo order_id
+  const order = await Order.findById(order_id);
+  if (!order) {
+    logger.log('error', 'Order not found in refund order');
+    throw new AppError(StatusCodes.NOT_FOUND, 'Đơn hàng không tìm thấy');
+  }
+
+  // Kiểm tra trạng thái đơn hàng phải là 'canceled' hoặc 'Returned', và đã thanh toán
+  if (
+    !(
+      (order.status === 'cancelled' || order.status === 'Returned') &&
+      order.payment_status === 'Paid'
+    )
+  ) {
+    logger.log('error', 'Order status or payment status invalid for refund');
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Trạng thái đơn hàng hoặc trạng thái thanh toán không hợp lệ để hoàn tiền',
+    );
+  }
+
+  // Tạo yêu cầu hoàn tiền mới
+  const refunded = await Refunded.create({
+    order_id,
+    bank_number,
+    bank_name,
+    customer_name,
+    phone_number,
+    images,
+  });
+
+  if (!refunded) {
+    logger.log('error', 'Refund request failed');
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Yêu cầu hoàn tiền không thành công',
+    );
+  }
+
+  return refunded;
 };
 
 export const serviceCalFeeService = async (location: string) => {
@@ -1398,7 +1459,65 @@ export const getReturnedOrderService = async (
     orders = await Returned.paginate(conditions, options);
   return { orders };
 };
+export const getRefundedOrderService = async (
+  // Trang hiện tại (mặc định là 1)
+  _page: number | string = 1,
+  // Trường để sắp xếp (mặc định là created_at)
+  _sort: string = 'createdAt',
+  // Thứ tự sắp xếp (mặc định là giảm dần)
+  _order: string = 'desc',
+  // Số lượng yêu cầu trả về trên một trang (mặc định là 10)
+  _limit: number | string = 100,
+  // Tìm kiếm theo tên khách hàng
+  search: string | undefined,
+  // Tình trạng xác nhận
+  is_confirm: boolean | undefined,
+  // Ngày để tìm kiếm
+  date: string | undefined,
+) => {
+  const conditions: Record<string, any> = {};
 
+  // Thêm điều kiện tìm kiếm theo tên khách hàng
+  if (search) {
+    conditions.$or = [
+      { customer_name: { $regex: new RegExp(search, 'i') } },
+      { order_id: search }, // Tìm kiếm chính xác theo `order_id`
+    ];
+  }
+
+  // Thêm điều kiện xác nhận
+  if (is_confirm) {
+    conditions.is_confirm = is_confirm;
+  }
+
+  // Thêm điều kiện theo ngày
+  if (date) {
+    // Chuyển đổi chuỗi ngày thành đối tượng moment
+    const { years, months, date: day } = moment(date).toObject();
+    // Đặt điều kiện tìm kiếm theo khoảng thời gian
+    conditions.created_at = {
+      // Ngày bắt đầu
+      $gte: new Date(years, months + 1, day),
+      // Ngày kết thúc
+      $lt: new Date(years, months + 1, day + 1),
+    };
+  }
+
+  // Tùy chọn cho truy vấn phân trang
+  const options = {
+      page: Number(_page) || 1,
+      limit: Number(_limit) || 10,
+      sort: {
+        // Sắp xếp theo trường và thứ tự
+        [_sort]: _order === 'desc' ? -1 : 1,
+      },
+      // Chọn các trường để trả về
+      select: ['-deleted', '-deleted_at'],
+    },
+    // Lấy danh sách yêu cầu hoàn trả từ cơ sở dữ liệu
+    orders = await Refunded.paginate(conditions, options);
+  return { orders };
+};
 export const updateStatusDeliveredService = async (id: string) => {
   const ordered = await Order.findById(id);
   if (!ordered) {
@@ -1533,7 +1652,40 @@ export const confirmReturnedOrderService = async (id: string) => {
 
   return;
 };
+export const confirmRefundedOrderService = async (id: string) => {
+  const refunded = await Refunded.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        is_confirm: true,
+      },
+    },
+    { new: true },
+  );
 
+  if (!refunded) {
+    logger.log('error', 'Refunded update failed in confirm refund order');
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Không tìm thấy đơn hàng');
+  }
+
+  const orderUpdate = await Order.findByIdAndUpdate(
+    refunded.order_id,
+    {
+      $set: { status: 'Refunded' },
+      $push: {
+        status_detail: {
+          status: 'Refunded',
+        },
+      },
+    },
+    { new: true },
+  );
+  if (!orderUpdate) {
+    logger.log('error', 'Order update failed in confirm refund order');
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Không tìm thấy đơn hàng');
+  }
+  return;
+};
 export const updateInfoCustomerService = async (
   id: string,
   // Tên khách hàng

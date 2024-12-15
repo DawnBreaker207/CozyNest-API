@@ -1,6 +1,7 @@
 import { messagesSuccess } from '@/constants/messages';
 import {
   cancelOrderService,
+  confirmRefundedOrderService,
   confirmReturnedOrderService,
   createNewOrderService,
   decreaseProductFromOrderService,
@@ -10,9 +11,11 @@ import {
   getOneOrderService,
   getOrderByPhoneNumberService,
   getOrderByUserIdService,
+  getRefundedOrderService,
   getReturnedOrderService,
   getTokenPrintBillsService,
   increaseProductFromOrderService,
+  refundedOrderService,
   removeProductFromOrderService,
   returnedOrderService,
   serviceCalFeeService,
@@ -160,7 +163,48 @@ export const returnedOrder: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+// Hàm xử lý yêu cầu hoàn tiền đơn hàng
+export const refundedOrder: RequestHandler = async (req, res, next) => {
+  const {
+    order_id,
+    bank_number,
+    bank_name,
+    customer_name,
+    phone_number,
+    images,
+  } = req.body as {
+    // ID của đơn hàng
+    order_id: string;
+    // Lý do hoàn trả
+    bank_number: number;
+    // Tên ngân hàng
+    bank_name: string;
+    // Tên khách hàng
+    customer_name: string;
+    // Số điện thoại của khách hàng
+    phone_number: string;
+    // Hình ảnh chứng minh yêu cầu hoàn trả
+    images: string[];
+  };
+  try {
+    const returned = await refundedOrderService(
+      order_id,
+      bank_number,
+      bank_name,
+      customer_name,
+      phone_number,
+      images,
+    );
 
+    return res.status(StatusCodes.OK).json({
+      message: 'Tạo yêu cầu hoàn tiền thành công',
+      res: returned,
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in return order: ${error}`);
+    next(error);
+  }
+};
 // Tính tiền vận chuyển
 export const serviceCalFee: RequestHandler = async (req, res, next) => {
   const { location } = req.body;
@@ -526,7 +570,60 @@ export const getReturnedOrder: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
+export const getRefundedOrder: RequestHandler = async (req, res, next) => {
+  const {
+    // Trang hiện tại (mặc định là 1)
+    _page = 1,
+    // Trường để sắp xếp (mặc định là created_at)
+    _sort = 'created_at',
+    // Thứ tự sắp xếp (mặc định là giảm dần)
+    _order = 'desc',
+    // Số lượng yêu cầu trả về trên một trang (mặc định là 10)
+    _limit = 100,
+    // Tìm kiếm theo tên khách hàng
+    search,
+    // Tình trạng xác nhận
+    is_confirm,
+    // Ngày để tìm kiếm
+    date,
+  } = req.query as {
+    // Trang hiện tại
+    _page?: number | string;
+    // Trường sắp xếp
+    _sort?: string;
+    // Thứ tự sắp xếp
+    _order?: 'asc' | 'desc';
+    // Số lượng yêu cầu trên một trang
+    _limit?: number | string;
+    // Từ khóa tìm kiếm
+    search?: string;
+    // Tình trạng xác nhận
+    is_confirm?: boolean;
+    // Ngày tìm kiếm
+    date?: string;
+  };
+  try {
+    const { orders } = await getRefundedOrderService(
+      _page,
+      _sort,
+      _order,
+      _limit,
+      search,
+      is_confirm,
+      date,
+    );
+    return res.status(StatusCodes.OK).json({
+      message: 'Thành công',
+      res: {
+        items: orders.docs,
+        // paginate: orders,
+      },
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in get returned order: ${error}`);
+    next(error);
+  }
+};
 export const updateStatusDelivered: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -564,6 +661,18 @@ export const confirmReturnedOrder: RequestHandler = async (req, res, next) => {
     });
   } catch (error) {
     logger.log('error', `Catch error in get returned order: ${error}`);
+    next(error);
+  }
+};
+export const confirmRefundedOrder: RequestHandler = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    await confirmRefundedOrderService(id);
+    return res.status(StatusCodes.OK).json({
+      message: 'Đơn hàng hoàn tiền thành công',
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in get refunded order: ${error}`);
     next(error);
   }
 };
