@@ -33,186 +33,186 @@ interface AddressLocation {
  */
 
 const getAddressLocation = async (
-    location: string,
-  ): Promise<AddressLocation | undefined> => {
-    try {
-      let ward_code: string = WARD_CODE as string,
-        district_id: number = parseInt(DISTRICT_ID as string);
+  location: string,
+): Promise<AddressLocation | undefined> => {
+  try {
+    let ward_code: string = WARD_CODE as string,
+      district_id: number = parseInt(DISTRICT_ID as string);
 
-      const provinces = await axios.get<Province[]>(
-          'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province',
-          {
-            headers: {
-              Token: TOKEN_SHIPMENT,
-              'Content-Type': 'application/json',
-            },
-          },
-        ),
-        provinces_id = provinces.data.find((item) =>
-          item.NameExtension.includes(location.split(',')[2].trim()),
-        ),
-        districts = await axios.post<{ data: District[] }>(
-          'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district',
-          {
-            provinces_id: provinces_id?.ProvinceID,
-          },
-          {
-            headers: {
-              Token: TOKEN_SHIPMENT,
-              'Content-Type': 'application/json',
-            },
-          },
-        ),
-        district = districts.data.data.find(
-          (item) => item.DistrictName == location.split(',')[1].trim(),
-        );
-      if (!district) {
-        logger.log('error', 'Get address location errors: District not found');
-        throw new AppError(StatusCodes.NOT_FOUND, 'District not found');
-      }
-      district_id = district.DistrictID;
-
-      const wards = await axios.post<{ data: Ward[] }>(
-          'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id',
-          {
-            district_id,
-          },
-          {
-            headers: {
-              Token: TOKEN_SHIPMENT,
-              'Content-Type': 'application/json',
-            },
-          },
-        ),
-        ward = wards.data.data.find(
-          (item) => item.WardName == location.split(',')[0].trim(),
-        );
-      if (!ward) {
-        logger.log('error', 'Get address location errors : Ward not found');
-        throw new AppError(StatusCodes.NOT_FOUND, 'Ward not found');
-      }
-      ward_code = ward.WardCode;
-
-      return {
-        ward_code,
-        district,
-      };
-    } catch (error) {
-      logger.log('error', `Catch errors get address location : ${error}`);
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        `Problems when get address location${error}`,
-      );
-    }
-  },
-  /**
-   *
-   * @param order_code
-   * @returns
-   */
-  getOrderInfo = async (order_code: string) => {
-    try {
-      const order_info = await axios.post(
-        'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail',
-        { order_code },
-        {
-          headers: { Token: TOKEN_SHIPMENT },
-        },
-      );
-      return order_info.data;
-    } catch (error) {
-      logger.log('error', `Catch errors get order info : ${error}`);
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        `Can not get order info${error}`,
-      );
-    }
-  },
-  /**
-   *
-   * @param order_code
-   * @returns
-   */
-  cancelledOrder = async (order_code: string) => {
-    try {
-      const order_info = await axios.post(
-        'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/cancel',
-        { order_code: [order_code] },
+    const provinces = await axios.get<Province[]>(
+        'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province',
         {
           headers: {
             Token: TOKEN_SHIPMENT,
-            ShopId: SHIPMENT_SHOP,
+            'Content-Type': 'application/json',
           },
         },
-      );
-      return order_info;
-    } catch (error) {
-      logger.log('error', `Catch errors cancelled order : ${error}`);
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        `Problems when cancel order ${error}`,
-      );
-    }
-  },
-  /**
-   *
-   * @param info
-   * @returns
-   */
-  updateInfo = async (info: string[]) => {
-    try {
-      const order_info = await axios.post(
-        'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/update',
-        { ...info },
+      ),
+      provinces_id = provinces.data.find((item) =>
+        item.NameExtension.includes(location.split(',')[2].trim()),
+      ),
+      districts = await axios.post<{ data: District[] }>(
+        'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district',
+        {
+          provinces_id: provinces_id?.ProvinceID,
+        },
         {
           headers: {
             Token: TOKEN_SHIPMENT,
-            ShopId: SHIPMENT_SHOP,
+            'Content-Type': 'application/json',
           },
         },
+      ),
+      district = districts.data.data.find(
+        (item) => item.DistrictName == location.split(',')[1].trim(),
       );
-      return order_info.data;
-    } catch (error) {
-      logger.log('error', `Catch errors update info : ${error}`);
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        `Problems when update info${error}`,
-      );
+    if (!district) {
+      logger.log('error', 'Get address location errors: District not found');
+      throw new AppError(StatusCodes.NOT_FOUND, 'District not found');
     }
-  },
-  /**
-   *
-   * @param info
-   * @returns
-   */
-  calculateTime = async (info: string[]) => {
-    try {
-      const expected_time = await axios.post(
-        'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime',
-        { ...info },
-        {
-          headers: {
-            Token: TOKEN_SHIPMENT,
-            ShopId: SHIPMENT_SHOP,
-          },
-        },
-      );
+    district_id = district.DistrictID;
 
-      return expected_time.data;
-    } catch (error) {
-      logger.log('error', `Catch errors calculate time : ${error}`);
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        `Problems when calculate time${error}`,
+    const wards = await axios.post<{ data: Ward[] }>(
+        'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id',
+        {
+          district_id,
+        },
+        {
+          headers: {
+            Token: TOKEN_SHIPMENT,
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+      ward = wards.data.data.find(
+        (item) => item.WardName == location.split(',')[0].trim(),
       );
+    if (!ward) {
+      logger.log('error', 'Get address location errors : Ward not found');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Ward not found');
     }
-  },
-  /**
-   *
-   * @param location
-   * @returns
-   */
-  calculateFee = async (location: string[]) => {
+    ward_code = ward.WardCode;
+
+    return {
+      ward_code,
+      district,
+    };
+  } catch (error) {
+    logger.log('error', `Catch errors get address location : ${error}`);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Problems when get address location${error}`,
+    );
+  }
+};
+/**
+ *
+ * @param order_code
+ * @returns
+ */
+const getOrderInfo = async (order_code: string) => {
+  try {
+    const order_info = await axios.post(
+      'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail',
+      { order_code },
+      {
+        headers: { Token: TOKEN_SHIPMENT },
+      },
+    );
+    return order_info.data;
+  } catch (error) {
+    logger.log('error', `Catch errors get order info : ${error}`);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Can not get order info${error}`,
+    );
+  }
+};
+/**
+ *
+ * @param order_code
+ * @returns
+ */
+const cancelledOrder = async (order_code: string) => {
+  try {
+    const order_info = await axios.post(
+      'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/cancel',
+      { order_code: [order_code] },
+      {
+        headers: {
+          Token: TOKEN_SHIPMENT,
+          ShopId: SHIPMENT_SHOP,
+        },
+      },
+    );
+    return order_info;
+  } catch (error) {
+    logger.log('error', `Catch errors cancelled order : ${error}`);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Problems when cancel order ${error}`,
+    );
+  }
+};
+/**
+ *
+ * @param info
+ * @returns
+ */
+const updateInfo = async (info: string[]) => {
+  try {
+    const order_info = await axios.post(
+      'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/update',
+      { ...info },
+      {
+        headers: {
+          Token: TOKEN_SHIPMENT,
+          ShopId: SHIPMENT_SHOP,
+        },
+      },
+    );
+    return order_info.data;
+  } catch (error) {
+    logger.log('error', `Catch errors update info : ${error}`);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Problems when update info${error}`,
+    );
+  }
+};
+/**
+ *
+ * @param info
+ * @returns
+ */
+const calculateTime = async (info: string[]) => {
+  try {
+    const expected_time = await axios.post(
+      'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime',
+      { ...info },
+      {
+        headers: {
+          Token: TOKEN_SHIPMENT,
+          ShopId: SHIPMENT_SHOP,
+        },
+      },
+    );
+
+    return expected_time.data;
+  } catch (error) {
+    logger.log('error', `Catch errors calculate time : ${error}`);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Problems when calculate time${error}`,
+    );
+  }
+};
+/**
+ *
+ * @param location
+ * @returns
+ */
+const calculateFee = async (location: string[]) => {
     try {
       const calculate = await axios.post(
         'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',

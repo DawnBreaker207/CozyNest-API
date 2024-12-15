@@ -1184,7 +1184,7 @@ export const getOrderByUserIdService = async (
   const orderDetailsPromises = order.docs.map(async (item) => {
       const orderDetails = await Order_Detail.find({
         order_id: item._id,
-      });
+      }).populate('products.sku_id', 'name image SKU price quantity');
       if (!orderDetails) {
         logger.log(
           'error',
@@ -1199,7 +1199,7 @@ export const getOrderByUserIdService = async (
         orderDetails.map(async (detail) => {
           const sku = await Sku.findOne({
             _id: detail.products[0].sku_id,
-          }).select('name image SKU price quantity');
+          });
           return {
             ...detail.toObject(),
             ...(sku ? sku.toObject() : {}),
@@ -1319,7 +1319,7 @@ export const getOneOrderService = async (id: string) => {
       select: 'total coupon installation_fee products',
       populate: {
         path: 'products.sku_id',
-        select: 'name image',
+        select: 'name image product_id',
       },
     })
     .exec();
