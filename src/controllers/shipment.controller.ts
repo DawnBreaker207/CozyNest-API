@@ -64,6 +64,7 @@ export const calShippingFee: RequestHandler = async (req, res, next) => {
     });
     res.status(StatusCodes.OK).json({ res: response.data });
   } catch (error: unknown) {
+    console.log(error);
     if (error instanceof Error) {
       logger.log('error', `Catch error in calculate shipping fee: ${error}`);
       next(

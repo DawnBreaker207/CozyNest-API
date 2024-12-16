@@ -1,4 +1,5 @@
 import { messagesSuccess } from '@/constants/messages';
+import Notification from '@/models/Notification';
 import {
   cancelOrderService,
   confirmRefundedOrderService,
@@ -94,9 +95,21 @@ export const updateStatusOrder: RequestHandler = async (req, res, next) => {
       updateOrder.status === 'Confirmed' ||
       updateOrder.status === 'Completed' ||
       updateOrder.status === 'Canceled' ||
+      updateOrder.status === 'Delivered' ||
       updateOrder.status === 'Returned'
     ) {
-      io.emit('orderUpdated', { orderId: id, orderData: updateOrder });
+      // Lưu thông báo vào cơ sở dữ liệu
+      const notification = new Notification({
+        userId: updateOrder.user_id, // ID của người nhận thông báo (có thể là admin hoặc người dùng)
+        orderId: id,
+        status: status,
+      });
+      await notification.save();
+      io.emit('orderUpdated', {
+        orderId: id,
+        orderData: updateOrder,
+        message: notification,
+      });
     }
 
     res.status(StatusCodes.CREATED).json({
