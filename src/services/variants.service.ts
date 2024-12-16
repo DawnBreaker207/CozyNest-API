@@ -88,10 +88,10 @@ const getVariants = async (
       const optionValues = await OptionValue.find({
         _id: variant.option_value_id,
       });
-      if (!optionValues || optionValues.length === 0) {
-        logger.log('error', 'Option values not found for variant');
-        throw new AppError(StatusCodes.BAD_REQUEST, 'Option values not found');
-      }
+      // if (!optionValues || optionValues.length === 0) {
+      //   logger.log('error', 'Option values not found for variant');
+      //   throw new AppError(StatusCodes.BAD_REQUEST, 'Option values not found');
+      // }
 
       // Lấy thông tin Option liên quan đến variant
       const optionsWithValue = optionValues.map((optionValue) => {
@@ -502,10 +502,10 @@ const createVariantService = async (product_id: string) => {
   const options = await Option.find({ product_id: product_id }).select(
     '_id name',
   );
-  if (options.length === 0) {
-    logger.log('error', 'Option value not exist in save variant');
-    throw new AppError(StatusCodes.NOT_FOUND, 'Option value not exist ');
-  }
+  // if (options.length === 0) {
+  //   logger.log('error', 'Option value not exist in save variant');
+  //   throw new AppError(StatusCodes.NOT_FOUND, 'Option value not exist ');
+  // }
 
   // Create option values base on options
   const docs = await Promise.all(
