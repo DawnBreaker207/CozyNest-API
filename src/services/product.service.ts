@@ -51,7 +51,8 @@ const getOneProductService = async (id: string): Promise<ProductType> => {
       populate: [
         {
           path: 'sku_id',
-          select: 'image name SKU price stock sold price_discount_percent',
+          select:
+            'image name SKU price stock sold price_discount_percent price_before_discount',
         },
         { path: 'option_id', select: 'name position' },
         {
