@@ -90,14 +90,12 @@ export const updateStatusOrder: RequestHandler = async (req, res, next) => {
   try {
     const updateOrder = await updateStatusOrderService(id, status);
 
-    const io: Server = req.app.get('io');
     if (
       updateOrder.status === 'Confirmed' ||
       updateOrder.status === 'Completed' ||
-      updateOrder.status === 'Canceled' ||
-      updateOrder.status === 'Delivered' ||
-      updateOrder.status === 'Returned'
+      updateOrder.status === 'Delivered'
     ) {
+      const io: Server = req.app.get('io');
       // Lưu thông báo vào cơ sở dữ liệu
       const notification = new Notification({
         userId: updateOrder.user_id, // ID của người nhận thông báo (có thể là admin hoặc người dùng)
@@ -571,6 +569,7 @@ export const getReturnedOrder: RequestHandler = async (req, res, next) => {
       is_confirm,
       date,
     );
+
     return res.status(StatusCodes.OK).json({
       message: 'Thành công',
       res: {
@@ -655,6 +654,21 @@ export const cancelOrder: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
     const updateOrder = await cancelOrderService(id);
+
+    if (updateOrder.status === 'Cancelled') {
+      const io: Server = req.app.get('io');
+      const notification = new Notification({
+        userId: updateOrder.user_id, // ID của người nhận thông báo (có thể là admin hoặc người dùng)
+        orderId: id,
+        status: updateOrder.status,
+      });
+      await notification.save();
+      io.emit('orderUpdated', {
+        orderId: id,
+        orderData: updateOrder,
+        message: notification,
+      });
+    }
     res.status(StatusCodes.OK).json({
       message: 'Huỷ thành công',
       res: updateOrder,
@@ -668,7 +682,23 @@ export const cancelOrder: RequestHandler = async (req, res, next) => {
 export const confirmReturnedOrder: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
-    await confirmReturnedOrderService(id);
+    const confirmReturned = await confirmReturnedOrderService(id);
+
+    if (confirmReturned.orderUpdate.status === 'Returned') {
+      const io: Server = req.app.get('io');
+      const notification = new Notification({
+        userId: confirmReturned.orderUpdate.user_id, // ID của người nhận thông báo (có thể là admin hoặc người dùng)
+        orderId: id,
+        status: confirmReturned.orderUpdate.status,
+      });
+      await notification.save();
+      io.emit('orderUpdated', {
+        orderId: id,
+        orderData: confirmReturned.orderUpdate,
+        message: notification,
+      });
+    }
+
     return res.status(StatusCodes.OK).json({
       message: 'Đơn hàng hoàn trả thành công',
     });

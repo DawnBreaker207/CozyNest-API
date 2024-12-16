@@ -100,3 +100,18 @@ export const sendOrder = (data: any): string => {
 
   return html;
 };
+export const sendRefund = (data: any): string => {
+  const { customer_name, order_id, createdAt } = data._doc || {};
+  const { total_amount } = data;
+
+  const templatePath = path.resolve(__dirname, '../views/sendRefund.pug');
+
+  const html = pug.renderFile(templatePath, {
+    order_id: order_id,
+    customer_name: customer_name,
+    refund_amount: total_amount.toLocaleString('vi-VN') + ' VND',
+    daySolve: formatDateTime(createdAt),
+  });
+
+  return html;
+};

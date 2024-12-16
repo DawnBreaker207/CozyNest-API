@@ -1,5 +1,4 @@
 import { ProductType } from '@/interfaces/Product';
-import Cart from '@/models/Cart';
 import Category from '@/models/Category';
 import { Product } from '@/models/Product';
 import { Sku } from '@/models/Sku';
