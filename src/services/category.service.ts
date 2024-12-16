@@ -110,7 +110,6 @@ const hideCategoryService = async (id: string): Promise<CategoryType> => {
   session.startTransaction();
   try {
     const category = await Category.findOne({ _id: id }).session(session);
-    console.log(category?.products);
 
     if (!category) {
       logger.log('error', 'Category is not found in delete category');
@@ -138,14 +137,13 @@ const hideCategoryService = async (id: string): Promise<CategoryType> => {
 
       // Add product Id to default category
       if (category.products && category.products.length > 0) {
-        const test = await Category.findByIdAndUpdate(
-          { _id: defaultCategoryId },
-          {
-            $addToSet: { products: { $each: category?.products } },
-          },
-          { session: session },
-        );
-        console.log(test);
+        // const test = await Category.findByIdAndUpdate(
+        //   { _id: defaultCategoryId },
+        //   {
+        //     $addToSet: { products: { $each: category?.products } },
+        //   },
+        //   { session: session },
+        // );
       }
     }
     const data = await Category.findByIdAndUpdate(
@@ -172,7 +170,7 @@ const hideCategoryService = async (id: string): Promise<CategoryType> => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    logger.log('Error', 'Catch error in soft delete category');
+    logger.log('error', 'Catch error in soft delete category');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       `Error in soft delete category:${error}`,
@@ -240,7 +238,7 @@ const deleteCategoryService = async (id: string): Promise<CategoryType> => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    logger.log('Error', 'Catch error in hard delete category');
+    logger.log('error', 'Catch error in hard delete category');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       `Error in hard delete category:${error}`,

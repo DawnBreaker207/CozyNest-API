@@ -17,6 +17,7 @@ import routeVariant from './variant.route';
 import routeReview from './review.route';
 import routeSearch from './search.route';
 import routeStock from './stock.route';
+import routeNotification from './notification.route';
 
 const router = Router();
 
@@ -75,4 +76,6 @@ router.use('/search', routeSearch);
 
 router.use('/stock', routeStock);
 
+//* Notifications
+router.use('/notification', routeNotification);
 export default router;

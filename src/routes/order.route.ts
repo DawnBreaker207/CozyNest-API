@@ -1,5 +1,6 @@
 import {
   cancelOrder,
+  confirmRefundedOrder,
   confirmReturnedOrder,
   createNewOrder,
   decreaseProductFromOrder,
@@ -9,8 +10,10 @@ import {
   getOneOrder,
   getOrderByPhoneNumber,
   getOrderByUserId,
+  getRefundedOrder,
   getReturnedOrder,
   increaseProductFromOrder,
+  refundedOrder,
   removeProductFromOrder,
   returnedOrder,
   serviceCalFee,
@@ -35,6 +38,9 @@ routeOrder.get('/orderByUserId', getOrderByUserId);
 routeOrder.post('/return', returnedOrder);
 routeOrder.get('/return', getReturnedOrder);
 routeOrder.put('/return/:id', confirmReturnedOrder);
+routeOrder.post('/refund', refundedOrder);
+routeOrder.get('/refund', getRefundedOrder);
+routeOrder.put('/refund/:id', confirmRefundedOrder);
 routeOrder.put('/confirm-completed/:id', updateStatusDelivered);
 //* Create new order
 routeOrder.post('/', checkAuth, createNewOrder);

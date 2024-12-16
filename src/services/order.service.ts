@@ -14,7 +14,7 @@ import {
   getAddressLocation,
   getTokenPrintBill,
 } from '@/utils/shipment';
-import { sendOrder } from '@/utils/texts';
+import { sendOrder, sendRefund } from '@/utils/texts';
 import { StatusCodes } from 'http-status-codes';
 import moment from 'moment';
 import mongoose, { PaginateOptions } from 'mongoose';
@@ -24,6 +24,7 @@ import {
   createZaloPayService,
 } from './payment.service';
 import { createDeliveryOrderService } from './shipment.service';
+import { Refunded } from '@/models/Refund';
 
 // Utils functions
 /**
@@ -288,15 +289,17 @@ export const createNewOrderService = async (
   coupon: string,
   input: OrderType,
 ) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     // Tìm giỏ hàng
-    const cart = await Cart.findOne({ _id: cart_id });
+    const cart = await Cart.findOne({ _id: cart_id }).session(session);
     if (!cart) {
       logger.log('error', 'Cart not found in create order');
       throw new AppError(StatusCodes.NOT_FOUND, 'Not found cart');
     }
 
-    const existingOrder = await Order.findOne({ cart_id });
+    const existingOrder = await Order.findOne({ cart_id }).session(session);
     if (existingOrder) {
       logger.log('error', 'Cart already exists in create new order service');
       throw new AppError(
@@ -310,27 +313,34 @@ export const createNewOrderService = async (
     const payUrl = await checkPaymentMethod(paymentMethod, { total_amount });
 
     // Tạo đơn hàng
-    const order = await Order.create({
-      ...input,
-      customer_name: customer_name,
-      phone_number: phone_number,
-      address: address,
-      email: input.email,
-      total_amount: Number(total_amount),
-      payment_method: paymentMethod,
-      payment_url: payUrl,
-      status: input.status,
-    });
-    if (!order) {
+    const orderCreated = await Order.create(
+      [
+        {
+          ...input,
+          customer_name: customer_name,
+          phone_number: phone_number,
+          address: address,
+          email: input.email,
+          total_amount: Number(total_amount),
+          payment_method: paymentMethod,
+          payment_url: payUrl,
+          status: input.status,
+        },
+      ],
+      { session: session },
+    );
+
+    if (!orderCreated || orderCreated.length === 0) {
       logger.log('error', 'Order create error in create order');
       throw new AppError(StatusCodes.BAD_REQUEST, 'Create order error');
     }
+    const order = orderCreated[0];
 
     // Tạo chi tiết sản phẩm trong đơn hàng
     const addProductItem = async (cart: CartType, order_id: any) => {
       const products = await Promise.all(
         cart.products.map(async (product) => {
-          const skuInfo = await Sku.findById(product.sku_id);
+          const skuInfo = await Sku.findById(product.sku_id).session(session);
           if (!skuInfo) {
             logger.log('error', 'SKU not found in create order');
             throw new AppError(StatusCodes.NOT_FOUND, 'SKU không tồn tại');
@@ -347,9 +357,13 @@ export const createNewOrderService = async (
           }
 
           // Cập nhật số lượng tồn kho của SKU
-          await Sku.findByIdAndUpdate(product.sku_id, {
-            $inc: { stock: -product.quantity, sold: +product.quantity },
-          });
+          await Sku.findByIdAndUpdate(
+            product.sku_id,
+            {
+              $inc: { stock: -product.quantity, sold: +product.quantity },
+            },
+            { session: session },
+          );
 
           return {
             sku_id: product.sku_id,
@@ -364,14 +378,19 @@ export const createNewOrderService = async (
       );
 
       // Tạo một OrderDetail duy nhất chứa tất cả sản phẩm
-      const newOrderDetail = await Order_Detail.create({
-        order_id: order_id,
-        installation_fee: installation_fee || 0, // Nếu có phí lắp đặt
-        total: total || 0, // Thêm trường total vào đây
-        coupon: coupon || '', // Thêm trường coupon vào đây
-        products: products,
-      });
-
+      const createOrderDetail = await Order_Detail.create(
+        [
+          {
+            order_id: order_id,
+            installation_fee: installation_fee || 0, // Nếu có phí lắp đặt
+            total: total || 0, // Thêm trường total vào đây
+            coupon: coupon || '', // Thêm trường coupon vào đây
+            products: products,
+          },
+        ],
+        { session: session },
+      );
+      const newOrderDetail = createOrderDetail[0];
       return newOrderDetail;
     };
     // Tạo chi tiết sản phẩm từ giỏ hàng
@@ -385,7 +404,7 @@ export const createNewOrderService = async (
       {
         $set: { order_details: order_detail._id },
       },
-      { new: true },
+      { new: true, session: session },
     );
 
     // Nếu đơn hàng có phương thức giao hàng, cập nhật thông tin giao hàng
@@ -402,11 +421,15 @@ export const createNewOrderService = async (
     await Cart.findOneAndUpdate(
       { cart_id: cart_id },
       { $set: { products: [], total_money: 0 } },
+      { session: session },
     );
+    await session.commitTransaction();
+    session.endSession();
 
     return { new_order_details, order };
   } catch (error) {
-    logger.log('Error', 'Catch error in create new order service');
+    session.endSession();
+    logger.log('error', 'Catch error in create new order service');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       `Error in create new order service:${error}`,
@@ -418,7 +441,7 @@ export const cancelOrderService = async (id: string) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const ordered = await Order.findById(id);
+    const ordered = await Order.findById(id).session(session);
     if (!ordered) {
       logger.log('error', 'Order not found in cancel order');
       throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy đơn hàng');
@@ -426,13 +449,13 @@ export const cancelOrderService = async (id: string) => {
 
     const checkStatus: { [key: string]: () => void } = {
       cancelled: () => {
-        if (ordered?.status === 'cancelled') {
+        if (ordered?.status === 'Cancelled') {
           logger.log('error', 'Order was cancelled in cancel order');
           throw new AppError(StatusCodes.BAD_REQUEST, 'Đơn hàng đã được hủy');
         }
       },
       delivered: () => {
-        if (ordered.status === 'delivered') {
+        if (ordered.status === 'Delivered') {
           logger.log(
             'error',
             'Order can not cancel when delivery in cancel order',
@@ -444,7 +467,7 @@ export const cancelOrderService = async (id: string) => {
         }
       },
       returned: () => {
-        if (ordered.status === 'returned') {
+        if (ordered.status === 'Returned') {
           logger.log(
             'error',
             ' Order can not cancel when returned in cancel order',
@@ -462,14 +485,14 @@ export const cancelOrderService = async (id: string) => {
     const updateOrder = await Order.findByIdAndUpdate(
       id,
       {
-        $set: { status: 'cancelled' },
+        $set: { status: 'Cancelled' },
         $push: {
           status_detail: {
-            status: 'cancelled',
+            status: 'Cancelled',
           },
         },
       },
-      { new: true, session },
+      { new: true, session: session },
     ).populate({
       path: 'order_details',
       select: 'total coupon installation_fee products',
@@ -487,7 +510,7 @@ export const cancelOrderService = async (id: string) => {
         sku_id: string;
         quantity: number;
       }) => {
-        const SKU = await Sku.findById(product.sku_id);
+        const SKU = await Sku.findById(product.sku_id).session(session);
         if (!SKU) {
           logger.log('error', 'SKU not found in cancel order');
           throw new AppError(StatusCodes.NOT_FOUND, 'Không tìm thấy SKU');
@@ -500,7 +523,7 @@ export const cancelOrderService = async (id: string) => {
           {
             $set: { stock: newStock, sold: newSold },
           },
-          { new: true },
+          { new: true, session: session },
         );
       },
       orderDetails = await Order_Detail.find({ order_id: id }).session(session);
@@ -525,7 +548,7 @@ export const cancelOrderService = async (id: string) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    logger.log('Error', 'Catch error in cancel order service');
+    logger.log('error', 'Catch error in cancel order service');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       `Error in cancel order service:${error}`,
@@ -761,7 +784,7 @@ export const updateStatusOrderService = async (id: string, status: string) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    logger.log('Error', 'Catch error in update status order service');
+    logger.log('error', 'Catch error in update status order service');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       `Error in update status order service:${error}`,
@@ -836,6 +859,96 @@ export const returnedOrderService = async (
     throw new AppError(StatusCodes.BAD_REQUEST, 'Hoàn hàng không thành công');
   }
   return returned;
+};
+
+export const refundedOrderService = async (
+  order_id: string,
+  bank_number: number,
+  bank_name: string,
+  customer_name: string,
+  phone_number: string,
+  images: string[],
+) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    // Kiểm tra xem đã có yêu cầu hoàn tiền cho đơn hàng này chưa
+    const refunded_order = await Refunded.findOne({ order_id }).session(
+      session,
+    );
+    if (refunded_order) {
+      logger.log('error', 'Order has already been refunded');
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'Đơn hàng đã được yêu cầu hoàn tiền',
+      );
+    }
+
+    // Tìm kiếm đơn hàng theo order_id
+    const order = await Order.findById(order_id).session(session);
+    if (!order) {
+      logger.log('error', 'Order not found in refund order');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Đơn hàng không tìm thấy');
+    }
+
+    // Kiểm tra trạng thái đơn hàng phải là 'cancelled' hoặc 'Returned', và đã thanh toán
+    if (
+      !(
+        (order.status === 'Cancelled' || order.status === 'Returned') &&
+        order.payment_status === 'Paid'
+      )
+    ) {
+      logger.log('error', 'Order status or payment status invalid for refund');
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'Trạng thái đơn hàng hoặc trạng thái thanh toán không hợp lệ để hoàn tiền',
+      );
+    }
+
+    // Tạo yêu cầu hoàn tiền mới
+    const createRefunded = await Refunded.create(
+      [
+        {
+          order_id,
+          bank_number,
+          bank_name,
+          customer_name,
+          phone_number,
+          images,
+        },
+      ],
+      { session: session },
+    );
+    const refunded = createRefunded[0];
+    if (!refunded) {
+      logger.log('error', 'Refund request failed');
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'Yêu cầu hoàn tiền không thành công',
+      );
+    }
+    await configSendMail({
+      email: order?.email as string,
+      subject: 'Đơn hàng được hoàn tiền thành công',
+      text: sendRefund({
+        ...refunded,
+        total_amount: order.total_amount,
+      }),
+    });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return refunded;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    logger.log('error', 'Catch error in refunded order');
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Error in refunded order:${error}`,
+    );
+  }
 };
 
 export const serviceCalFeeService = async (location: string) => {
@@ -1123,7 +1236,7 @@ export const getOrderByUserIdService = async (
   const orderDetailsPromises = order.docs.map(async (item) => {
       const orderDetails = await Order_Detail.find({
         order_id: item._id,
-      });
+      }).populate('products.sku_id', 'name image SKU price quantity');
       if (!orderDetails) {
         logger.log(
           'error',
@@ -1138,7 +1251,7 @@ export const getOrderByUserIdService = async (
         orderDetails.map(async (detail) => {
           const sku = await Sku.findOne({
             _id: detail.products[0].sku_id,
-          }).select('name image SKU price quantity');
+          });
           return {
             ...detail.toObject(),
             ...(sku ? sku.toObject() : {}),
@@ -1258,7 +1371,7 @@ export const getOneOrderService = async (id: string) => {
       select: 'total coupon installation_fee products',
       populate: {
         path: 'products.sku_id',
-        select: 'name image',
+        select: 'name image product_id',
       },
     })
     .exec();
@@ -1398,7 +1511,65 @@ export const getReturnedOrderService = async (
     orders = await Returned.paginate(conditions, options);
   return { orders };
 };
+export const getRefundedOrderService = async (
+  // Trang hiện tại (mặc định là 1)
+  _page: number | string = 1,
+  // Trường để sắp xếp (mặc định là created_at)
+  _sort: string = 'createdAt',
+  // Thứ tự sắp xếp (mặc định là giảm dần)
+  _order: string = 'desc',
+  // Số lượng yêu cầu trả về trên một trang (mặc định là 10)
+  _limit: number | string = 100,
+  // Tìm kiếm theo tên khách hàng
+  search: string | undefined,
+  // Tình trạng xác nhận
+  is_confirm: boolean | undefined,
+  // Ngày để tìm kiếm
+  date: string | undefined,
+) => {
+  const conditions: Record<string, any> = {};
 
+  // Thêm điều kiện tìm kiếm theo tên khách hàng
+  if (search) {
+    conditions.$or = [
+      { customer_name: { $regex: new RegExp(search, 'i') } },
+      { order_id: search }, // Tìm kiếm chính xác theo `order_id`
+    ];
+  }
+
+  // Thêm điều kiện xác nhận
+  if (is_confirm) {
+    conditions.is_confirm = is_confirm;
+  }
+
+  // Thêm điều kiện theo ngày
+  if (date) {
+    // Chuyển đổi chuỗi ngày thành đối tượng moment
+    const { years, months, date: day } = moment(date).toObject();
+    // Đặt điều kiện tìm kiếm theo khoảng thời gian
+    conditions.created_at = {
+      // Ngày bắt đầu
+      $gte: new Date(years, months + 1, day),
+      // Ngày kết thúc
+      $lt: new Date(years, months + 1, day + 1),
+    };
+  }
+
+  // Tùy chọn cho truy vấn phân trang
+  const options = {
+      page: Number(_page) || 1,
+      limit: Number(_limit) || 10,
+      sort: {
+        // Sắp xếp theo trường và thứ tự
+        [_sort]: _order === 'desc' ? -1 : 1,
+      },
+      // Chọn các trường để trả về
+      select: ['-deleted', '-deleted_at'],
+    },
+    // Lấy danh sách yêu cầu hoàn trả từ cơ sở dữ liệu
+    orders = await Refunded.paginate(conditions, options);
+  return { orders };
+};
 export const updateStatusDeliveredService = async (id: string) => {
   const ordered = await Order.findById(id);
   if (!ordered) {
@@ -1531,9 +1702,42 @@ export const confirmReturnedOrderService = async (id: string) => {
     }),
   );
 
+  return { orderUpdate, returned };
+};
+export const confirmRefundedOrderService = async (id: string) => {
+  const refunded = await Refunded.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        is_confirm: true,
+      },
+    },
+    { new: true },
+  );
+
+  if (!refunded) {
+    logger.log('error', 'Refunded update failed in confirm refund order');
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Không tìm thấy đơn hàng');
+  }
+
+  const orderUpdate = await Order.findByIdAndUpdate(
+    refunded.order_id,
+    {
+      $set: { status: 'Refunded' },
+      $push: {
+        status_detail: {
+          status: 'Refunded',
+        },
+      },
+    },
+    { new: true },
+  );
+  if (!orderUpdate) {
+    logger.log('error', 'Order update failed in confirm refund order');
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Không tìm thấy đơn hàng');
+  }
   return;
 };
-
 export const updateInfoCustomerService = async (
   id: string,
   // Tên khách hàng

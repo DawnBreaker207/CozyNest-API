@@ -56,7 +56,7 @@ export const getAllProducts: RequestHandler = async (req, res, next) => {
               {
                 path: 'sku_id',
                 select:
-                  'name price SKU image sold stock price_discount_percent',
+                  'name price SKU image sold stock price_discount_percent price_before_discount',
               },
               { path: 'option_id', select: 'name position' },
               {

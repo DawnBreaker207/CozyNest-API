@@ -1,6 +1,8 @@
 import { messagesSuccess } from '@/constants/messages';
+import Notification from '@/models/Notification';
 import {
   cancelOrderService,
+  confirmRefundedOrderService,
   confirmReturnedOrderService,
   createNewOrderService,
   decreaseProductFromOrderService,
@@ -10,9 +12,11 @@ import {
   getOneOrderService,
   getOrderByPhoneNumberService,
   getOrderByUserIdService,
+  getRefundedOrderService,
   getReturnedOrderService,
   getTokenPrintBillsService,
   increaseProductFromOrderService,
+  refundedOrderService,
   removeProductFromOrderService,
   returnedOrderService,
   serviceCalFeeService,
@@ -86,14 +90,24 @@ export const updateStatusOrder: RequestHandler = async (req, res, next) => {
   try {
     const updateOrder = await updateStatusOrderService(id, status);
 
-    const io: Server = req.app.get('io');
     if (
       updateOrder.status === 'Confirmed' ||
       updateOrder.status === 'Completed' ||
-      updateOrder.status === 'Canceled' ||
-      updateOrder.status === 'Returned'
+      updateOrder.status === 'Delivered'
     ) {
-      io.emit('orderUpdated', { orderId: id, orderData: updateOrder });
+      const io: Server = req.app.get('io');
+      // Lưu thông báo vào cơ sở dữ liệu
+      const notification = new Notification({
+        userId: updateOrder.user_id, // ID của người nhận thông báo (có thể là admin hoặc người dùng)
+        orderId: id,
+        status: status,
+      });
+      await notification.save();
+      io.emit('orderUpdated', {
+        orderId: id,
+        orderData: updateOrder,
+        message: notification,
+      });
     }
 
     res.status(StatusCodes.CREATED).json({
@@ -160,7 +174,48 @@ export const returnedOrder: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+// Hàm xử lý yêu cầu hoàn tiền đơn hàng
+export const refundedOrder: RequestHandler = async (req, res, next) => {
+  const {
+    order_id,
+    bank_number,
+    bank_name,
+    customer_name,
+    phone_number,
+    images,
+  } = req.body as {
+    // ID của đơn hàng
+    order_id: string;
+    // Lý do hoàn trả
+    bank_number: number;
+    // Tên ngân hàng
+    bank_name: string;
+    // Tên khách hàng
+    customer_name: string;
+    // Số điện thoại của khách hàng
+    phone_number: string;
+    // Hình ảnh chứng minh yêu cầu hoàn trả
+    images: string[];
+  };
+  try {
+    const returned = await refundedOrderService(
+      order_id,
+      bank_number,
+      bank_name,
+      customer_name,
+      phone_number,
+      images,
+    );
 
+    return res.status(StatusCodes.OK).json({
+      message: 'Tạo yêu cầu hoàn tiền thành công',
+      res: returned,
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in return order: ${error}`);
+    next(error);
+  }
+};
 // Tính tiền vận chuyển
 export const serviceCalFee: RequestHandler = async (req, res, next) => {
   const { location } = req.body;
@@ -514,6 +569,7 @@ export const getReturnedOrder: RequestHandler = async (req, res, next) => {
       is_confirm,
       date,
     );
+
     return res.status(StatusCodes.OK).json({
       message: 'Thành công',
       res: {
@@ -526,7 +582,60 @@ export const getReturnedOrder: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
+export const getRefundedOrder: RequestHandler = async (req, res, next) => {
+  const {
+    // Trang hiện tại (mặc định là 1)
+    _page = 1,
+    // Trường để sắp xếp (mặc định là created_at)
+    _sort = 'created_at',
+    // Thứ tự sắp xếp (mặc định là giảm dần)
+    _order = 'desc',
+    // Số lượng yêu cầu trả về trên một trang (mặc định là 10)
+    _limit = 100,
+    // Tìm kiếm theo tên khách hàng
+    search,
+    // Tình trạng xác nhận
+    is_confirm,
+    // Ngày để tìm kiếm
+    date,
+  } = req.query as {
+    // Trang hiện tại
+    _page?: number | string;
+    // Trường sắp xếp
+    _sort?: string;
+    // Thứ tự sắp xếp
+    _order?: 'asc' | 'desc';
+    // Số lượng yêu cầu trên một trang
+    _limit?: number | string;
+    // Từ khóa tìm kiếm
+    search?: string;
+    // Tình trạng xác nhận
+    is_confirm?: boolean;
+    // Ngày tìm kiếm
+    date?: string;
+  };
+  try {
+    const { orders } = await getRefundedOrderService(
+      _page,
+      _sort,
+      _order,
+      _limit,
+      search,
+      is_confirm,
+      date,
+    );
+    return res.status(StatusCodes.OK).json({
+      message: 'Thành công',
+      res: {
+        items: orders.docs,
+        // paginate: orders,
+      },
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in get returned order: ${error}`);
+    next(error);
+  }
+};
 export const updateStatusDelivered: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -545,6 +654,21 @@ export const cancelOrder: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
     const updateOrder = await cancelOrderService(id);
+
+    if (updateOrder.status === 'Cancelled') {
+      const io: Server = req.app.get('io');
+      const notification = new Notification({
+        userId: updateOrder.user_id, // ID của người nhận thông báo (có thể là admin hoặc người dùng)
+        orderId: id,
+        status: updateOrder.status,
+      });
+      await notification.save();
+      io.emit('orderUpdated', {
+        orderId: id,
+        orderData: updateOrder,
+        message: notification,
+      });
+    }
     res.status(StatusCodes.OK).json({
       message: 'Huỷ thành công',
       res: updateOrder,
@@ -558,12 +682,40 @@ export const cancelOrder: RequestHandler = async (req, res, next) => {
 export const confirmReturnedOrder: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
-    await confirmReturnedOrderService(id);
+    const confirmReturned = await confirmReturnedOrderService(id);
+
+    if (confirmReturned.orderUpdate.status === 'Returned') {
+      const io: Server = req.app.get('io');
+      const notification = new Notification({
+        userId: confirmReturned.orderUpdate.user_id, // ID của người nhận thông báo (có thể là admin hoặc người dùng)
+        orderId: id,
+        status: confirmReturned.orderUpdate.status,
+      });
+      await notification.save();
+      io.emit('orderUpdated', {
+        orderId: id,
+        orderData: confirmReturned.orderUpdate,
+        message: notification,
+      });
+    }
+
     return res.status(StatusCodes.OK).json({
       message: 'Đơn hàng hoàn trả thành công',
     });
   } catch (error) {
     logger.log('error', `Catch error in get returned order: ${error}`);
+    next(error);
+  }
+};
+export const confirmRefundedOrder: RequestHandler = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    await confirmRefundedOrderService(id);
+    return res.status(StatusCodes.OK).json({
+      message: 'Đơn hàng hoàn tiền thành công',
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in get refunded order: ${error}`);
     next(error);
   }
 };

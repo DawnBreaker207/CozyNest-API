@@ -41,7 +41,7 @@ routeCoupon.post(
 );
 
 // Update coupon
-routeCoupon.patch(
+routeCoupon.put(
   '/:id',
   [checkAuth, checkPermission],
   // #swagger.tags = ['Coupon']

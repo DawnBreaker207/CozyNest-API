@@ -57,11 +57,11 @@ export const realTime = (io: Server) => {
     // Event for order updates
     socket.on(
       'orderUpdated',
-      (input: { orderId: string; role: string; orderData: any }) => {
-        const { role, orderId, orderData } = input;
+      (input: { orderId: string; message: string; orderData: any }) => {
+        const { message, orderId, orderData } = input;
         // if (role === 'superAdmin' || role === 'admin' || role === 'shipper') {
         logger.log('info', `Order updated ${orderId} `);
-        io.to(`order_${orderId}`).emit('orderUpdated', orderData);
+        io.to(`order_${orderId}`).emit('orderUpdated', { orderData, message });
         // }
       },
     );

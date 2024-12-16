@@ -215,7 +215,7 @@ export const removeAllFromCartService = async (userId: string) => {
 
     return cart;
   } catch (error) {
-    logger.error(`Error removing all items from cart: ${error}`);
+    logger.error(`error removing all items from cart: ${error}`);
     throw error;
   }
 };
