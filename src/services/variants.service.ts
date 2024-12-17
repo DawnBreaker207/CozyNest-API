@@ -414,7 +414,6 @@ const createOptionValueService = async (
     option_id: option_id,
     product_id: product_id,
   });
-
   if (!doc) {
     logger.log('error', 'Option value create failed in create option value');
     throw new AppError(
@@ -422,12 +421,6 @@ const createOptionValueService = async (
       'Something was wrong when create option value',
     );
   }
-  await Option.findByIdAndUpdate(
-    { _id: option_id },
-    {
-      $push: { option_value_id: doc._id }, // Thêm ID vào mảng option_value_ids
-    },
-  );
   return doc;
 };
 
@@ -441,14 +434,10 @@ const updateOptionValueService = async (
     { ...input, updated_at: moment().toISOString() },
     { new: true },
   );
-
   if (!doc) {
     logger.log('error', 'Option value not found in update option value');
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found option value');
   }
-  await Option.findByIdAndUpdate(doc.option_id, {
-    $addToSet: { option_value_id: doc._id }, // Đảm bảo không trùng lặp ID
-  });
   return doc;
 };
 
