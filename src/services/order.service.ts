@@ -1303,7 +1303,7 @@ export const getOrderByUserIdService = async (
       const newOrderDetails = await Promise.all(
         orderDetails.map(async (detail) => {
           const sku = await Sku.findOne({
-            _id: detail.products[0].sku_id,
+            _id: detail.products[0]?.sku_id,
           });
           return {
             ...detail.toObject(),
