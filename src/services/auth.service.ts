@@ -82,4 +82,5 @@ const checkTokenService = async (refreshToken: string): Promise<UserType> => {
   }
   return user;
 };
+
 export { checkTokenService, loginService, registerService };

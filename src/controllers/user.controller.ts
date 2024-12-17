@@ -81,13 +81,16 @@ export const updateUser: RequestHandler = async (req, res, next) => {
    * @param {object} req.body Param body input
    */
   const { id } = req.params,
-    { email, password } = req.body;
+    { email, password, role } = req.body;
   try {
-    const newUser = await updateUserService(id, email, password, req.body);
-    res.status(StatusCodes.OK).json({
-      message: messagesSuccess.UPDATE_USER_SUCCESS,
-      res: newUser,
-    });
+    const newUser = await updateUserService(
+      id,
+      email,
+      password,
+      role,
+      req.body,
+    );
+    res.status(StatusCodes.OK).json(newUser);
   } catch (error) {
     logger.log('error', `Catch error in update user: ${error}`);
     next(error);

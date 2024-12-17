@@ -14,6 +14,8 @@ import { PORT } from './utils/env';
 import { errorHandle, errorHandleNotFound } from './utils/errorHandle';
 import logger from './utils/logger';
 import { realTime } from './utils/socket';
+import  './utils/orderStatusCron';
+
 
 const app = express();
 

@@ -1,4 +1,5 @@
 export const timeCounts = Object.freeze({
+  mins_1: 1 * 60 * 1000,
   mins_5: 5 * 60 * 1000,
   mins_10: 10 * 60 * 1000,
   mins_15: 15 * 60 * 1000,
@@ -20,7 +21,7 @@ export const statusOrder: readonly string[] = [
   //Giao hàng thành công
   'Delivered',
   //Đã hủy đơn hàng
-  'Canceled',
+  'Cancelled',
   //Đơn hàng hoàn thành
   'Completed',
   //Hoàn trả đơn hàng

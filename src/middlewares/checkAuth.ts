@@ -61,7 +61,10 @@ export const checkAuth: RequestHandler = async (req, res, next) => {
     //* Check user valid, compare status
     if (user.status !== decoded.status) {
       logger.log('error', 'Check auth error: Status compare not valid');
-      throw new AppError(StatusCodes.FORBIDDEN, 'Status compare not valid');
+      return res.status(StatusCodes.FORBIDDEN).json({
+        message: 'Status compare not valid',
+      });
+      // throw new AppError(StatusCodes.FORBIDDEN, 'Status compare not valid');
     }
 
     req.user = user;

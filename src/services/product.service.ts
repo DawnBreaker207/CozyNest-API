@@ -43,7 +43,7 @@ const getAllProductsService = async (query: object, options: object) => {
 
 const getOneProductService = async (id: string): Promise<ProductType> => {
   const data = await Product.findById(id).populate([
-    { path: 'category_id', select: 'name' },
+    { path: 'category_id', select: 'name isHidden' },
     {
       path: 'variants',
       select: 'sku_id ',

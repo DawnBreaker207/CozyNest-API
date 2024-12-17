@@ -48,7 +48,7 @@ export const messagesError = Object.freeze({
   DELETE_CART_FAILED: 'Delete cart failed!',
   //!* Order
   ORDER_FAILED: 'Order failed!',
-  ORDER_CANCELED: 'Order cancelled',
+  ORDER_CANCELLED: 'Order cancelled',
 });
 
 export const messagesSuccess = Object.freeze({

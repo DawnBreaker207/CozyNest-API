@@ -147,8 +147,14 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
           'Canceled',
           //Đơn hàng hoàn thành
           'Completed',
+          //Tiến hành hoàn trả đơn hangf
+          'Returning',
+          //Từ chối hoàn trả hàng
+          'Rejected',
           //Hoàn trả đơn hàng
           'Returned',
+          //Tiến hành hoàn tiền
+          'Refunding',
           //Hoàn trả đơn hàng và hoàn tiền
           'Refunded',
         ],
@@ -175,8 +181,14 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
               'Canceled',
               //Đơn hàng hoàn thành
               'Completed',
+              //Tiến hành hoàn trả đơn hangf
+              'Returning',
+              //Từ chối hoàn trả hàng
+              'Rejected',
               //Hoàn trả đơn hàng
               'Returned',
+              //Tiến hành hoàn tiền
+              'Refunding',
               //Hoàn trả đơn hàng và hoàn tiền
               'Refunded',
             ],

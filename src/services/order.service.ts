@@ -532,14 +532,14 @@ export const cancelOrderService = async (id: string) => {
       throw new AppError(StatusCodes.NOT_FOUND, 'Order detail not found');
     }
     await Promise.all(
-      orderDetails.map((item) => {
-        item.products.map((product) => {
+      orderDetails.flatMap((item) =>
+        item.products.map((product) =>
           checkSkuStock({
             sku_id: product.sku_id.toString(),
             quantity: product.quantity,
-          });
-        });
-      }),
+          }),
+        ),
+      ),
     );
     await session.commitTransaction();
     session.endSession();
@@ -821,44 +821,84 @@ export const returnedOrderService = async (
   phone_number: string,
   images: string[],
 ) => {
-  // Kiểm tra xem đã có yêu cầu hoàn trả cho đơn hàng này chưa
-  const return_order = await Returned.findOne({ order_id });
-  if (return_order) {
-    logger.log('error', 'Order has request return in return order');
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Kiểm tra xem đã có yêu cầu hoàn trả cho đơn hàng này chưa
+    const return_order = await Returned.findOne({ order_id });
+    if (return_order) {
+      logger.log('error', 'Order has request return in return order');
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'Đơn hàng đã được yêu cầu hoàn hàng',
+      );
+    }
+
+    // Tìm kiếm đơn hàng theo order_id
+    const order = await Order.findById(order_id).session(session);
+    if (!order) {
+      logger.log('error', 'Order not found in return order');
+      throw new AppError(StatusCodes.NOT_FOUND, 'Đơn hàng không tìm thấy');
+    }
+
+    // Kiểm tra trạng thái đơn hàng, phải là 'Delivered' để hoàn trả
+    if (order.status === 'Returned' || order.status !== 'Delivered') {
+      logger.log('error', 'Order status can not return in return order');
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'Trạng thái đơn hàng không thể hoàn',
+      );
+    }
+
+    // Tạo yêu cầu hoàn trả mới
+    const returned = await Returned.create({
+      order_id,
+      reason,
+      customer_name,
+      phone_number,
+      images,
+    });
+
+    if (!returned) {
+      logger.log('error', 'Order return failed in return order');
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Hoàn hàng không thành công');
+    }
+
+    // Cập nhật trạng thái đơn hàng và thêm vào status_detail
+    const updatedOrder = await Order.findByIdAndUpdate(
+      { _id: order_id },
+      {
+        $set: { status: 'Returning' }, // Cập nhật trạng thái đơn hàng
+        $push: {
+          status_detail: {
+            status: 'Returning', // Thêm trạng thái mới vào status_detail
+            updatedAt: new Date(), // Thời gian cập nhật
+            reason: reason, // Lưu lý do hoàn trả
+          },
+        },
+      },
+      { new: true, session: session }, // Trả về tài liệu sau khi cập nhật
+    );
+
+    if (!updatedOrder) {
+      logger.log('error', 'Order update failed in return order');
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Cập nhật đơn hàng thất bại');
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return updatedOrder;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    logger.log('Error', 'Catch error in return order service');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
-      'Đơn hàng đã được yêu cầu hoàn hàng',
+      `Error in return order service: ${error}`,
     );
   }
-
-  // Tìm kiếm đơn hàng theo order_id
-  const order = await Order.findById(order_id);
-  if (!order) {
-    logger.log('error', 'Order not found in return order');
-    throw new AppError(StatusCodes.NOT_FOUND, 'Đơn hàng không tìm thấy');
-  }
-  // Kiểm tra trạng thái đơn hàng, phải là 'delivered' để hoàn trả
-  if (order.status === 'Returned' || order.status !== 'Delivered') {
-    logger.log('error', 'Order status can not return in return order');
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      'Trạng thái đơn hàng không thể hoàn',
-    );
-  }
-
-  // Tạo yêu cầu hoàn trả mới
-  const returned = await Returned.create({
-    order_id,
-    reason,
-    customer_name,
-    phone_number,
-    images,
-  });
-  if (!returned) {
-    logger.log('error', 'Order return failed in return order');
-    throw new AppError(StatusCodes.BAD_REQUEST, 'Hoàn hàng không thành công');
-  }
-  return returned;
 };
 
 export const refundedOrderService = async (
@@ -876,6 +916,7 @@ export const refundedOrderService = async (
     const refunded_order = await Refunded.findOne({ order_id }).session(
       session,
     );
+
     if (refunded_order) {
       logger.log('error', 'Order has already been refunded');
       throw new AppError(
@@ -891,10 +932,10 @@ export const refundedOrderService = async (
       throw new AppError(StatusCodes.NOT_FOUND, 'Đơn hàng không tìm thấy');
     }
 
-    // Kiểm tra trạng thái đơn hàng phải là 'cancelled' hoặc 'Returned', và đã thanh toán
+    // Kiểm tra trạng thái đơn hàng phải là 'Cancelled' hoặc 'Returned', và đã thanh toán
     if (
       !(
-        (order.status === 'Cancelled' || order.status === 'Returned') &&
+        (order.status === 'cancelled' || order.status === 'Returned') &&
         order.payment_status === 'Paid'
       )
     ) {
@@ -927,15 +968,26 @@ export const refundedOrderService = async (
         'Yêu cầu hoàn tiền không thành công',
       );
     }
-    await configSendMail({
-      email: order?.email as string,
-      subject: 'Đơn hàng được hoàn tiền thành công',
-      text: sendRefund({
-        ...refunded,
-        total_amount: order.total_amount,
-      }),
-    });
 
+    // Cập nhật trạng thái đơn hàng và thêm vào status_detail
+    const updatedOrder = await Order.findByIdAndUpdate(
+      { _id: order_id },
+      {
+        $set: { status: 'Refunding' }, // Cập nhật trạng thái đơn hàng
+        $push: {
+          status_detail: {
+            status: 'Refunding', // Thêm trạng thái vào status_detail
+            updatedAt: new Date(), // Thời gian thực hiện hành động
+          },
+        },
+      },
+      { new: true, session: session }, // Trả về tài liệu đã được cập nhật
+    );
+
+    if (!updatedOrder) {
+      logger.log('error', 'Order update failed in refund order');
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Cập nhật đơn hàng thất bại');
+    }
     await session.commitTransaction();
     session.endSession();
 
@@ -1250,7 +1302,7 @@ export const getOrderByUserIdService = async (
       const newOrderDetails = await Promise.all(
         orderDetails.map(async (detail) => {
           const sku = await Sku.findOne({
-            _id: detail.products[0].sku_id,
+            _id: detail.products[0]?.sku_id,
           });
           return {
             ...detail.toObject(),
@@ -1613,7 +1665,7 @@ export const confirmReturnedOrderService = async (id: string) => {
     id,
     {
       $set: {
-        is_confirm: true,
+        is_confirm: 'Đã xác nhận',
       },
     },
     { new: true },
@@ -1704,39 +1756,113 @@ export const confirmReturnedOrderService = async (id: string) => {
 
   return { orderUpdate, returned };
 };
-export const confirmRefundedOrderService = async (id: string) => {
-  const refunded = await Refunded.findByIdAndUpdate(
+export const cancelReturnedOrderService = async (
+  id: string,
+  reasonCancel: string,
+) => {
+  const returned = await Returned.findByIdAndUpdate(
     id,
     {
       $set: {
-        is_confirm: true,
+        is_confirm: 'Đã từ chối', // Thay đổi thành 'Đã từ chối'
+        reason_cancel: reasonCancel, // Lưu lý do từ chối
       },
     },
     { new: true },
   );
 
-  if (!refunded) {
-    logger.log('error', 'Refunded update failed in confirm refund order');
+  if (!returned) {
+    logger.log('error', 'Returned update failed in cancel return order');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Không tìm thấy đơn hàng');
   }
 
   const orderUpdate = await Order.findByIdAndUpdate(
-    refunded.order_id,
+    returned.order_id,
     {
-      $set: { status: 'Refunded' },
+      $set: { status: 'Rejected' }, // Cập nhật trạng thái thành 'Rejected'
       $push: {
         status_detail: {
-          status: 'Refunded',
+          status: 'Rejected', // Cập nhật status_detail thành 'Rejected'
+          reason_cancel: reasonCancel,
         },
       },
     },
     { new: true },
   );
   if (!orderUpdate) {
-    logger.log('error', 'Order update failed in confirm refund order');
+    logger.log('error', 'Order update failed in cancel return order');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Không tìm thấy đơn hàng');
   }
-  return;
+
+  // Không cần phần xử lý kho nữa, bỏ qua phần này
+
+  return { orderUpdate, returned };
+};
+
+export const confirmRefundedOrderService = async (id: string) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Tìm và cập nhật trạng thái xác nhận của đơn hoàn tiền
+    const refunded = await Refunded.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          is_confirm: true,
+        },
+      },
+      { new: true, session },
+    );
+
+    if (!refunded) {
+      logger.log('error', 'Refunded update failed in confirm refund order');
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Không tìm thấy đơn hàng');
+    }
+
+    // Tìm đơn hàng liên quan và cập nhật trạng thái
+    const orderUpdate = await Order.findByIdAndUpdate(
+      refunded.order_id,
+      {
+        $set: { status: 'Refunded' },
+        $push: {
+          status_detail: {
+            status: 'Refunded',
+            updatedAt: new Date(), // Thêm thời gian cập nhật
+          },
+        },
+      },
+      { new: true, session },
+    );
+
+    if (!orderUpdate) {
+      logger.log('error', 'Order update failed in confirm refund order');
+      throw new AppError(StatusCodes.BAD_REQUEST, 'Không tìm thấy đơn hàng');
+    }
+
+    // Gửi mail thông báo hoàn tiền
+    await configSendMail({
+      email: orderUpdate?.email as string, // Lấy email từ đơn hàng
+      subject: 'Hoàn tiền đơn hàng thành công',
+      text: sendRefund({
+        ...refunded,
+        total_amount: orderUpdate.total_amount,
+      }),
+    });
+
+    // Hoàn tất giao dịch
+    await session.commitTransaction();
+    session.endSession();
+    return;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    logger.log('error', 'Catch error in confirm refund order');
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Error in confirm refund order: ${error}`,
+    );
+  }
 };
 export const updateInfoCustomerService = async (
   id: string,
@@ -1765,9 +1891,9 @@ export const updateInfoCustomerService = async (
     // Nếu đơn hàng đã bị hủy
     order.status === 'cancelled' ||
     // Nếu đơn hàng đang được giao
-    order.status === 'delivering' ||
+    order.status === 'Delivering' ||
     // Nếu đơn hàng đã được giao
-    order.status === 'delivered'
+    order.status === 'Delivered'
   ) {
     logger.log('error', 'Order can not fix in update info customer');
     throw new AppError(StatusCodes.BAD_REQUEST, 'Không thể sửa đơn hàng');

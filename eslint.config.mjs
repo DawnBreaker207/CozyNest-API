@@ -37,6 +37,11 @@ export default [
   {
     ignores: ['dist', 'node_modules', '**/test/**'],
   },
+  {
+  "env": {
+    "node": true
+  }
+},
 
   eslint.configs.recommended,
   prettierConfig,
