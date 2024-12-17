@@ -5,6 +5,7 @@ import { ProductType } from './Product';
 export interface OptionType extends Document {
   _id: Types.ObjectId;
   product_id: Types.ObjectId;
+  option_value_id: Types.ObjectId;
   name: string;
   position: number;
   created_at: Date;

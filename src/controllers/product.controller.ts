@@ -48,7 +48,7 @@ export const getAllProducts: RequestHandler = async (req, res, next) => {
         },
 
         populate: [
-          { path: 'category_id', select: 'name' },
+          { path: 'category_id', select: 'name isHidden' },
           {
             path: 'variants',
             select: 'sku_id',
