@@ -2,6 +2,7 @@ import { messagesSuccess } from '@/constants/messages';
 import Notification from '@/models/Notification';
 import {
   cancelOrderService,
+  cancelReturnedOrderService,
   confirmRefundedOrderService,
   confirmReturnedOrderService,
   createNewOrderService,
@@ -704,6 +705,28 @@ export const confirmReturnedOrder: RequestHandler = async (req, res, next) => {
     });
   } catch (error) {
     logger.log('error', `Catch error in get returned order: ${error}`);
+    next(error);
+  }
+};
+export const cancelReturnedOrder: RequestHandler = async (req, res, next) => {
+  const { id } = req.params;
+  const { reasonCancel } = req.body; // Nhận lý do từ chối từ request body
+
+  if (!reasonCancel || reasonCancel.trim() === '') {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: 'Lý do từ chối là bắt buộc.',
+    });
+  }
+
+  try {
+    // Gọi service và truyền lý do từ chối vào
+    await cancelReturnedOrderService(id, reasonCancel);
+
+    return res.status(StatusCodes.OK).json({
+      message: 'Từ chối hoàn trả đơn hàng thành công',
+    });
+  } catch (error) {
+    logger.log('error', `Catch error in cancel returned order: ${error}`);
     next(error);
   }
 };

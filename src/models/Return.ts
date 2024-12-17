@@ -14,8 +14,12 @@ const returnedSchema = new Schema<ReturnedType>(
       required: true,
     },
     is_confirm: {
-      type: Boolean,
-      default: false,
+      type: String,
+      enum: ['Đã xác nhận', 'Đã từ chối', 'Chờ xác nhận'],
+      default: 'Chờ xác nhận',
+    },
+    reason_cancel: {
+      type: String,
     },
     customer_name: {
       type: String,

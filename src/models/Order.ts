@@ -149,6 +149,8 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
           'Completed',
           //Tiến hành hoàn trả đơn hangf
           'Returning',
+          //Từ chối hoàn trả hàng
+          'Rejected',
           //Hoàn trả đơn hàng
           'Returned',
           //Tiến hành hoàn tiền
@@ -181,6 +183,8 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
               'Completed',
               //Tiến hành hoàn trả đơn hangf
               'Returning',
+              //Từ chối hoàn trả hàng
+              'Rejected',
               //Hoàn trả đơn hàng
               'Returned',
               //Tiến hành hoàn tiền

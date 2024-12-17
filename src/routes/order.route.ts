@@ -1,5 +1,6 @@
 import {
   cancelOrder,
+  cancelReturnedOrder,
   confirmRefundedOrder,
   confirmReturnedOrder,
   createNewOrder,
@@ -38,6 +39,7 @@ routeOrder.get('/orderByUserId', getOrderByUserId);
 routeOrder.post('/return', returnedOrder);
 routeOrder.get('/return', getReturnedOrder);
 routeOrder.put('/return/:id', confirmReturnedOrder);
+routeOrder.put('/return/:id/reject', cancelReturnedOrder);
 routeOrder.post('/refund', refundedOrder);
 routeOrder.get('/refund', getRefundedOrder);
 routeOrder.put('/refund/:id', confirmRefundedOrder);
