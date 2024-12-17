@@ -532,14 +532,14 @@ export const cancelOrderService = async (id: string) => {
       throw new AppError(StatusCodes.NOT_FOUND, 'Order detail not found');
     }
     await Promise.all(
-      orderDetails.map((item) => {
-        item.products.map((product) => {
+      orderDetails.flatMap((item) =>
+        item.products.map((product) =>
           checkSkuStock({
             sku_id: product.sku_id.toString(),
             quantity: product.quantity,
-          });
-        });
-      }),
+          }),
+        ),
+      ),
     );
     await session.commitTransaction();
     session.endSession();
@@ -968,7 +968,6 @@ export const refundedOrderService = async (
         'Yêu cầu hoàn tiền không thành công',
       );
     }
-
 
     // Cập nhật trạng thái đơn hàng và thêm vào status_detail
     const updatedOrder = await Order.findByIdAndUpdate(
@@ -1757,13 +1756,16 @@ export const confirmReturnedOrderService = async (id: string) => {
 
   return { orderUpdate, returned };
 };
-export const cancelReturnedOrderService = async (id: string, reasonCancel: string) => {
+export const cancelReturnedOrderService = async (
+  id: string,
+  reasonCancel: string,
+) => {
   const returned = await Returned.findByIdAndUpdate(
     id,
     {
       $set: {
         is_confirm: 'Đã từ chối', // Thay đổi thành 'Đã từ chối'
-        reason_cancel: reasonCancel,  // Lưu lý do từ chối
+        reason_cancel: reasonCancel, // Lưu lý do từ chối
       },
     },
     { new: true },

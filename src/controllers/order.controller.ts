@@ -356,7 +356,7 @@ export const getOrderByUserId: RequestHandler = async (req, res, next) => {
 export const getAllOrders: RequestHandler = async (req, res, next) => {
   const {
     _page = '1',
-    _sort = 'created_at',
+    _sort = 'createdAt',
     _order = 'desc',
     _limit = '100', // Giới hạn mặc định là 100
     search,

@@ -144,7 +144,7 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
           //Giao hàng thành công
           'Delivered',
           //Đã hủy đơn hàng
-          'Cancelled',
+          'Canceled',
           //Đơn hàng hoàn thành
           'Completed',
           //Tiến hành hoàn trả đơn hangf
@@ -178,7 +178,7 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
               //Giao hàng thành công
               'Delivered',
               //Đã hủy đơn hàng
-              'Cancelled',
+              'Canceled',
               //Đơn hàng hoàn thành
               'Completed',
               //Tiến hành hoàn trả đơn hangf

@@ -1,4 +1,5 @@
 export const timeCounts = Object.freeze({
+  mins_1: 1 * 60 * 1000,
   mins_5: 5 * 60 * 1000,
   mins_10: 10 * 60 * 1000,
   mins_15: 15 * 60 * 1000,
