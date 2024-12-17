@@ -20,7 +20,7 @@ export const statusOrder: readonly string[] = [
   //Giao hàng thành công
   'Delivered',
   //Đã hủy đơn hàng
-  'Canceled',
+  'Cancelled',
   //Đơn hàng hoàn thành
   'Completed',
   //Hoàn trả đơn hàng

@@ -32,6 +32,7 @@ const updateUserService = async (
   id: string,
   email: string,
   password: string,
+  role: string,
   input: UserType,
 ) => {
   // Check user exist
@@ -40,6 +41,35 @@ const updateUserService = async (
     logger.log('error', 'User not found in update user');
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found user');
   }
+
+  if (input.role) {
+    if (role === 'superAdmin') {
+      // SuperAdmin có thể nâng quyền cho tất cả
+    } else if (role === 'admin') {
+      if (input.role === 'superAdmin') {
+        logger.log('error', 'Admin cannot assign SuperAdmin role');
+        return {
+          status: StatusCodes.FORBIDDEN,
+          message: 'Admin cannot assign SuperAdmin role',
+        };
+      }
+    } else if (role === 'shipper') {
+      if (['admin', 'superAdmin'].includes(input.role)) {
+        logger.log('error', 'Shipper cannot assign Admin or SuperAdmin role');
+        return {
+          status: StatusCodes.FORBIDDEN,
+          message: 'Shipper cannot assign Admin or SuperAdmin role',
+        };
+      }
+    } else {
+      logger.log('error', 'User cannot change role');
+      return {
+        status: StatusCodes.FORBIDDEN,
+        message: 'Admin cannot assign SuperAdmin role',
+      };
+    }
+  }
+
   // Check email exist
   const emailExist = await User.findOne({ email });
   if (emailExist && !emailExist._id.equals(user.id)) {
@@ -50,16 +80,23 @@ const updateUserService = async (
   if (password || password != null) {
     password = await hashPassword(password);
   }
-  const newUser = await User.findByIdAndUpdate(id, input);
-  if (!newUser) {
+  const updatedUser = await User.findByIdAndUpdate(id, input, {
+    new: true,
+  });
+  if (!updatedUser) {
     logger.log('error', 'User update failed in get update user');
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       'Something is wrong when update user',
     );
   }
-  return newUser;
+  return {
+    status: StatusCodes.OK,
+    message: 'User updated successfully',
+    data: updatedUser,
+  };
 };
+
 const generateVerifyTokenService = async (email: string) => {
   const user = await User.findOne({ email });
   if (!user) {
