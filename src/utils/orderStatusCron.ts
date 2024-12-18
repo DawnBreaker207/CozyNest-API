@@ -1,6 +1,6 @@
+import { Order } from '@/models/Order';
+import logger from './logger';
 import { timeCounts } from '@/constants/initialValue';
-import { Order } from '@/models/Order'; // Import Order model
-import logger from '@/utils/logger'; // Import logger nếu có
 
 // Hàm tự động cập nhật trạng thái đơn hàng
 const autoCancelDeliveringOrders = async () => {
@@ -34,7 +34,7 @@ const autoCancelDeliveringOrders = async () => {
     // Cập nhật trạng thái cho các đơn hàng đã giao mà chưa được xác nhận
     const deliveredOrdersWithoutConfirm = await Order.find({
       status: 'Delivered',
-      updatedAt: { $lte: new Date() }, // Điều kiện đơn hàng đã giao
+      updatedAt: { $lte: threeDaysAgo }, // Điều kiện đơn hàng đã giao
     });
 
     if (deliveredOrdersWithoutConfirm.length > 0) {
@@ -58,7 +58,6 @@ const autoCancelDeliveringOrders = async () => {
     logger.error('Lỗi khi tự động cập nhật trạng thái đơn hàng:', error);
   }
 };
-
 // Tạo cron job chạy mỗi ngày lúc 0:00
 const startCronJob = () => {
   logger.info(
