@@ -935,7 +935,7 @@ export const refundedOrderService = async (
     // Kiểm tra trạng thái đơn hàng phải là 'Cancelled' hoặc 'Returned', và đã thanh toán
     if (
       !(
-        (order.status === 'cancelled' || order.status === 'Returned') &&
+        (order.status === 'Cancelled' || order.status === 'Returned') &&
         order.payment_status === 'Paid'
       )
     ) {
@@ -995,7 +995,7 @@ export const refundedOrderService = async (
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    logger.log('error', 'Catch error in refunded order');
+    logger.log('error', 'Catch error in refunded order',error);
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       `Error in refunded order:${error}`,
