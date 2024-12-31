@@ -46,7 +46,7 @@ routeOrder.put('/refund/:id', confirmRefundedOrder);
 routeOrder.put('/confirm-completed/:id', updateStatusDelivered);
 //* Create new order
 routeOrder.post('/', checkAuth, createNewOrder);
-routeOrder.get('/', checkAuth, getAllOrders);
+routeOrder.get('/', getAllOrders);
 //* Get all orders exist
 routeOrder.get('/statistical', getAllUserOrders);
 routeOrder.get('/shipping', getAllShipping);

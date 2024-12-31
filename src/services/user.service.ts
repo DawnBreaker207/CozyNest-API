@@ -42,30 +42,13 @@ const updateUserService = async (
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found user');
   }
 
-  if (input.role) {
+  if (input.role && Object.keys(input).length === 1) {
+    // Chỉ có 'superAdmin' mới có thể thay đổi vai trò của người dùng
     if (role === 'superAdmin') {
-      // SuperAdmin có thể nâng quyền cho tất cả
-    } else if (role === 'admin') {
-      if (input.role === 'superAdmin') {
-        logger.log('error', 'Admin cannot assign SuperAdmin role');
-        return {
-          status: StatusCodes.FORBIDDEN,
-          message: 'Admin cannot assign SuperAdmin role',
-        };
-      }
-    } else if (role === 'shipper') {
-      if (['admin', 'superAdmin'].includes(input.role)) {
-        logger.log('error', 'Shipper cannot assign Admin or SuperAdmin role');
-        return {
-          status: StatusCodes.FORBIDDEN,
-          message: 'Shipper cannot assign Admin or SuperAdmin role',
-        };
-      }
-    } else {
-      logger.log('error', 'User cannot change role');
+      logger.log('error', 'Only superAdmin can change the role');
       return {
         status: StatusCodes.FORBIDDEN,
-        message: 'Admin cannot assign SuperAdmin role',
+        message: 'Only superAdmin can change the role',
       };
     }
   }
