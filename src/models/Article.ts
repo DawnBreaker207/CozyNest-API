@@ -28,6 +28,7 @@ const ArticleSchema = new Schema({
   author: {
     type: String,
   },
+  author_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   isHidden: { type: Boolean, default: false },
   createdAt: {
     type: Date,
