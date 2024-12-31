@@ -1,0 +1,51 @@
+extends baseEmail
+
+block content
+  p(style="color: #2986cc;") Kính gửi anh/chị: #{customerName}
+  p Xin cảm ơn quý khách đã mua hàng tại CozyNest.
+  p(style="font-weight: bold;") Hóa đơn được tạo lúc: #{orderDate}
+
+  .invoice-details(style="border: 1px solid #ccc; border-radius: 10px; padding: 10px 20px; margin-top: 20px;")
+    p Mã hóa đơn: #{orderId}
+    p Khách hàng: #{customerName}
+    p Điện thoại: #{customerPhone}
+    p Địa chỉ nhận hàng: #{customerAddress}
+
+  if products.length
+    table(style="width: 100%; border-collapse: collapse; margin-top: 20px;")
+      thead
+        tr(style="background-color: #cfe2f3;")
+          th(style="padding: 10px; border: 1px solid black;") STT
+          th(style="padding: 10px; border: 1px solid black;") Sản phẩm
+          th(style="padding: 10px; border: 1px solid black;") Số lượng
+          th(style="padding: 10px; border: 1px solid black;") Đơn giá
+      tbody
+        each product, index in products
+          tr(style="border-bottom: 1px solid #ccc;")
+            td(style="padding: 10px; border: 1px solid black; text-align: center;") #{index + 1}
+            td(style="padding: 10px; border: 1px solid black; text-align: center;")
+              img(src=product.image alt=product.name style="width: 80px; height: 80px; border-radius: 5px;")
+              p #{product.name}
+            td(style="padding: 10px; border: 1px solid black; text-align: center;") #{product.quantity}
+            td(style="padding: 10px; border: 1px solid black; text-align: center;") #{product.price}
+
+  .summary(style="margin-top: 20px; border-top: 2px solid #000; padding-top: 20px;")
+    h4(style="margin: 10px 0; display: flex; justify-content: space-between;")
+      span(style="margin-right: 5px;") Tổng cộng:
+      span #{totalProduct}
+    h4(style="margin: 10px 0; display: flex; justify-content: space-between;")
+      span(style="margin-right: 5px;") Phí vận chuyển:
+      span #{shippingFee}
+    h4(style="margin: 10px 0; display: flex; justify-content: space-between;")
+      span(style="margin-right: 5px;") Phí lắp đặt:
+      span #{installationFee}
+    h4(style="margin: 10px 0; display: flex; justify-content: space-between; color: red;")
+      span(style="margin-right: 5px;") - Giảm giá:
+      span #{voucher}   
+    .total-amount(style="border-top: 2px dashed #000; margin-top: 20px; padding-top: 10px;")
+      h3(style="color: red; font-weight: bold; display: flex; justify-content: space-between;")
+        span(style="margin-right: 5px;") Tổng tiền thanh toán:
+        span #{totalAmount}
+
+  p Thanh toán: #{paymentMethod}
+  p Trạng thái đơn hàng: #{paymentStatus}

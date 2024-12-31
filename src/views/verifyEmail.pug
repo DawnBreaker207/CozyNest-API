@@ -1,0 +1,8 @@
+extends baseEmail
+
+block content
+  .message-container(style="padding: 20px; text-align: center;")
+    p(style="font-size: 18px;") Mã xác nhận của bạn là:
+    .confirmation-code(style="background-color: #bedaef; color: #f12; padding: 15px; border-radius: 5px; font-size: 24px; font-weight: bold; display: inline-block; margin: 20px 0;")
+      | #{content}
+    p(style="font-size: 16px;") Mã này sẽ hết hiệu lực sau 5 phút. Vui lòng không chia sẻ mã này với ai để bảo vệ tài khoản của bạn!
