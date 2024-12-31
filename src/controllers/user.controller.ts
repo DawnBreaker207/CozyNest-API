@@ -90,7 +90,7 @@ export const updateUser: RequestHandler = async (req, res, next) => {
       role,
       req.body,
     );
-    res.status(StatusCodes.OK).json(newUser);
+    res.status(StatusCodes.OK).json({res:newUser});
   } catch (error) {
     logger.log('error', `Catch error in update user: ${error}`);
     next(error);
