@@ -42,7 +42,7 @@ const updateUserService = async (
     throw new AppError(StatusCodes.NOT_FOUND, 'Not found user');
   }
 
-  if (input.role === user.role) {
+  if (input.role && Object.keys(input).length === 1) {
     // Chỉ có 'superAdmin' mới có thể thay đổi vai trò của người dùng
     if (role === 'superAdmin') {
       logger.log('error', 'Only superAdmin can change the role');
