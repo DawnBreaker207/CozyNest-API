@@ -19,6 +19,11 @@ const reviewSchema = new Schema<ReviewType>(
       ref: 'Order',
       required: true,
     },
+    sku_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SKU',
+      required: true,
+    },
     rating: {
       type: Number,
       required: true,
