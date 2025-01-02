@@ -57,6 +57,7 @@ export interface OrderDetailType extends Document {
     price_before_discount?: number;
     price_discount_percent?: number;
     total_money?: number;
+    isReviewed?: boolean;
   }[];
 }
 

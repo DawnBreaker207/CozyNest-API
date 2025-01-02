@@ -43,6 +43,10 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
             type: Number,
             default: 0,
           },
+          isReviewed: {
+            type: Boolean,
+            default: false,
+          },
         },
       ],
     },
@@ -52,7 +56,6 @@ const orderDetailSchema = new mongoose.Schema<OrderDetailType>(
       versionKey: false,
     },
   ),
-  // TODO: Update
   shippingInfoSchema = new mongoose.Schema<ShippingInfoType>(
     {
       shipping_address: {
